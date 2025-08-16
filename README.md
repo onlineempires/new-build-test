@@ -14,6 +14,7 @@
 - **Live Demo**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev
 - **Courses Page**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses
 - **TikTok Mastery Course**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses/tiktok-mastery
+- **Lesson Page Example**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses/tiktok-mastery/lesson-3-2
 - **GitHub**: https://github.com/onlineempires/new-build-test
 
 ## Tech Stack
@@ -45,6 +46,11 @@
 ✅ **Responsive Design**: Mobile-first design with proper breakpoints  
 ✅ **Navigation System**: Sidebar with active state detection for courses  
 ✅ **Mock API System**: Comprehensive data structure with fallback patterns  
+✅ **Individual Lesson Pages**: Dedicated lesson pages with video player and content  
+✅ **Seamless Upgrade Banner**: Premium upgrade banner in bottom right corner matching reference design  
+✅ **Lesson Completion System**: Checkbox completion with progress tracking and navigation  
+✅ **Sticky Sidebar**: Right sidebar with lesson progress, navigation, and upgrade banner  
+✅ **Module Overview**: Course structure navigation with current lesson highlighting  
 
 ## Current Course Sections
 
@@ -64,10 +70,14 @@
 ## User Guide
 1. **Dashboard Navigation**: Use sidebar to navigate between Dashboard, All Courses, and other sections
 2. **Courses Page**: View your learning journey with progress tracking and achievement system
-3. **Course Selection**: Click any course card to access detailed course content
-4. **Progress Tracking**: Your progress is automatically saved and continues where you left off
-5. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
-6. **Level System**: Earn XP points to advance through levels and unlock new content
+3. **Course Selection**: Click any course card to access detailed course content and lesson overview
+4. **Lesson Learning**: Click individual lessons to access dedicated lesson pages with video player
+5. **Lesson Completion**: Use the checkbox to mark lessons as complete and track your progress
+6. **Continue Learning**: Use "Continue to Next Lesson" button for seamless lesson progression
+7. **Progress Tracking**: Your progress is automatically saved and continues where you left off
+8. **Premium Upgrade**: Seamless upgrade banner appears in bottom right for premium features
+9. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
+10. **Level System**: Earn XP points to advance through levels and unlock new content
 
 ## Development Commands
 ```bash
@@ -114,11 +124,12 @@ components/
 │   ├── ProfileDropdown.tsx     # User profile menu
 │   └── FeedbackModal.tsx       # Feedback form modal
 pages/
-├── index.tsx                   # Dashboard homepage
-├── courses.tsx                 # ONLINE EMPIRES courses page
-├── courses/[courseId].tsx      # Individual course detail pages
-├── _app.tsx                    # App wrapper
-└── _document.tsx               # Document with Font Awesome CDN
+├── index.tsx                           # Dashboard homepage
+├── courses.tsx                         # ONLINE EMPIRES courses page
+├── courses/[courseId].tsx              # Individual course detail pages
+├── courses/[courseId]/[lessonId].tsx   # Individual lesson pages with video player
+├── _app.tsx                            # App wrapper
+└── _document.tsx                       # Document with Font Awesome CDN
 lib/
 └── api/
     ├── courses.ts              # Course data and API functions
@@ -134,6 +145,19 @@ lib/
 - **Circular Achievement Icons**: Recent achievements with Font Awesome icons
 - **Course Categories**: Structured learning path with foundational and advanced sections
 - **Visual Course Cards**: Gradient backgrounds with relevant icons for each course
+
+## Lesson Page Features (NEW)
+- **Seamless Upgrade Banner**: Premium upgrade banner positioned in bottom right corner with natural flow
+- **Purple Gradient Design**: Beautiful gradient background matching reference design exactly
+- **Crown Icon & LIMITED TIME Badge**: Yellow/gold premium badge with crown symbol for urgency
+- **Video Player Interface**: Full-width video player with lesson title and duration
+- **Lesson Completion System**: Easy checkbox to mark lessons as complete with instant feedback
+- **Continue to Next Lesson**: Blue button for seamless progression through course content
+- **Navigation Controls**: Previous/Next lesson buttons with proper lesson flow logic
+- **Sticky Right Sidebar**: Progress tracking, navigation, and upgrade banner stay visible while scrolling
+- **Module Overview**: Collapsible course structure showing current position and completion status
+- **Responsive Layout**: Mobile-optimized design that works perfectly on all devices
+- **Lesson Content Area**: Dedicated space for transcripts, notes, and supplementary materials
 
 ## Mobile Responsiveness
 - **Breakpoints**: sm (640px), md (768px), lg (1024px)
