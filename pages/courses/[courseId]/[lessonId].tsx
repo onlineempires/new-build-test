@@ -21,6 +21,10 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
+  
+  // Mock user subscription status - in real app, this would come from user data
+  const userSubscriptionType = 'free'; // 'free', 'monthly', 'annual'
+  const shouldShowUpgrade = userSubscriptionType !== 'annual' && showUpgradeBanner;
   const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
@@ -267,8 +271,8 @@ export default function LessonPage() {
                   </div>
                 </div>
 
-                {/* Lesson Overview */}
-                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                {/* Lesson Overview - Aligned with sidebar height */}
+                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 h-fit">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Lesson Overview</h2>
                   
                   <p className="text-gray-700 leading-relaxed mb-6">
@@ -276,7 +280,7 @@ export default function LessonPage() {
                     "In this lesson, you'll learn how to identify and understand your target market. We'll cover market research techniques, customer personas, and how to position your business for maximum impact in your chosen niche."}
                   </p>
 
-                  <div className="mb-6">
+                  <div className="mb-4">
                     <h3 className="font-semibold text-gray-900 mb-3">Key Takeaways:</h3>
                     <ul className="space-y-2">
                       <li className="flex items-start">
@@ -292,6 +296,14 @@ export default function LessonPage() {
                         <span className="text-gray-700">Positioning strategies for your business</span>
                       </li>
                     </ul>
+                  </div>
+
+                  {/* Additional content to balance height with sidebar */}
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <i className="fas fa-clock mr-2"></i>
+                      <span>Estimated time: {formatDuration(data.currentLesson.duration)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -385,10 +397,10 @@ export default function LessonPage() {
                     </div>
                   </div>
 
-                  {/* Two-Column Layout for Lesson Completion & Upgrade */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Two-Row Layout for Lesson Completion & Upgrade */}
+                  <div className="space-y-4">
                     
-                    {/* Left Column - Lesson Completion */}
+                    {/* Top Row - Lesson Completion */}
                     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                       <div className="mb-4">
                         <label className="flex items-center cursor-pointer">
@@ -426,16 +438,9 @@ export default function LessonPage() {
                       )}
                     </div>
 
-                    {/* Right Column - Upgrade Banner */}
-                    {showUpgradeBanner && (
-                      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 relative">
-                        <button
-                          onClick={() => setShowUpgradeBanner(false)}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          <i className="fas fa-times text-sm"></i>
-                        </button>
-                        
+                    {/* Bottom Row - Fixed Upgrade Banner (for non-annual users) */}
+                    {shouldShowUpgrade && (
+                      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                         <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
                           <div className="mb-4">
                             <div className="inline-flex items-center bg-yellow-400 text-purple-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
