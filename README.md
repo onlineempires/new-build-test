@@ -1,58 +1,87 @@
-# Digital Era Dashboard
+# Digital Era Learning Management System
 
 ## Project Overview
-- **Name**: Digital Era Dashboard
-- **Goal**: Pixel-perfect recreation of Digital Era dashboard with modern React components
+- **Name**: Digital Era Learning Management System
+- **Goal**: Complete learning management system with ONLINE EMPIRES dashboard design
 - **Features**: 
-  - Responsive dashboard with sidebar navigation
-  - Statistics cards with Heroicons
-  - Course progress tracking
-  - User notifications and profile management
-  - Mobile-first responsive design
+  - Pixel-perfect ONLINE EMPIRES courses page with achievement banners
+  - Dashboard with statistics, progress tracking, and course management
+  - Individual course detail pages with video player and lesson tracking
+  - Level progression system with XP rewards and achievements
+  - Mobile-first responsive design with Font Awesome icons
 
 ## URLs
 - **Live Demo**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev
+- **Courses Page**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses
+- **TikTok Mastery Course**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses/tiktok-mastery
 - **GitHub**: https://github.com/onlineempires/new-build-test
 
 ## Tech Stack
 - **Frontend**: Next.js 12 + React 18 + TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Heroicons v2
-- **HTTP Client**: Axios
-- **Process Management**: PM2
+- **Styling**: Tailwind CSS + Font Awesome 6.4.0
+- **Icons**: Font Awesome (FA) for navigation and UI elements
+- **HTTP Client**: Axios with fallback to mock data
+- **Process Management**: PM2 for development server
+- **Typography**: Inter font for modern design
 
 ## Data Architecture
-- **Mock API**: Local mock data with TypeScript interfaces
-- **Components**: Modular React components with proper TypeScript typing
-- **State Management**: React hooks for local state
-- **Data Flow**: Dashboard → Components → Mock API → UI Updates
+- **Mock API**: Comprehensive course data with TypeScript interfaces
+- **Course Structure**: Courses → Modules → Lessons with progress tracking
+- **Progress System**: XP points, achievements, streak tracking, completion status
+- **User Data**: Profile information, learning statistics, notification system
+- **Data Flow**: Pages → API Layer → Mock Data → UI Components
 
 ## Features Completed
-✅ **Header Layout**: Search bar, notifications, Facebook icon, profile dropdown  
-✅ **Sidebar Navigation**: Fixed 64-width sidebar with menu items and user profile  
-✅ **Statistics Cards**: 4 cards with Heroicons (Academic Cap, Fire, Banknotes, User Plus)  
-✅ **Welcome Banner**: Gradient background with user avatar  
-✅ **Course Progress**: Continue Journey section with progress tracking  
-✅ **Learning Modules**: Start Here grid with course cards  
-✅ **Recent Achievements**: Achievement tracking display  
-✅ **Responsive Design**: Mobile-first with proper breakpoints  
-✅ **Notifications**: Dropdown notifications with clear functionality  
-✅ **Profile Management**: User profile dropdown with settings  
+✅ **ONLINE EMPIRES Courses Page**: Complete redesign matching provided screenshot  
+✅ **Statistics Cards**: Course Completed 53%, Learning Streak 12 days, Achievements 23, Hours Learned 127  
+✅ **Achievement Banner**: Green notification banner with "Course Crusher" achievement and +350 XP  
+✅ **Start Here Section**: 3 foundational courses (Business Blueprint, Discovery Process, Next Steps)  
+✅ **Advanced Training**: 6 skill-building courses with different completion states  
+✅ **Recent Achievements**: Circular achievement icons with proper Font Awesome integration  
+✅ **Level 13 Preview**: Purple gradient section with XP progress bar and level advancement  
+✅ **Course Detail Pages**: Individual course pages with video player interface  
+✅ **Progress Tracking**: Dynamic progress indicators and completion states  
+✅ **Font Awesome Integration**: Complete icon system across all components  
+✅ **Responsive Design**: Mobile-first design with proper breakpoints  
+✅ **Navigation System**: Sidebar with active state detection for courses  
+✅ **Mock API System**: Comprehensive data structure with fallback patterns  
+
+## Current Course Sections
+
+### Start Here (Required Foundation)
+1. **The Business Blueprint** - COMPLETED (15 lessons, 2.5 hours, +200 XP)
+2. **The Discovery Process** - IN PROGRESS 67% (8 lessons, 1.5 hours, +160 XP)
+3. **Next Steps** - LOCKED (4 lessons, 1 hour, +100 XP)
+
+### Advanced Training (Skill Builders)
+1. **TikTok Mastery** - IN PROGRESS 67% (25 lessons, 6 hours, +450 XP)
+2. **Facebook Advertising Mastery** - COMPLETED (22 lessons, 8 hours, +500 XP)
+3. **Instagram Growth Hacks** - NOT STARTED (18 lessons, 4.5 hours, +350 XP)
+4. **Email Marketing Secrets** - AVAILABLE SOON (16 lessons, 5 hours, +400 XP)
+5. **Sales Psychology** - COMPLETED (14 lessons, 3.5 hours, +300 XP)
+6. **Team Building Mastery** - IN PROGRESS 25% (20 lessons, 6.5 hours, +480 XP)
 
 ## User Guide
-1. **Navigation**: Use the sidebar to navigate between different sections
-2. **Dashboard**: View your learning progress and statistics on the main dashboard
-3. **Search**: Use the header search to find courses and lessons
-4. **Notifications**: Click the bell icon to view and manage notifications
-5. **Profile**: Click your avatar to access profile settings and logout
+1. **Dashboard Navigation**: Use sidebar to navigate between Dashboard, All Courses, and other sections
+2. **Courses Page**: View your learning journey with progress tracking and achievement system
+3. **Course Selection**: Click any course card to access detailed course content
+4. **Progress Tracking**: Your progress is automatically saved and continues where you left off
+5. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
+6. **Level System**: Earn XP points to advance through levels and unlock new content
 
-## Development
+## Development Commands
 ```bash
 # Install dependencies
 npm install
 
-# Start development server
-npm run dev
+# Start development server with PM2
+pm2 start ecosystem.config.cjs
+
+# Stop server
+pm2 stop dashboard-webapp
+
+# View logs
+pm2 logs --nostream
 
 # Build for production
 npm run build
@@ -63,30 +92,52 @@ npm start
 
 ## Deployment
 - **Platform**: Next.js Compatible (Vercel, Netlify, etc.)
-- **Status**: ✅ Active
+- **Status**: ✅ Active on sandbox environment
 - **Build Command**: `npm run build`
 - **Start Command**: `npm start`
 - **Node Version**: 18+
-- **Last Updated**: December 2024
+- **PM2 Configuration**: ecosystem.config.cjs
+- **Last Updated**: August 2025
 
-## Component Structure
+## Component Architecture
 ```
 components/
 ├── layout/
-│   ├── AppLayout.tsx     # Main layout wrapper
-│   └── Sidebar.tsx       # Navigation sidebar
-└── dashboard/
-    ├── StatsCards.tsx        # Statistics display cards
-    ├── ContinueJourney.tsx   # Course progress section
-    ├── StartHereGrid.tsx     # Learning modules grid
-    ├── RecentAchievements.tsx # Achievement display
-    ├── NotificationDropdown.tsx # Notification management
-    ├── ProfileDropdown.tsx    # User profile menu
-    └── FeedbackModal.tsx     # Feedback form modal
+│   ├── AppLayout.tsx           # Main layout with header and sidebar
+│   └── Sidebar.tsx             # Navigation with Font Awesome icons
+├── dashboard/
+│   ├── StatsCards.tsx          # Statistics display cards
+│   ├── ContinueJourney.tsx     # Course progress section
+│   ├── StartHereGrid.tsx       # Learning modules grid
+│   ├── RecentAchievements.tsx  # Achievement display
+│   ├── NotificationDropdown.tsx # Notification management
+│   ├── ProfileDropdown.tsx     # User profile menu
+│   └── FeedbackModal.tsx       # Feedback form modal
+pages/
+├── index.tsx                   # Dashboard homepage
+├── courses.tsx                 # ONLINE EMPIRES courses page
+├── courses/[courseId].tsx      # Individual course detail pages
+├── _app.tsx                    # App wrapper
+└── _document.tsx               # Document with Font Awesome CDN
+lib/
+└── api/
+    ├── courses.ts              # Course data and API functions
+    └── client.ts               # HTTP client configuration
 ```
+
+## ONLINE EMPIRES Design Features
+- **Achievement Banners**: Dynamic green notification banners with XP rewards
+- **Progress Indicators**: Visual progress bars with percentage completion
+- **Course Status System**: Completed, In Progress, Not Started, Locked, Available Soon
+- **XP Reward System**: Points awarded for lesson and course completion
+- **Level Progression**: Preview sections showing next level requirements
+- **Circular Achievement Icons**: Recent achievements with Font Awesome icons
+- **Course Categories**: Structured learning path with foundational and advanced sections
+- **Visual Course Cards**: Gradient backgrounds with relevant icons for each course
 
 ## Mobile Responsiveness
 - **Breakpoints**: sm (640px), md (768px), lg (1024px)
-- **Grid System**: Responsive grids that adapt to screen size
-- **Navigation**: Collapsible sidebar with hamburger menu on mobile
-- **Touch Friendly**: Proper touch targets and spacing for mobile users
+- **Grid System**: Responsive course grids (1 col mobile, 2 col tablet, 3 col desktop)
+- **Navigation**: Collapsible sidebar with hamburger menu
+- **Touch Targets**: Proper button sizing for mobile interaction
+- **Font Scaling**: Responsive typography with Inter font family
