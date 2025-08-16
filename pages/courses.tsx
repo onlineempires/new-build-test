@@ -205,10 +205,6 @@ export default function AllCourses() {
             }} />
           </div>
 
-
-
-          {/* Progress-based upgrade prompts - REMOVED for free/trial users to reduce clutter */}
-
           {/* Conditional Achievement Banner - Only show when actually earned */}
           {stats && stats.coursesCompleted >= 3 && (
             <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm">
