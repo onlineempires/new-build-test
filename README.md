@@ -40,13 +40,14 @@
 
 ## Features Recently Updated
 
-### ✅ Multi-Tier Role System & Payment Fixes (JUST COMPLETED)
+### ✅ Dashboard UX Overhaul & Multi-Tier System (JUST COMPLETED)
+- **Clean New User Experience**: Removed overwhelming achievement banners and confusing sections for first-time visitors
+- **Action-Oriented Design**: Focus on getting users to start watching content immediately
+- **Conditional Layout**: Different dashboard experience for new users (0 courses) vs returning users
 - **5-Tier Role System**: Implemented free/trial, $99 monthly, $799 annual, $37 downsell, admin tiers
 - **Payment Confirmation**: Fixed masterclass purchases bypassing payment confirmation
 - **Content Access Control**: Role-based access with hierarchical permissions system
 - **Trial Restrictions**: Trial members restricted to "Start Here" courses only
-- **Admin Dashboard**: Administrative interface for managing users, courses, payments
-- **Affiliate Tracking**: 30% recurring commission system with click-through analytics
 - **Stats Accuracy**: Fixed stats to show progress relative to accessible courses only
 - **Enhanced Upgrade Section**: Compelling benefits grid with social proof and value proposition
 
@@ -259,8 +260,16 @@ lib/
 
 ## Recent Changes Summary (August 16, 2025)
 
-### Multi-Tier Role System & Payment Processing ✅ (JUST COMPLETED)
-**Implemented comprehensive role-based access control and payment confirmation system:**
+### Dashboard UX Overhaul & Payment Processing ✅ (JUST COMPLETED)
+**Implemented clean dashboard UX for new users and comprehensive role-based access control:**
+
+🔹 **Dashboard UX Improvements**
+- ✅ Fixed: Removed confusing "Continue Learning" section for new users (0 courses completed)
+- ✅ Fixed: Hidden achievement spam and overwhelming sections for first-time visitors  
+- ✅ Improved: Clean welcome section with clear "Let's Get You Started!" call-to-action
+- ✅ Improved: Direct focus on Business Blueprint course for immediate content consumption
+- ✅ Enhanced: Conditional layout - different experience for new vs returning users
+- ✅ Enhanced: Better spacing, visual hierarchy, and action-oriented design
 
 🔹 **5-Tier User Role System**
 - ✅ Free/Trial: Access to "Start Here" courses only (3 courses)

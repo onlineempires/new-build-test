@@ -192,8 +192,8 @@ export default function AllCourses() {
       >
         <div className="min-h-screen bg-gray-50 pb-8">
           
-          {/* Statistics Cards */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-6">
+          {/* Statistics Cards - Clean Layout */}
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6 sm:py-8">
             <StatsCards stats={stats || {
               coursesCompleted: 0,
               coursesTotal: 0,
@@ -207,12 +207,7 @@ export default function AllCourses() {
 
 
 
-          {/* Progress-based upgrade prompts - only for limited access users */}
-          {stats && stats.coursesCompleted >= 2 && !permissions.canAccessAllCourses && (
-            <div className="px-6 pt-4">
-              <ProgressMilestoneUpgrade milestone={`${stats.coursesCompleted} courses completed`} />
-            </div>
-          )}
+          {/* Progress-based upgrade prompts - REMOVED for free/trial users to reduce clutter */}
 
           {/* Conditional Achievement Banner - Only show when actually earned */}
           {stats && stats.coursesCompleted >= 3 && (
@@ -278,40 +273,7 @@ export default function AllCourses() {
                 </div>
               )}
 
-              {/* Progress message for users who have started */}
-              {(currentRole === 'free' || currentRole === 'trial') && stats && stats.coursesCompleted > 0 && (
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-6">
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <i className="fas fa-rocket text-blue-600"></i>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center mb-2">
-                        <h3 className="font-bold text-blue-900 mr-2">
-                          🔥 Great Progress! Keep Going
-                        </h3>
-                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                          {stats.coursesCompleted}/{stats.coursesTotal} Completed
-                        </span>
-                      </div>
-                      <p className="text-blue-800 text-sm mb-3">
-                        You've completed <strong>{stats.coursesCompleted} course{stats.coursesCompleted !== 1 ? 's' : ''}</strong>! Continue with the remaining foundation courses to unlock advanced training.
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-star mr-1"></i>{stats.xpPoints} XP Earned
-                        </span>
-                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-fire mr-1"></i>{stats.learningStreakDays} Day Streak
-                        </span>
-                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-crown mr-1"></i>{stats.level} Level
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Progress message for users who have started - REMOVED for cleaner UX */}
 
               <div className="flex items-center mb-4">
                 <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">

@@ -105,7 +105,7 @@ function StatsCards({ stats }: StatsCardsProps) {
       </div>
 
       {/* Desktop Layout - Grid */}
-      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 xl:gap-6 mb-6 sm:mb-8">
         {cards.map((card, index) => (
           <div 
             key={index} 
