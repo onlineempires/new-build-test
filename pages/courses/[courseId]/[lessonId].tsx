@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
-import { getCourse, updateLessonProgress, Course, Lesson, Module } from '../../../lib/api/courses';
+import { getCourse, updateLessonProgress, loadProgressFromStorage, Course, Lesson, Module } from '../../../lib/api/courses';
 
 interface LessonPageData {
   course: Course;
@@ -23,11 +23,14 @@ export default function LessonPage() {
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
   
   // Mock user subscription status - in real app, this would come from user data
-  const userSubscriptionType = 'free'; // 'free', 'monthly', 'annual'
+  const [userSubscriptionType] = useState<'free' | 'monthly' | 'annual'>('monthly');
   const shouldShowUpgrade = userSubscriptionType !== 'annual' && showUpgradeBanner;
   const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
+    // Load progress from storage on component mount
+    loadProgressFromStorage();
+    
     if (courseId && lessonId) {
       loadLessonData(courseId as string, lessonId as string);
     }
@@ -102,15 +105,40 @@ export default function LessonPage() {
     }
   };
 
-  const handleLessonComplete = async () => {
+  const handleToggleCompletion = async (completed: boolean) => {
     if (!data) return;
     
     try {
-      await updateLessonProgress(data.course.id, data.currentLesson.id, true);
-      setIsCompleted(true);
+      // Optimistic update for responsive UI
+      setIsCompleted(completed);
+      
+      // Update backend
+      await updateLessonProgress(data.course.id, data.currentLesson.id, completed);
+      
+      // Update the course data to reflect the completion
+      const updatedData = { ...data };
+      updatedData.currentLesson.isCompleted = completed;
+      // Find and update the lesson in the course modules
+      updatedData.course.modules = updatedData.course.modules.map(module => ({
+        ...module,
+        lessons: module.lessons.map(lesson => 
+          lesson.id === data.currentLesson.id 
+            ? { ...lesson, isCompleted: completed }
+            : lesson
+        )
+      }));
+      
+      setData(updatedData);
+      
     } catch (err) {
       console.error('Failed to update lesson progress:', err);
+      // Revert optimistic update on error
+      setIsCompleted(!completed);
     }
+  };
+
+  const handleLessonComplete = async () => {
+    handleToggleCompletion(true);
   };
 
   const navigateToLesson = (lesson: Lesson) => {
@@ -212,21 +240,21 @@ export default function LessonPage() {
               >
                 Dashboard
               </button>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <button 
                 onClick={() => router.push('/courses')}
                 className="hover:text-gray-700 transition-colors"
               >
                 All Courses
               </button>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <button 
                 onClick={() => router.push(`/courses/${courseId}`)}
                 className="hover:text-gray-700 transition-colors"
               >
                 {data.course.title}
               </button>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <span className="text-gray-900 font-medium">{data.currentLesson.title}</span>
             </nav>
           </div>
@@ -408,9 +436,7 @@ export default function LessonPage() {
                             type="checkbox"
                             checked={isCompleted}
                             onChange={(e) => {
-                              if (e.target.checked) {
-                                handleLessonComplete();
-                              }
+                              handleToggleCompletion(e.target.checked);
                             }}
                             className="sr-only"
                           />

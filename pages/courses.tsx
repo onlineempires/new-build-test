@@ -1,14 +1,62 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
-import { getAllCourses, CourseData } from '../lib/api/courses';
+import StatsCards from '../components/dashboard/StatsCards';
+import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
 
 export default function AllCourses() {
   const [data, setData] = useState<CourseData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper function to render course button based on status
+  const getCourseButton = (course: any) => {
+    if (course.isCompleted) {
+      return (
+        <a 
+          href={`/courses/${course.id}`}
+          className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
+        >
+          <i className="fas fa-redo mr-2"></i>Completed - Watch Again
+        </a>
+      );
+    }
+    
+    if (course.progress > 0) {
+      const completedLessons = Math.round((course.progress / 100) * course.lessonCount);
+      return (
+        <a 
+          href={`/courses/${course.id}`}
+          className="block w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-center"
+        >
+          <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
+        </a>
+      );
+    }
+    
+    // Check if course should be locked (for demonstration purposes, let's make some courses locked)
+    const lockedCourses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
+    if (lockedCourses.includes(course.id)) {
+      return (
+        <button className="w-full bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors">
+          <i className="fas fa-lock mr-2"></i>Unlock Access for $49
+        </button>
+      );
+    }
+    
+    return (
+      <a 
+        href={`/courses/${course.id}`}
+        className="block w-full bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-center"
+      >
+        <i className="fas fa-rocket mr-2"></i>Start Course
+      </a>
+    );
+  };
+
   useEffect(() => {
+    // Load progress from storage first
+    loadProgressFromStorage();
     loadCourses();
   }, []);
 
@@ -74,64 +122,17 @@ export default function AllCourses() {
         notifications={data.notifications}
         onClearNotifications={() => {}}
       >
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-8">
           
           {/* Statistics Cards */}
-          <div className="bg-white border-b border-gray-200 px-6 py-6">
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              
-              {/* Course Completed */}
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                    <i className="fas fa-graduation-cap text-blue-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-600">Course Completed</div>
-                    <div className="text-2xl font-bold text-gray-900">53%</div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Learning Streak */}
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                    <i className="fas fa-fire text-green-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-600">Learning Streak</div>
-                    <div className="text-2xl font-bold text-gray-900">12 days</div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Achievements */}
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
-                    <i className="fas fa-trophy text-purple-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-600">Achievements</div>
-                    <div className="text-2xl font-bold text-gray-900">23</div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Hours Learned */}
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
-                    <i className="fas fa-clock text-yellow-600 text-lg"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-600">Hours Learned</div>
-                    <div className="text-2xl font-bold text-gray-900">127</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-6">
+            <StatsCards stats={{
+              coursesCompleted: 3,
+              coursesTotal: 6,
+              learningStreakDays: 12,
+              commissions: 1250,
+              newLeads: 23
+            }} />
           </div>
 
           {/* Compact Achievement Banner */}
@@ -171,102 +172,63 @@ export default function AllCourses() {
               </div>
               
               <div className="grid gap-4 md:grid-cols-3">
-                
-                {/* The Business Blueprint */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <i className="fas fa-building text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">COMPLETED</span>
-                      <span className="text-xs text-gray-500">BEGINNER</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">The Business Blueprint</h3>
-                    <p className="text-sm text-gray-600 mb-3">Foundation course covering the basics of business building...</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>15 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>2.5 hours</span>
-                      <span className="text-green-600 font-medium">+200 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>100%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                      </div>
-                    </div>
-                    <button className="w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors">
-                      <i className="fas fa-check mr-2"></i>Completed
-                    </button>
-                  </div>
-                </div>
+                {data?.startHereCourses.map((course, index) => {
+                  const getStatusBadge = () => {
+                    if (course.isCompleted) {
+                      return <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">COMPLETED</span>;
+                    }
+                    if (course.progress > 0) {
+                      return <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>;
+                    }
+                    return <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">NOT STARTED</span>;
+                  };
 
-                {/* The Discovery Process */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center">
-                    <i className="fas fa-search text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>
-                      <span className="text-xs text-gray-500">BEGINNER</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">The Discovery Process</h3>
-                    <p className="text-sm text-gray-600 mb-3">Learn how to identify opportunities and understand your target market deeply</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>8&nbsp;lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>1.5&nbsp;hours</span>
-                      <span className="text-yellow-600 font-medium">+160&nbsp;XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>67%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: '67%' }}></div>
-                      </div>
-                    </div>
-                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors">
-                      <i className="fas fa-play mr-2"></i>Continue Learning
-                    </button>
-                  </div>
-                </div>
+                  const getIcon = () => {
+                    if (course.id === 'business-blueprint') return 'fas fa-building';
+                    if (course.id === 'discovery-process') return 'fas fa-search';
+                    return 'fas fa-arrow-right';
+                  };
 
-                {/* Next Steps */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden opacity-75">
-                  <div className="h-32 bg-gradient-to-br from-cyan-400 to-cyan-500 flex items-center justify-center">
-                    <i className="fas fa-arrow-right text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">LOCKED</span>
-                      <span className="text-xs text-gray-500">BEGINNER</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Next Steps</h3>
-                    <p className="text-sm text-gray-600 mb-3">Plan your implementation strategy and take action on what you've learned</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>4 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>1 hour</span>
-                      <span className="text-yellow-600 font-medium">+100 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>Locked</span>
+                  const getGradient = () => {
+                    if (course.id === 'business-blueprint') return 'from-purple-500 to-purple-600';
+                    if (course.id === 'discovery-process') return 'from-pink-400 to-pink-500';
+                    return 'from-cyan-400 to-cyan-500';
+                  };
+
+                  return (
+                    <div key={course.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
+                        <i className={`${getIcon()} text-white text-3xl`}></i>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gray-400 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          {getStatusBadge()}
+                          <span className="text-xs text-gray-500">BEGINNER</span>
+                        </div>
+                        <h3 className="font-semibold text-gray-900 mb-2">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3">{course.description}</p>
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                          <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount}&nbsp;lessons</span>
+                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.17)}&nbsp;hours</span>
+                          <span className="text-green-600 font-medium">+{course.lessonCount * 15}&nbsp;XP</span>
+                        </div>
+                        <div className="mb-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Progress</span>
+                            <span>{course.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"} 
+                              style={{ width: `${course.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        {getCourseButton(course)}
                       </div>
                     </div>
-                    <button className="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded font-medium cursor-not-allowed">
-                      <i className="fas fa-lock mr-2"></i>Complete Discovery Process First
-                    </button>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -281,120 +243,81 @@ export default function AllCourses() {
               </div>
               
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                {data?.socialMediaCourses.map((course, index) => {
+                  const getStatusBadge = () => {
+                    if (course.isCompleted) {
+                      return <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">COMPLETED</span>;
+                    }
+                    if (course.progress > 0) {
+                      return <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>;
+                    }
+                    return <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">NOT STARTED</span>;
+                  };
+
+                  const getIcon = () => {
+                    if (course.id === 'tiktok-mastery') return 'fab fa-tiktok';
+                    if (course.id === 'facebook-advertising') return 'fab fa-facebook';
+                    if (course.id === 'instagram-marketing') return 'fab fa-instagram';
+                    if (course.id === 'sales-funnel-mastery') return 'fas fa-brain';
+                    return 'fas fa-users';
+                  };
+
+                  const getGradient = () => {
+                    if (course.id === 'tiktok-mastery') return 'from-green-400 to-green-500';
+                    if (course.id === 'facebook-advertising') return 'from-pink-400 to-orange-400';
+                    if (course.id === 'instagram-marketing') return 'from-gray-400 to-gray-500';
+                    if (course.id === 'sales-funnel-mastery') return 'from-orange-400 to-yellow-400';
+                    return 'from-purple-500 to-purple-600';
+                  };
+
+                  const getDifficulty = () => {
+                    if (course.id === 'tiktok-mastery' || course.id === 'instagram-marketing') return 'INTERMEDIATE';
+                    return 'ADVANCED';
+                  };
+
+                  return (
+                    <div key={course.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
+                        <i className={`${getIcon()} text-white text-3xl`}></i>
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col">
+                        <div className="flex items-center justify-between mb-2">
+                          {getStatusBadge()}
+                          <span className="text-xs text-gray-500">{getDifficulty()}</span>
+                        </div>
+                        <h3 className="font-semibold text-gray-900 mb-2">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 flex-1">{course.description}</p>
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                          <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount} lessons</span>
+                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.2)} hours</span>
+                          <span className="text-green-600 font-medium">+{course.lessonCount * 20} XP</span>
+                        </div>
+                        <div className="mb-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Progress</span>
+                            <span>{course.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"} 
+                              style={{ width: `${course.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        {getCourseButton(course)}
+                      </div>
+                    </div>
+                  );
+                })}
                 
-                {/* TikTok Mastery */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
-                  <div className="h-32 bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
-                    <i className="fab fa-tiktok text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>
-                      <span className="text-xs text-gray-500">INTERMEDIATE</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">TikTok Mastery</h3>
-                    <p className="text-sm text-gray-600 mb-3 flex-1">Master TikTok marketing strategies and create viral content that converts</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>25 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>6 hours</span>
-                      <span className="text-yellow-600 font-medium">+450 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>67%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: '67%' }}></div>
-                      </div>
-                    </div>
-                    <a 
-                      href="/courses/tiktok-mastery/lesson-3-2"
-                      className="block w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-center"
-                    >
-                      <i className="fas fa-play mr-2"></i>Continue Learning (16/24)
-                    </a>
-                  </div>
-                </div>
-
-                {/* Facebook Advertising Mastery */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-pink-400 to-orange-400 flex items-center justify-center">
-                    <i className="fab fa-facebook text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">COMPLETED</span>
-                      <span className="text-xs text-gray-500">ADVANCED</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Facebook Advertising Mastery</h3>
-                    <p className="text-sm text-gray-600 mb-3">Advanced Facebook ads and targeting for maximum ROI and lead generation</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>22 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>8 hours</span>
-                      <span className="text-green-600 font-medium">+500 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>100%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                      </div>
-                    </div>
-                    <a 
-                      href="/courses/facebook-advertising"
-                      className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
-                    >
-                      <i className="fas fa-redo mr-2"></i>Review Course
-                    </a>
-                  </div>
-                </div>
-
-                {/* Instagram Growth Hacks */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center">
-                    <i className="fab fa-instagram text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">NOT STARTED</span>
-                      <span className="text-xs text-gray-500">BEGINNER</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Instagram Growth Hacks</h3>
-                    <p className="text-sm text-gray-600 mb-3">Grow your Instagram following with advanced strategies and followers</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>18 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>4.5 hours</span>
-                      <span className="text-yellow-600 font-medium">+350 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>0%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-gray-600 h-2 rounded-full" style={{ width: '0%' }}></div>
-                      </div>
-                    </div>
-                    <a 
-                      href="/courses/instagram-marketing"
-                      className="block w-full bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-center"
-                    >
-                      <i className="fas fa-rocket mr-2"></i>Start Course
-                    </a>
-                  </div>
-                </div>
-
-                {/* Email Marketing Secrets */}
+                {/* Add Email Marketing Secrets as a locked course */}
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   <div className="h-32 bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center">
                     <i className="fas fa-envelope text-white text-3xl"></i>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">AVAILABLE SOON</span>
+                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
                       <span className="text-xs text-gray-500">INTERMEDIATE</span>
                     </div>
                     <h3 className="font-semibold text-gray-900 mb-2">Email Marketing Secrets</h3>
@@ -407,88 +330,19 @@ export default function AllCourses() {
                     <div className="mb-3">
                       <div className="flex justify-between text-sm mb-1">
                         <span>Progress</span>
-                        <span>Coming Soon</span>
+                        <span>Locked</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                       </div>
                     </div>
                     <button className="w-full bg-orange-500 text-white py-2 px-4 rounded font-medium">
-                      <i className="fas fa-clock mr-2"></i>Available Soon
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sales Psychology */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center">
-                    <i className="fas fa-brain text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">COMPLETED</span>
-                      <span className="text-xs text-gray-500">ADVANCED</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Sales Psychology</h3>
-                    <p className="text-sm text-gray-600 mb-3">Understand buyer psychology and master the art of persuasion</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>14 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>3.5 hours</span>
-                      <span className="text-green-600 font-medium">+300 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>100%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
-                      </div>
-                    </div>
-                    <a 
-                      href="/courses/sales-psychology"
-                      className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
-                    >
-                      <i className="fas fa-redo mr-2"></i>Review Course
-                    </a>
-                  </div>
-                </div>
-
-                {/* Team Building Mastery */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <i className="fas fa-users text-white text-3xl"></i>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>
-                      <span className="text-xs text-gray-500">ADVANCED</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Team Building Mastery</h3>
-                    <p className="text-sm text-gray-600 mb-3">Build, lead, and scale high-performing teams that drive results</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>20 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>6.5 hours</span>
-                      <span className="text-yellow-600 font-medium">+480 XP</span>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>25%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: '25%' }}></div>
-                      </div>
-                    </div>
-                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors">
-                      <i className="fas fa-play mr-2"></i>Continue Learning (5/20)
+                      <i className="fas fa-lock mr-2"></i>Unlock Access for $49
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-
-
 
             {/* Level 13 Preview */}
             <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg p-6 text-white text-center">
@@ -501,10 +355,10 @@ export default function AllCourses() {
               <div className="max-w-md mx-auto">
                 <div className="flex justify-between text-sm mb-2">
                   <span>XP Progress</span>
-                  <span>153 XP needed for next level</span>
+                  <span>{data ? `${3450 - data.stats.xpPoints} XP needed for next level` : '153 XP needed for next level'}</span>
                 </div>
                 <div className="w-full bg-purple-800 rounded-full h-3">
-                  <div className="bg-white h-3 rounded-full" style={{ width: '75%' }}></div>
+                  <div className="bg-white h-3 rounded-full" style={{ width: data ? `${Math.min(100, (data.stats.xpPoints / 3450) * 100)}%` : '75%' }}></div>
                 </div>
               </div>
             </div>

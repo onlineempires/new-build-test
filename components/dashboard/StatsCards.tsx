@@ -59,12 +59,29 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     <>
       {/* Mobile Layout - Horizontal scroll */}
       <div className="sm:hidden mb-6">
+        {/* Scroll indicator hint */}
+        <div className="flex items-center justify-between mb-2 px-1">
+          <div className="text-xs text-gray-500 font-medium">Swipe to see more stats</div>
+          <div className="flex gap-1">
+            {cards.map((_, index) => (
+              <div key={index} className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+            ))}
+          </div>
+        </div>
+        
         <div className="flex gap-3 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {cards.map((card, index) => (
             <div 
               key={index} 
-              className={`bg-white rounded-xl p-3 shadow-sm border ${card.borderColor} flex-shrink-0 w-32`}
+              className={`bg-white rounded-xl p-3 shadow-sm border ${card.borderColor} flex-shrink-0 w-32 relative`}
             >
+              {/* Scroll indicator on first card */}
+              {index === 0 && (
+                <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-400 animate-pulse">
+                  <i className="fas fa-chevron-right text-xs"></i>
+                </div>
+              )}
+              
               <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center mb-2 mx-auto`}>
                 <i className={`${card.iconClass} ${card.iconColor} text-sm`}></i>
               </div>
@@ -75,6 +92,7 @@ export default function StatsCards({ stats }: StatsCardsProps) {
             </div>
           ))}
         </div>
+        
         <style jsx>{`
           div::-webkit-scrollbar {
             display: none;

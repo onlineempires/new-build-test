@@ -57,16 +57,21 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar user={user} onLogout={handleLogout} />
-      <main className="flex-1 lg:ml-64 overflow-auto">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200">
+      
+      {/* Fixed Header */}
+      <div className="fixed top-0 right-0 left-0 lg:left-64 bg-white border-b border-gray-200 z-30">
           {/* Mobile Header */}
           <div className="lg:hidden px-4 py-3">
             <div className="flex items-center justify-between">
-              {/* Left: Hamburger + Title */}
+              {/* Left: Hamburger + Logo */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-10"> {/* Spacer for hamburger */}</div>
-                <h1 className="text-lg font-bold text-gray-900 truncate">{getPageTitle()}</h1>
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white font-bold mr-2 text-lg">
+                    ⚡
+                  </div>
+                  <span className="text-gray-900 font-bold text-lg">DIGITAL ERA</span>
+                </div>
               </div>
               
               {/* Right: Actions */}
@@ -187,8 +192,10 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
               </div>
             </div>
           </div>
-        </div>
-        
+      </div>
+      
+      {/* Main Content Area */}
+      <main className="flex-1 lg:ml-64 pt-16 lg:pt-20 overflow-auto pb-4">
         {children}
       </main>
     </div>

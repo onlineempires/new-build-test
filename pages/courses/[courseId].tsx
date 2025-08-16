@@ -116,7 +116,7 @@ export default function CoursePage() {
         notifications={[]}
         onClearNotifications={() => {}}
       >
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 pb-8">
           
           {/* Breadcrumb Navigation */}
           <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
@@ -127,14 +127,14 @@ export default function CoursePage() {
               >
                 Dashboard
               </button>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <button 
                 onClick={() => router.push('/courses')}
                 className="hover:text-gray-700 transition-colors"
               >
                 All Courses
               </button>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <span className="text-gray-900 font-medium">{course.title}</span>
             </nav>
           </div>
@@ -221,12 +221,12 @@ export default function CoursePage() {
 
                         <p className="text-gray-600 mb-4">{module.description}</p>
                         
-                        <div className="space-y-2">
+                        <div className="space-y-0 divide-y divide-gray-100">
                           {module.lessons.map((lesson, lessonIndex) => (
                             <button
                               key={lesson.id}
                               onClick={() => router.push(`/courses/${courseId}/${lesson.id}`)}
-                              className="w-full flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
+                              className="w-full flex items-center p-3 hover:bg-gray-50 transition-colors text-left first:rounded-t-lg last:rounded-b-lg"
                             >
                               <span className="w-6 h-6 mr-3">
                                 {lesson.isCompleted ? (

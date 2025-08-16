@@ -90,12 +90,6 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
               </div>
             </a>
           </Link>
-          <button
-            onClick={onLogout}
-            className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-sidebar-hover transition-colors"
-          >
-            Logout
-          </button>
         </div>
       </div>
 

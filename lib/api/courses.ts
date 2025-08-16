@@ -531,8 +531,56 @@ export const getAllCourses = async (): Promise<CourseData> => {
   } catch (error) {
     // Fall back to mock data for development
     console.warn('Using mock courses data - API not available:', error);
+    
     return new Promise((resolve) => {
-      setTimeout(() => resolve(mockData), 500); // Simulate network delay
+      setTimeout(() => {
+        // Load progress from storage
+        loadProgressFromStorage();
+        
+        // Deep clone mock data and update with current progress
+        const updatedData = JSON.parse(JSON.stringify(mockData));
+        
+        // Calculate total completed courses
+        let completedCourses = 0;
+        
+        // Update all courses with current progress
+        const updateCourseProgress = (course: Course) => {
+          let totalCompleted = 0;
+          let totalLessons = 0;
+          
+          course.modules = course.modules.map(module => ({
+            ...module,
+            lessons: module.lessons.map(lesson => {
+              totalLessons++;
+              const isCompleted = globalProgressState.completedLessons.has(lesson.id);
+              if (isCompleted) totalCompleted++;
+              return {
+                ...lesson,
+                isCompleted
+              };
+            })
+          }));
+          
+          // Update course progress
+          course.progress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+          course.isCompleted = course.progress === 100;
+          
+          if (course.isCompleted) {
+            completedCourses++;
+          }
+          
+          return course;
+        };
+        
+        updatedData.startHereCourses = updatedData.startHereCourses.map(updateCourseProgress);
+        updatedData.socialMediaCourses = updatedData.socialMediaCourses.map(updateCourseProgress);
+        
+        // Update global stats with current progress
+        updatedData.stats.coursesCompleted = completedCourses;
+        updatedData.stats.xpPoints = globalProgressState.totalXP;
+        
+        resolve(updatedData);
+      }, 500); // Simulate network delay
     });
   }
 };
@@ -544,18 +592,53 @@ export const getCourse = async (courseId: string): Promise<Course> => {
   } catch (error) {
     console.warn('Using mock course data for courseId:', courseId);
     
-    // Find course in mock data
+    // Load progress from storage
+    loadProgressFromStorage();
+    
+    // Find course in mock data and update with current progress
     const allCourses = [...mockData.startHereCourses, ...mockData.socialMediaCourses];
-    const course = allCourses.find(c => c.id === courseId);
+    let course = allCourses.find(c => c.id === courseId);
     
     if (!course) {
       throw new Error(`Course ${courseId} not found`);
     }
     
     return new Promise((resolve) => {
-      setTimeout(() => resolve(course), 300);
+      setTimeout(() => {
+        // Update course with current progress state
+        const courseCopy = JSON.parse(JSON.stringify(course)); // Deep clone
+        let totalCompleted = 0;
+        let totalLessons = 0;
+        
+        courseCopy.modules = courseCopy.modules.map((module: Module) => ({
+          ...module,
+          lessons: module.lessons.map((lesson: Lesson) => {
+            totalLessons++;
+            const isCompleted = globalProgressState.completedLessons.has(lesson.id);
+            if (isCompleted) totalCompleted++;
+            return {
+              ...lesson,
+              isCompleted
+            };
+          })
+        }));
+        
+        // Update course progress
+        courseCopy.progress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
+        courseCopy.isCompleted = courseCopy.progress === 100;
+        
+        resolve(courseCopy);
+      }, 300);
     });
   }
+};
+
+// Global progress state for mock data
+let globalProgressState = {
+  completedLessons: new Set<string>(),
+  totalXP: 2450,
+  coursesCompleted: 3,
+  lastUpdateTime: Date.now()
 };
 
 export const updateLessonProgress = async (courseId: string, lessonId: string, completed: boolean): Promise<void> => {
@@ -563,9 +646,58 @@ export const updateLessonProgress = async (courseId: string, lessonId: string, c
     await client.put(`/courses/${courseId}/lessons/${lessonId}/progress`, { completed });
   } catch (error) {
     console.warn('Mock: Lesson progress updated for:', lessonId, completed);
-    // In mock mode, just resolve
+    
+    // Update global progress state for mock mode
+    if (completed) {
+      globalProgressState.completedLessons.add(lessonId);
+      // Add XP for lesson completion (25 XP per lesson)
+      globalProgressState.totalXP += 25;
+    } else {
+      globalProgressState.completedLessons.delete(lessonId);
+      // Remove XP for lesson incompletion
+      globalProgressState.totalXP = Math.max(0, globalProgressState.totalXP - 25);
+    }
+    
+    globalProgressState.lastUpdateTime = Date.now();
+    
+    // Store in localStorage for persistence across page reloads
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('learningProgress', JSON.stringify({
+        completedLessons: Array.from(globalProgressState.completedLessons),
+        totalXP: globalProgressState.totalXP,
+        coursesCompleted: globalProgressState.coursesCompleted,
+        lastUpdateTime: globalProgressState.lastUpdateTime
+      }));
+    }
+    
     return new Promise((resolve) => {
       setTimeout(resolve, 200);
     });
   }
+};
+
+// Load progress from localStorage on initialization
+export const loadProgressFromStorage = (): void => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('learningProgress');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        globalProgressState.completedLessons = new Set(parsed.completedLessons || []);
+        globalProgressState.totalXP = parsed.totalXP || 2450;
+        globalProgressState.coursesCompleted = parsed.coursesCompleted || 3;
+        globalProgressState.lastUpdateTime = parsed.lastUpdateTime || Date.now();
+      } catch (e) {
+        console.warn('Failed to load progress from storage:', e);
+      }
+    }
+  }
+};
+
+// Get current progress state
+export const getCurrentProgress = () => {
+  return {
+    ...globalProgressState,
+    completedLessons: Array.from(globalProgressState.completedLessons)
+  };
 };
