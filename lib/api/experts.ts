@@ -13,6 +13,7 @@ export interface Expert {
   sessionDuration: number; // in minutes
   price: number;
   commission: number; // percentage for affiliate
+  calendlyUrl: string; // Unique Calendly username for secure booking
   availability: TimeSlot[];
   stats: {
     totalSessions: number;
@@ -76,6 +77,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 299,
     commission: 25, // 25% to platform, 75% to expert
+    calendlyUrl: 'johnsmith-digitalera',
     stats: {
       totalSessions: 847,
       averageRating: 4.9,
@@ -101,6 +103,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 399,
     commission: 25,
+    calendlyUrl: 'sarahjohnson-digitalera',
     stats: {
       totalSessions: 623,
       averageRating: 4.95,
@@ -126,6 +129,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 349,
     commission: 25,
+    calendlyUrl: 'mikedavis-digitalera',
     stats: {
       totalSessions: 456,
       averageRating: 4.9,
@@ -151,6 +155,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 275,
     commission: 25,
+    calendlyUrl: 'lisachen-digitalera',
     stats: {
       totalSessions: 1024,
       averageRating: 4.98,
@@ -176,6 +181,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 325,
     commission: 25,
+    calendlyUrl: 'robertwilson-digitalera',
     stats: {
       totalSessions: 578,
       averageRating: 4.92,
@@ -201,6 +207,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 375,
     commission: 25,
+    calendlyUrl: 'emmarodriguez-digitalera',
     stats: {
       totalSessions: 389,
       averageRating: 4.94,
@@ -226,6 +233,7 @@ const mockExperts: Expert[] = [
     sessionDuration: 60,
     price: 450,
     commission: 25,
+    calendlyUrl: 'alexmartinez-digitalera',
     stats: {
       totalSessions: 2156,
       averageRating: 4.97,
@@ -239,6 +247,9 @@ const mockExperts: Expert[] = [
     ]
   }
 ];
+
+// Note: Real-time availability checking will be implemented through admin panel integration
+// Individual expert calendars will be configured and managed through the admin interface
 
 export const getAllExperts = async (): Promise<Expert[]> => {
   try {

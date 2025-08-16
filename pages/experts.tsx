@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
-import BookingModal from '../components/experts/BookingModal';
-import { Expert, Booking, getAllExperts } from '../lib/api/experts';
+import NewBookingModal from '../components/experts/NewBookingModal';
+import { Expert, getAllExperts } from '../lib/api/experts';
 
 const ExpertDirectory = () => {
   const [experts, setExperts] = useState<Expert[]>([]);
@@ -36,9 +36,10 @@ const ExpertDirectory = () => {
     setBookingModalOpen(true);
   };
 
-  const handleBookingSuccess = (booking: Booking) => {
-    console.log('Booking successful:', booking);
-    // Here you could show a success message, update stats, etc.
+  const handleBookingSuccess = (bookingData: any) => {
+    console.log('Booking successful:', bookingData);
+    // Show success message
+    alert(`Booking confirmed! ID: ${bookingData.bookingId}`);
   };
 
   const getLevelColor = (level: string) => {
@@ -191,18 +192,20 @@ const ExpertDirectory = () => {
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{expert.name}</h3>
                   
                   {/* Rating */}
-                  <div className="flex items-center justify-center mb-3">
-                    <div className="flex text-yellow-400 mr-2">
-                      {[...Array(5)].map((_, i) => (
-                        <i 
-                          key={i} 
-                          className={`fas fa-star text-sm ${
-                            i < Math.floor(expert.rating) ? '' : 'opacity-30'
-                          }`}
-                        ></i>
-                      ))}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center justify-center">
+                      <div className="flex text-yellow-400 mr-2">
+                        {[...Array(5)].map((_, i) => (
+                          <i 
+                            key={i} 
+                            className={`fas fa-star text-sm ${
+                              i < Math.floor(expert.rating) ? '' : 'opacity-30'
+                            }`}
+                          ></i>
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-600 font-medium">({expert.stats.averageRating})</span>
                     </div>
-                    <span className="text-sm text-gray-600 font-medium">({expert.stats.averageRating})</span>
                   </div>
 
                   {/* Level Badge */}
@@ -258,10 +261,10 @@ const ExpertDirectory = () => {
                   <div className="pt-4">
                     <button
                       onClick={() => handleBookCall(expert)}
-                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 group-hover:bg-blue-700 flex items-center justify-center"
+                      className="w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700"
                     >
                       <i className="fas fa-calendar-plus mr-2"></i>
-                      Book Call
+                      Book Call Now
                     </button>
                   </div>
                 </div>
@@ -307,8 +310,8 @@ const ExpertDirectory = () => {
           )}
         </div>
 
-        {/* Booking Modal */}
-        <BookingModal
+        {/* New Booking Modal */}
+        <NewBookingModal
           expert={selectedExpert}
           isOpen={bookingModalOpen}
           onClose={() => {

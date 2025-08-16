@@ -108,7 +108,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
             </button>
             
             <a
-              href="https://facebook.com/groups/digitalera"
+              href="https://www.facebook.com/groups/onlineempiresvip"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

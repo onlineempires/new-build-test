@@ -8,6 +8,8 @@
   - Dashboard with statistics, progress tracking, and course management
   - Individual course detail pages with video player and lesson tracking
   - Level progression system with XP rewards and achievements
+  - Daily Method of Operation (DMO) system with 4 commitment paths (ONE PER DAY ENFORCEMENT)
+  - Expert Directory with streamlined booking system (availability system removed)
   - Mobile-first responsive design with Font Awesome icons
 
 ## URLs
@@ -15,6 +17,8 @@
 - **Courses Page**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses
 - **TikTok Mastery Course**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses/tiktok-mastery
 - **Lesson Page Example**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/courses/tiktok-mastery/lesson-3-2
+- **Expert Directory**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/experts
+- **DMO Page**: https://3000-i9us96luetzyr6dhv7ti9-6532622b.e2b.dev/dmo
 - **GitHub**: https://github.com/onlineempires/new-build-test
 
 ## Tech Stack
@@ -30,9 +34,88 @@
 - **Course Structure**: Courses → Modules → Lessons with progress tracking
 - **Progress System**: XP points, achievements, streak tracking, completion status
 - **User Data**: Profile information, learning statistics, notification system
-- **Data Flow**: Pages → API Layer → Mock Data → UI Components
+- **DMO System**: SINGLE PATH SELECTION per day, persistent checkbox tracking until midnight
+- **Expert Directory**: Simplified booking system (no real-time availability)
+- **Data Flow**: Pages → API Layer → Mock Data/localStorage → UI Components
 
-## Features Completed
+## Features Recently Updated
+
+### ✅ Expert Directory Simplification (JUST COMPLETED)
+- **Removed Availability System**: Eliminated mock "Available Now" / "Next: Tomorrow" indicators
+- **Unified Book Button**: All experts now show "Book Call Now" button consistently
+- **Calendar Integration Ready**: Prepared for real admin panel calendar integration
+- **Clean Expert Cards**: Removed overwhelming availability status badges and timing indicators
+- **Focus on Expertise**: Cards now emphasize expert qualifications and specialties without distracting availability
+
+### ✅ DMO Gaming Prevention System (JUST COMPLETED)
+- **One Path Per Day**: Users can only select ONE DMO path per day - no path switching allowed
+- **Locked Path Selection**: Once a path is chosen, it cannot be changed until midnight reset
+- **Persistent Checkboxes**: Task completion checkboxes remain sticky for 24 hours
+- **Anti-Gaming Stats**: Prevents multiple XP rewards from same day completion
+- **Daily XP Limits**: XP cannot exceed the maximum possible for selected path
+- **Visual Indicators**: Clear messaging about path lock and reset countdown
+- **Midnight Auto-Reset**: All progress and path selections reset automatically at midnight
+
+## DMO (Daily Method of Operation) System - ENHANCED SECURITY
+
+### Daily Commitment Paths (ONE SELECTION ONLY)
+1. **Express Path** - 1 Hour Per Day (6 tasks, 150 XP MAX)
+2. **Pocket Builder** - 2 Hours Per Day (10 tasks, 300 XP MAX)
+3. **Steady Climber** - 4 Hours Per Day (12 tasks, 500 XP MAX)
+4. **Full Throttle** - 6+ Hours Per Day (15 tasks, 800 XP MAX)
+
+### Anti-Gaming Features
+✅ **Path Lock System**: Cannot change path once selected until midnight reset  
+✅ **Daily XP Validation**: XP capped at selected path maximum to prevent exploitation  
+✅ **Single Completion Tracking**: Only one DMO completion counted per day  
+✅ **Persistent Task State**: Checkboxes maintain state for full 24-hour period  
+✅ **Visual Lock Indicators**: "Path Locked Until Midnight Reset" messaging  
+✅ **Countdown Timer**: Shows exact time until daily reset occurs  
+✅ **Commitment Enforcement**: "Choose your commitment level wisely" messaging
+
+### DMO Security Logic
+```typescript
+// Path selection is permanent for the day
+const selectPath = (pathId: string) => {
+  if (hasPathSelected) return; // Prevents path changes
+  // Selection logic with localStorage persistence
+};
+
+// XP validation prevents gaming
+const validateDailyXP = (currentXP: number, pathId: string): number => {
+  const path = DMO_PATHS.find(p => p.id === pathId);
+  return Math.min(currentXP, path.totalXP); // Caps at path maximum
+};
+
+// Stats only update once per day
+if (allTasksCompleted && stats.lastCompletedDate !== today) {
+  // Update stats logic with date validation
+}
+```
+
+## Expert Directory System - PROFESSIONAL BOOKING FLOW
+
+### Expert Levels (6A System)
+- **6A Leaders**: Master-level experts
+- **6A2 Leaders**: Advanced experts  
+- **6A4-3 Leaders**: Experienced experts
+- **6A2-3 Leaders**: Skilled professionals
+- **6A8-4 Leaders**: Systems experts
+
+### Professional Booking Features ✅
+✅ **Clean Expert Profiles**: Focus on specialties, ratings, and experience  
+✅ **Uniform Book Buttons**: All experts show "Book Call Now" consistently  
+✅ **No Mock Availability**: Removed confusing fake availability indicators  
+✅ **3-Step Booking Funnel**: Session selection → Payment → Private calendar access  
+✅ **Session Packages**: Single session or 4-pack with 30% discount  
+✅ **Payment Protection**: No calendar access until payment confirmed  
+✅ **Private Calendar Access**: Post-purchase Calendly embed only  
+✅ **Coach Messaging**: Direct contact option if no suitable times  
+✅ **Mobile Responsive**: Optimized booking flow for all devices  
+✅ **Revenue Transparency**: Clear expert/platform split display  
+✅ **Booking ID System**: Unique tracking for each purchase
+
+## Features Completed (Previous)
 ✅ **ONLINE EMPIRES Courses Page**: Complete redesign matching provided screenshot  
 ✅ **Statistics Cards**: Course Completed 53%, Learning Streak 12 days, Achievements 23, Hours Learned 127  
 ✅ **Achievement Banner**: Green notification banner with "Course Crusher" achievement and +350 XP  
@@ -51,6 +134,8 @@
 ✅ **Lesson Completion System**: Checkbox completion with progress tracking and navigation  
 ✅ **Sticky Sidebar**: Right sidebar with lesson progress, navigation, and upgrade banner  
 ✅ **Module Overview**: Course structure navigation with current lesson highlighting  
+✅ **Achievement System**: Streak tracking, XP rewards, and success certificates  
+✅ **Mobile Optimization**: Responsive expert cards and DMO interface across all devices  
 
 ## Current Course Sections
 
@@ -68,6 +153,25 @@
 6. **Team Building Mastery** - IN PROGRESS 25% (20 lessons, 6.5 hours, +480 XP)
 
 ## User Guide
+
+### Daily Method of Operation (DMO) - CRITICAL RULES
+1. **Choose Wisely**: You can only select ONE DMO path per day - choose your commitment level carefully
+2. **Path Lock**: Once selected, your path cannot be changed until midnight reset (countdown shown)
+3. **Persistent Tasks**: Checkbox progress is saved and persists for the full 24-hour period
+4. **No Gaming**: System prevents multiple XP rewards or path switching to game the system
+5. **Midnight Reset**: All progress and path selection automatically resets at midnight
+6. **Compact Success**: Success certificates are now more compact with smaller margins
+
+### Expert Directory - PROFESSIONAL BOOKING PROCESS
+1. **Browse Experts**: Clean profiles focused on expertise and qualifications
+2. **Book Call Now**: Click to start the 3-step professional booking process
+3. **Step 1 - Choose Package**: Select single session or 4-pack (30% savings)
+4. **Step 2 - Secure Payment**: Complete payment via Stripe Checkout simulation
+5. **Step 3 - Schedule Session**: Access private Calendly calendar post-payment
+6. **Alternative Contact**: Message coach directly if no suitable times available
+7. **Booking Protection**: Calendar access only after payment confirmation
+
+### General Learning Path
 1. **Dashboard Navigation**: Use sidebar to navigate between Dashboard, All Courses, and other sections
 2. **Courses Page**: View your learning journey with progress tracking and achievement system
 3. **Course Selection**: Click any course card to access detailed course content and lesson overview
@@ -79,8 +183,8 @@
 9. **Continue Learning**: Use "Continue to Next Lesson" button for seamless progression
 10. **Premium Upgrade**: Upgrade banner appears naturally below the continue button
 11. **Progress Tracking**: Your progress is automatically saved and continues where you left off
-9. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
-10. **Level System**: Earn XP points to advance through levels and unlock new content
+12. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
+13. **Level System**: Earn XP points to advance through levels and unlock new content
 
 ## Development Commands
 ```bash
@@ -91,7 +195,7 @@ npm install
 pm2 start ecosystem.config.cjs
 
 # Stop server
-pm2 stop dashboard-webapp
+pm2 stop webapp
 
 # View logs
 pm2 logs --nostream
@@ -110,7 +214,7 @@ npm start
 - **Start Command**: `npm start`
 - **Node Version**: 18+
 - **PM2 Configuration**: ecosystem.config.cjs
-- **Last Updated**: August 2025
+- **Last Updated**: August 16, 2025 (Evening - Major Booking Flow Update)
 
 ## Component Architecture
 ```
@@ -131,51 +235,74 @@ pages/
 ├── courses.tsx                         # ONLINE EMPIRES courses page
 ├── courses/[courseId].tsx              # Individual course detail pages
 ├── courses/[courseId]/[lessonId].tsx   # Individual lesson pages with video player
+├── experts.tsx                         # Expert directory with simplified booking
+├── dmo.tsx                             # Daily Method of Operation with gaming prevention
 ├── _app.tsx                            # App wrapper
 └── _document.tsx                       # Document with Font Awesome CDN
 lib/
 └── api/
     ├── courses.ts              # Course data and API functions
+    ├── experts.ts              # Expert profiles (availability system removed)
+    ├── dmo.ts                  # DMO paths with gaming prevention logic
     └── client.ts               # HTTP client configuration
 ```
 
-## ONLINE EMPIRES Design Features
-- **Achievement Banners**: Dynamic green notification banners with XP rewards
-- **Progress Indicators**: Visual progress bars with percentage completion
-- **Course Status System**: Completed, In Progress, Not Started, Locked, Available Soon
-- **XP Reward System**: Points awarded for lesson and course completion
-- **Level Progression**: Preview sections showing next level requirements
-- **Circular Achievement Icons**: Recent achievements with Font Awesome icons
-- **Course Categories**: Structured learning path with foundational and advanced sections
-- **Visual Course Cards**: Gradient backgrounds with relevant icons for each course
+## Recent Changes Summary (August 16, 2025)
 
-## Lesson Page Features (ULTRA-CLEAN DESIGN)
-- **Two-Column Layout**: Video player on left (2/3 width) + progress sidebar on right (1/3 width)
-- **Breadcrumb Navigation**: Dashboard > All Courses > Course Name > Lesson Name navigation path
-- **Your Progress Section**: Circular progress indicator showing course completion percentage (67%)
-- **Detailed Progress Stats**: Module progress (2 of 5 lessons), Course progress (8 of 15 lessons), XP Earned (+50 XP)
-- **Lesson Materials**: Downloadable resources with file icons (PDF worksheets, DOCX templates)
-- **Enhanced Video Player**: Realistic landscape background with play button and video controls
-- **Video Progress Display**: Time indicator (3:44 / 9:56) with progress bar and control buttons
-- **Lesson Overview**: Comprehensive description and key takeaways with checkmark list
+### Expert Directory Cleanup
+- ❌ Removed: Mock availability indicators ("Available Now", "Next: Tomorrow")
+- ❌ Removed: Availability status badges and timing confusion
+- ❌ Removed: Dynamic button states based on fake availability
+- ✅ Added: Uniform "Book Call Now" buttons across all experts
+- ✅ Added: Clean focus on expert qualifications and specialties
+- ✅ Prepared: Admin panel integration for real calendar management
 
-### **Ultra-Clean Two-Rows Completion Section**
-- **Vertical Stacking Layout**: Lesson completion and upgrade banner in two separate rows
-- **Top Row**: Checkbox and "Continue to Next Lesson" button with perfect size fit
-- **Bottom Row**: Fixed upgrade banner (no close button) for consistent offer display
-- **Separate White Cards**: Each row has individual white background cards with subtle shadows
-- **Clean Alignment**: Lesson overview box aligned properly with sidebar elements (no overhanging)
-- **Enhanced Lesson Overview**: Added estimated time and improved height balance
-- **Subscription Logic**: Upgrade banner only shows for non-annual subscribers
-- **Admin Panel Ready**: User subscription type easily configurable for offer management
-- **Mobile Responsive**: Rows maintain clean stacking on all screen sizes
-- **Responsive Padding**: p-4 on mobile, p-6 on desktop for optimal touch targets
-- **Crown Icon + LIMITED TIME Badge**: Yellow badge with crown symbol for premium urgency
-- **Fixed Offer Display**: No dismissal option - permanent upgrade opportunity for eligible users
+### DMO Gaming Prevention
+- ❌ Removed: Ability to change paths multiple times per day
+- ❌ Removed: Path reset functionality (gaming prevention)
+- ❌ Removed: Multiple XP rewards from same day
+- ✅ Added: One path selection per day enforcement
+- ✅ Added: Path lock until midnight reset with countdown
+- ✅ Added: Persistent checkbox state for 24 hours
+- ✅ Added: Daily XP validation and caps
+- ✅ Added: Visual indicators for path lock status
+- ✅ Added: Anti-gaming statistics tracking
 
-## Mobile Responsiveness
-- **Breakpoints**: sm (640px), md (768px), lg (1024px)
-- **Grid System**: Responsive course grids (1 col mobile, 2 col tablet, 3 col desktop)
-- **Navigation**: Collapsible sidebar with hamburger menu
-- **Touch Targets**: Proper button sizing for mobile interaction
-- **Font Scaling**: Responsive typography with Inter font family
+### UI/UX Improvements ✅ (JUST COMPLETED)
+- ✅ Fixed: DMO success certificate modal - reduced margins and made more compact
+- ✅ Updated: Facebook group links to onlineempiresvip across all components
+- ✅ Improved: Certificate download generates smaller, more appropriate sized image
+
+### Complete Booking Flow Redesign ✅ (JUST COMPLETED)
+**Implemented your ideal 3-step booking funnel:**
+
+🔹 **Step 1: Session Type Selection Popup**
+- ✅ Clean session type selection (Single vs 4-Pack with 30% discount)
+- ✅ Clear pricing display with savings indicators
+- ✅ Terms & Conditions clearly stated
+- ✅ "Bookings are final", "No calendar access until payment"
+- ✅ Professional UI with expert profile integration
+
+🔹 **Step 2: Payment Processing Page**
+- ✅ Stripe Checkout simulation (ready for production integration)
+- ✅ Order summary with expert details and pricing
+- ✅ Demo mode notification with clear production pathway
+- ✅ Secure payment processing simulation
+
+🔹 **Step 3: Post-Purchase Booking Page**
+- ✅ Payment confirmation with unique booking ID generation
+- ✅ Private Calendly calendar embed simulation (ready for real integration)
+- ✅ "Can't find a time?" message coach functionality
+- ✅ Pre-filled email with booking details
+- ✅ Social media contact options
+- ✅ No public calendar access - only post-payment
+
+### Key Safeguards Implemented ✅
+- 🔒 No calendar access without payment confirmation
+- 🔒 Calendly embed only appears on post-payment page
+- 🔒 Unique booking ID/token for each purchase
+- 🔒 Revenue split transparency and tracking
+- 🔒 Admin-ready for Stripe Connect integration
+- 🔒 Clean separation of payment and calendar booking
+
+These changes create a professional, secure booking experience that prevents calendar access gaming while providing clear value proposition and smooth user experience.

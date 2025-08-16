@@ -17,7 +17,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
+          className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm"
         >
           <i className="fas fa-redo mr-2"></i>Completed - Watch Again
         </a>
@@ -29,7 +29,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="block w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-center"
+          className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm"
         >
           <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
         </a>
@@ -40,7 +40,7 @@ export default function AllCourses() {
     const lockedCourses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
     if (lockedCourses.includes(course.id)) {
       return (
-        <button className="w-full bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors">
+        <button className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm">
           <i className="fas fa-lock mr-2"></i>Unlock Access for $49
         </button>
       );
@@ -49,7 +49,7 @@ export default function AllCourses() {
     return (
       <a 
         href={`/courses/${course.id}`}
-        className="block w-full bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-center"
+        className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm"
       >
         <i className="fas fa-rocket mr-2"></i>Start Course
       </a>
@@ -345,7 +345,7 @@ export default function AllCourses() {
                         <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                       </div>
                     </div>
-                    <button className="w-full bg-orange-500 text-white py-2 px-4 rounded font-medium">
+                    <button className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm">
                       <i className="fas fa-lock mr-2"></i>Unlock Access for $49
                     </button>
                   </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Expert, TimeSlot, BookingRequest, Booking, bookSession, getAvailableSlots } from '../../lib/api/experts';
 import emailService from '../../lib/services/emailService';
+import SecureCalendlyModal from './SecureCalendlyModal';
+import BookingSecurityInfo from './BookingSecurityInfo';
 
 interface BookingModalProps {
   expert: Expert | null;
@@ -35,6 +37,7 @@ const BookingModal: React.FC<BookingModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
+  const [showCalendly, setShowCalendly] = useState(false);
   
   const [bookingData, setBookingData] = useState<BookingData>({
     selectedSlot: null,
@@ -184,8 +187,9 @@ const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mx-auto my-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center">
+      {/* Mobile: Slide up from bottom, Desktop: Center modal */}
+      <div className="w-full sm:w-auto sm:max-w-2xl bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 rounded-t-xl sm:rounded-t-2xl">
           <div className="flex items-center justify-between">
@@ -250,10 +254,12 @@ const BookingModal: React.FC<BookingModalProps> = ({
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-6">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {currentStep === 'time' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <>
+              <BookingSecurityInfo />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Session Details */}
               <div>
                 <div className="flex items-center mb-4">
@@ -288,45 +294,48 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
                 <div className="mb-4">
                   <h5 className="font-medium text-gray-700 mb-2">Available This Week</h5>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {availableSlots.slice(0, 4).map((slot) => (
                       <button
                         key={slot.id}
                         onClick={() => handleSelectTime(slot)}
-                        className={`p-2 sm:p-3 rounded-lg border text-xs sm:text-sm font-medium transition-all ${
+                        className={`p-4 rounded-lg border text-left transition-all min-h-[60px] ${
                           bookingData.selectedSlot?.id === slot.id
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-200'
                             : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                         }`}
                       >
-                        <div className="font-semibold">
-                          {slot.date === '2025-08-17' ? 'Today' : 'Tomorrow'}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-base">
+                              {slot.date === '2025-08-17' ? 'Today' : 'Tomorrow'}
+                            </div>
+                            <div className="text-sm text-gray-600">{slot.time}</div>
+                          </div>
+                          {bookingData.selectedSlot?.id === slot.id && (
+                            <i className="fas fa-check-circle text-blue-600 text-lg"></i>
+                          )}
                         </div>
-                        <div className="text-xs text-gray-600">{slot.time}</div>
                       </button>
                     ))}
                   </div>
                 </div>
                 {bookingData.selectedSlot && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center text-blue-800">
-                      <i className="fas fa-info-circle mr-2"></i>
-                      <span className="text-sm font-medium">
-                        Production integration: 
-                        <a 
-                          href="https://calendly.com/johnsmith-digitalera"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-1 underline hover:no-underline"
-                        >
-                          https://calendly.com/johnsmith-digitalera
-                        </a>
-                      </span>
+                  <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-green-800">
+                      <div className="flex items-center mb-2">
+                        <i className="fas fa-shield-alt mr-2"></i>
+                        <span className="font-semibold">Secure Payment Required</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        After payment confirmation, you'll receive a secure Calendly link to schedule your exact time with {expert.name}.
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
+              </div>
+            </>
           )}
 
           {currentStep === 'payment' && bookingData.selectedSlot && (
@@ -471,37 +480,54 @@ const BookingModal: React.FC<BookingModalProps> = ({
                 <i className="fas fa-check text-2xl text-green-600"></i>
               </div>
               
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Payment Confirmed!</h3>
               <p className="text-gray-600 mb-4">
-                Your coaching session has been successfully booked! 
+                Your payment has been processed successfully. Now schedule your exact time with {expert.name}.
               </p>
               
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <div className="flex items-start">
-                  <i className="fas fa-envelope text-blue-500 mt-1 mr-3"></i>
-                  <div>
-                    <div className="font-medium text-blue-800 mb-1">Emails Sent!</div>
-                    <div className="text-sm text-blue-700">
-                      • Booking confirmation sent to {bookingData.customerInfo.email}<br/>
-                      • Payment receipt sent to {bookingData.customerInfo.email}
+                  <i className="fas fa-shield-alt text-green-500 mt-1 mr-3"></i>
+                  <div className="text-left">
+                    <div className="font-semibold text-green-800 mb-1">Secure Calendar Access</div>
+                    <div className="text-sm text-green-700">
+                      Your payment unlocks direct access to {expert.name}'s private calendar. Choose your preferred time slot with no risk of double-booking.
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-6 text-left max-w-md mx-auto">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start">
+                  <i className="fas fa-envelope text-blue-500 mt-1 mr-3"></i>
+                  <div className="text-left">
+                    <div className="font-medium text-blue-800 mb-1">Confirmation Emails Sent</div>
+                    <div className="text-sm text-blue-700">
+                      • Payment receipt sent to {bookingData.customerInfo.email}<br/>
+                      • Secure calendar link sent to {bookingData.customerInfo.email}<br/>
+                      • Expert {expert.name} has been notified
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4 text-left">
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Expert:</span>
                     <span className="font-medium">{expert.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Date & Time:</span>
-                    <span className="font-medium">{bookingData.selectedSlot?.date === '2025-08-17' ? 'Today' : 'Tomorrow'} {bookingData.selectedSlot?.time}</span>
+                    <span className="text-gray-600">Session Duration:</span>
+                    <span className="font-medium">{expert.sessionDuration} minutes</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount Paid:</span>
                     <span className="font-medium text-green-600">${expert.price}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Booking ID:</span>
+                    <span className="font-medium text-blue-600">#{confirmedBooking.id}</span>
                   </div>
                 </div>
               </div>
@@ -509,68 +535,91 @@ const BookingModal: React.FC<BookingModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer - Fixed at bottom */}
         {currentStep !== 'confirmation' && (
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex justify-between">
-            <button
-              onClick={currentStep === 'payment' ? () => setCurrentStep('time') : handleClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-            >
-              {currentStep === 'payment' ? 'Back' : 'Cancel'}
-            </button>
-            
-            {currentStep === 'time' && (
+          <div className="border-t border-gray-200 bg-white p-4 sm:px-6 sm:py-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between">
               <button
-                onClick={handleContinueToPayment}
-                disabled={!bookingData.selectedSlot}
-                className={`px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex items-center ${
-                  bookingData.selectedSlot
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                onClick={currentStep === 'payment' ? () => setCurrentStep('time') : handleClose}
+                className="order-2 sm:order-1 px-4 py-3 sm:py-2 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-lg sm:border-0 sm:bg-transparent"
               >
-                Continue to Payment
-                <i className="fas fa-arrow-right ml-2"></i>
+                {currentStep === 'payment' ? 'Back' : 'Cancel'}
               </button>
-            )}
-            
-            {currentStep === 'payment' && (
-              <button
-                onClick={handlePaymentSubmit}
-                disabled={loading || !bookingData.paymentInfo.cardNumber || !bookingData.paymentInfo.expiryDate || !bookingData.paymentInfo.cvc}
-                className={`px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base font-medium transition-all flex items-center ${
-                  loading || !bookingData.paymentInfo.cardNumber || !bookingData.paymentInfo.expiryDate || !bookingData.paymentInfo.cvc
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-700'
-                }`}
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-lock mr-2"></i>
-                    Secure Payment
-                  </>
-                )}
-              </button>
-            )}
+              
+              {currentStep === 'time' && (
+                <button
+                  onClick={handleContinueToPayment}
+                  disabled={!bookingData.selectedSlot}
+                  className={`order-1 sm:order-2 w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg font-medium transition-all flex items-center justify-center ${
+                    bookingData.selectedSlot
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Continue to Payment
+                  <i className="fas fa-arrow-right ml-2"></i>
+                </button>
+              )}
+              
+              {currentStep === 'payment' && (
+                <button
+                  onClick={handlePaymentSubmit}
+                  disabled={loading || !bookingData.paymentInfo.cardNumber || !bookingData.paymentInfo.expiryDate || !bookingData.paymentInfo.cvc}
+                  className={`order-1 sm:order-2 w-full sm:w-auto px-6 py-3 sm:py-2 rounded-lg font-medium transition-all flex items-center justify-center ${
+                    loading || !bookingData.paymentInfo.cardNumber || !bookingData.paymentInfo.expiryDate || !bookingData.paymentInfo.cvc
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-green-600 text-white hover:bg-green-700'
+                  }`}
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-lock mr-2"></i>
+                      Secure Payment ${expert.price}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {currentStep === 'confirmation' && (
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 text-center">
-            <button
-              onClick={handleClose}
-              className="px-6 sm:px-8 py-2 sm:py-3 bg-blue-600 text-white rounded-lg text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors"
-            >
-              Done
-            </button>
+          <div className="border-t border-gray-200 bg-white p-4 sm:px-6 sm:py-4">
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => setShowCalendly(true)}
+                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center"
+              >
+                <i className="fas fa-calendar-check mr-2"></i>
+                Schedule Your Session
+              </button>
+              <button
+                onClick={handleClose}
+                className="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>
+      
+      {/* Secure Calendly Modal */}
+      {showCalendly && confirmedBooking && (
+        <SecureCalendlyModal
+          isOpen={showCalendly}
+          onClose={() => setShowCalendly(false)}
+          calendlyUrl={expert.calendlyUrl}
+          expertName={expert.name}
+          bookingId={confirmedBooking.id}
+          paymentToken={confirmedBooking.id}
+        />
+      )}
     </div>
   );
 };
