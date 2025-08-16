@@ -1,4 +1,7 @@
 import client from './client';
+import { getFastStats } from '../services/progressService';
+import { getContinueData } from '../services/continueService';
+import { getAchievementStrings, processAchievements, initializeAchievements } from '../services/achievementsService';
 
 export interface DashboardData {
   user: {
@@ -13,6 +16,8 @@ export interface DashboardData {
     commissions: number;
     newLeads: number;
     progressPercent: number;
+    xpPoints: number;
+    level: string;
   };
   notifications: Array<{
     id: number;
@@ -54,7 +59,9 @@ const mockData: DashboardData = {
     learningStreakDays: 12,
     commissions: 2847.00,
     newLeads: 47,
-    progressPercent: 67
+    progressPercent: 67,
+    xpPoints: 2450,
+    level: "Veteran"
   },
   notifications: [
     {
@@ -132,8 +139,32 @@ export const getDashboard = async (): Promise<DashboardData> => {
   } catch (error) {
     // Fall back to mock data for development
     console.warn('Using mock data - API not available:', error);
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockData), 500); // Simulate network delay
+    
+    return new Promise(async (resolve) => {
+      // Initialize achievements system
+      initializeAchievements();
+      
+      // Process current achievements based on progress
+      await processAchievements();
+      
+      // Get unified fast stats and dynamic continue data
+      const [stats, continueData] = await Promise.all([
+        getFastStats(),
+        getContinueData()
+      ]);
+      
+      // Get dynamic achievements
+      const dynamicAchievements = getAchievementStrings();
+      
+      // Update mock data with real progress
+      const updatedData = {
+        ...mockData,
+        stats,
+        continue: continueData || mockData.continue, // Fallback to mock if no continue data
+        achievements: dynamicAchievements.length > 0 ? dynamicAchievements : mockData.achievements
+      };
+      
+      setTimeout(() => resolve(updatedData), 200); // Reduced delay for better performance
     });
   }
 };

@@ -7,6 +7,7 @@ import ContinueJourney from '../components/dashboard/ContinueJourney';
 import StartHereGrid from '../components/dashboard/StartHereGrid';
 import RecentAchievements from '../components/dashboard/RecentAchievements';
 import FeedbackModal from '../components/dashboard/FeedbackModal';
+import LevelBadge from '../components/ui/LevelBadge';
 import { getDashboard, DashboardData } from '../lib/api/dashboard';
 
 export default function Dashboard() {
@@ -18,6 +19,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
+    
+    // Pre-load courses data for faster navigation
+    import('../lib/services/progressService').then(({ getCachedCourseData }) => {
+      getCachedCourseData().catch(() => {
+        // Ignore errors in background preload
+      });
+    });
   }, []);
 
   const loadDashboard = async () => {
@@ -127,7 +135,16 @@ export default function Dashboard() {
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 truncate">Hello, {data.user.name.split(' ')[0]}!</h1>
-                <p className="text-purple-100 text-sm sm:text-base font-medium">Welcome back to The Digital Era!</p>
+                <div className="flex items-center gap-3 mb-1">
+                  <p className="text-purple-100 text-sm sm:text-base font-medium">Welcome back to The Digital Era!</p>
+                  <div className="hidden sm:block">
+                    <LevelBadge completedCourses={data.stats.coursesCompleted} size="sm" />
+                  </div>
+                </div>
+                {/* Mobile level badge */}
+                <div className="sm:hidden mt-2">
+                  <LevelBadge completedCourses={data.stats.coursesCompleted} size="sm" showProgress={true} />
+                </div>
               </div>
             </div>
           </div>

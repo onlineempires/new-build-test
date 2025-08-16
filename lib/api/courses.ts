@@ -563,8 +563,9 @@ export const getAllCourses = async (): Promise<CourseData> => {
           
           // Update course progress
           course.progress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
-          course.isCompleted = course.progress === 100;
+          course.isCompleted = totalLessons > 0 && totalCompleted === totalLessons;
           
+          // Count as completed if ALL lessons are completed
           if (course.isCompleted) {
             completedCourses++;
           }
@@ -579,8 +580,57 @@ export const getAllCourses = async (): Promise<CourseData> => {
         updatedData.stats.coursesCompleted = completedCourses;
         updatedData.stats.xpPoints = globalProgressState.totalXP;
         
+        // Update level based on completed courses
+        const currentLevel = calculateUserLevel(completedCourses);
+        updatedData.stats.level = currentLevel.name;
+        
+        // CRITICAL: Update global state with accurate values
+        globalProgressState.coursesCompleted = completedCourses;
+        globalProgressState.currentLevel = currentLevel;
+        
+        // Debug logging to help track the issue
+        if (typeof window !== 'undefined') {
+          console.log('🗺 getAllCourses - Course completion update:', {
+            totalCourses: updatedData.startHereCourses.length + updatedData.socialMediaCourses.length,
+            completedCourses,
+            completedLessonsCount: globalProgressState.completedLessons.size,
+            completedLessonsArray: Array.from(globalProgressState.completedLessons),
+            timestamp: new Date().toISOString()
+          });
+          
+          // Log each course's detailed status
+          [...updatedData.startHereCourses, ...updatedData.socialMediaCourses].forEach((course, index) => {
+            const totalLessons = course.modules.reduce((sum: number, m: Module) => sum + m.lessons.length, 0);
+            const completedLessons = course.modules.reduce((sum: number, m: Module) => sum + m.lessons.filter((l: Lesson) => l.isCompleted).length, 0);
+            console.log(`📚 Course ${index + 1} - ${course.title}:`, {
+              progress: course.progress,
+              isCompleted: course.isCompleted,
+              totalLessons,
+              completedLessons,
+              completionRatio: `${completedLessons}/${totalLessons}`
+            });
+          });
+        }
+        
+        // Update module completion status
+        updatedData.startHereCourses = updatedData.startHereCourses.map((course: Course) => ({
+          ...course,
+          modules: course.modules.map((module: Module) => ({
+            ...module,
+            isCompleted: module.lessons.every((lesson: Lesson) => lesson.isCompleted)
+          }))
+        }));
+        
+        updatedData.socialMediaCourses = updatedData.socialMediaCourses.map((course: Course) => ({
+          ...course,
+          modules: course.modules.map((module: Module) => ({
+            ...module,
+            isCompleted: module.lessons.every((lesson: Lesson) => lesson.isCompleted)
+          }))
+        }));
+        
         resolve(updatedData);
-      }, 500); // Simulate network delay
+      }, 100); // Reduced delay for better performance
     });
   }
 };
@@ -625,33 +675,113 @@ export const getCourse = async (courseId: string): Promise<Course> => {
         
         // Update course progress
         courseCopy.progress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
-        courseCopy.isCompleted = courseCopy.progress === 100;
+        courseCopy.isCompleted = courseCopy.progress === 100 && totalLessons > 0;
+        
+        // Update module completion status
+        courseCopy.modules = courseCopy.modules.map((module: Module) => ({
+          ...module,
+          isCompleted: module.lessons.every((lesson: Lesson) => lesson.isCompleted)
+        }));
         
         resolve(courseCopy);
-      }, 300);
+      }, 50); // Reduced delay for better performance
     });
   }
+};
+
+// Leveling system configuration
+export const LEVEL_TIERS = {
+  ROOKIE: { min: 1, max: 2, name: 'Rookie', color: '#3B82F6', icon: 'fas fa-rocket', tailwind: 'bg-blue-600 text-white border-blue-600' },
+  OPERATOR: { min: 3, max: 5, name: 'Operator', color: '#10B981', icon: 'fas fa-cog', tailwind: 'bg-emerald-600 text-white border-emerald-600' },
+  VETERAN: { min: 6, max: 8, name: 'Veteran', color: '#8B5CF6', icon: 'fas fa-shield-alt', tailwind: 'bg-violet-600 text-white border-violet-600' },
+  ELITE: { min: 9, max: 12, name: 'Elite', color: '#6B7280', icon: 'fas fa-crown', tailwind: 'bg-gray-600 text-white border-gray-600' },
+  LEGEND: { min: 13, max: 999, name: 'Legend', color: '#F59E0B', icon: 'fas fa-trophy', tailwind: 'bg-amber-500 text-white border-amber-500' }
+};
+
+// Helper function to calculate user level based on completed courses
+export const calculateUserLevel = (completedCourses: number) => {
+  for (const [key, tier] of Object.entries(LEVEL_TIERS)) {
+    if (completedCourses >= tier.min && completedCourses <= tier.max) {
+      return tier;
+    }
+  }
+  return LEVEL_TIERS.ROOKIE; // Default fallback
 };
 
 // Global progress state for mock data
 let globalProgressState = {
   completedLessons: new Set<string>(),
+  completedCourses: new Set<string>(),
   totalXP: 2450,
-  coursesCompleted: 3,
-  lastUpdateTime: Date.now()
+  coursesCompleted: 0, // Will be calculated dynamically
+  lastUpdateTime: Date.now(),
+  currentLevel: calculateUserLevel(0) // Will be recalculated dynamically
 };
+
+// Helper function to reset global state when needed
+export const resetGlobalProgressState = () => {
+  globalProgressState = {
+    completedLessons: new Set<string>(),
+    completedCourses: new Set<string>(),
+    totalXP: 2450,
+    coursesCompleted: 0,
+    lastUpdateTime: Date.now(),
+    currentLevel: calculateUserLevel(0)
+  };
+  
+  // Clear localStorage to force fresh load
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('learningProgress');
+    sessionStorage.removeItem('fastStatsCache');
+    sessionStorage.setItem('progressCacheInvalidated', Date.now().toString());
+  }
+};
+
+// Helper function for debugging progress state
+export const debugProgressState = () => {
+  if (typeof window !== 'undefined') {
+    console.log('Current Progress State:', {
+      completedLessonsCount: globalProgressState.completedLessons.size,
+      completedLessons: Array.from(globalProgressState.completedLessons),
+      coursesCompleted: globalProgressState.coursesCompleted,
+      totalXP: globalProgressState.totalXP,
+      currentLevel: globalProgressState.currentLevel,
+      lastUpdateTime: new Date(globalProgressState.lastUpdateTime).toISOString()
+    });
+  }
+}
 
 export const updateLessonProgress = async (courseId: string, lessonId: string, completed: boolean): Promise<void> => {
   try {
     await client.put(`/courses/${courseId}/lessons/${lessonId}/progress`, { completed });
   } catch (error) {
-    console.warn('Mock: Lesson progress updated for:', lessonId, completed);
+    console.log('🔧 LESSON UPDATE DEBUG:', {
+      courseId,
+      lessonId,
+      completed,
+      beforeUpdate: {
+        completedLessonsCount: globalProgressState.completedLessons.size,
+        completedLessons: Array.from(globalProgressState.completedLessons),
+        coursesCompleted: globalProgressState.coursesCompleted,
+        totalXP: globalProgressState.totalXP
+      }
+    });
     
     // Update global progress state for mock mode
     if (completed) {
       globalProgressState.completedLessons.add(lessonId);
       // Add XP for lesson completion (25 XP per lesson)
       globalProgressState.totalXP += 25;
+      
+      // Update learning streak
+      if (typeof window !== 'undefined') {
+        // Dynamically import streak service to avoid server-side issues
+        import('../services/streakService').then(({ updateStreakOnLessonComplete }) => {
+          updateStreakOnLessonComplete();
+        }).catch(() => {
+          // Ignore errors in streak update
+        });
+      }
     } else {
       globalProgressState.completedLessons.delete(lessonId);
       // Remove XP for lesson incompletion
@@ -660,18 +790,52 @@ export const updateLessonProgress = async (courseId: string, lessonId: string, c
     
     globalProgressState.lastUpdateTime = Date.now();
     
-    // Store in localStorage for persistence across page reloads
+    console.log('🔧 AFTER LESSON UPDATE:', {
+      completedLessonsCount: globalProgressState.completedLessons.size,
+      completedLessons: Array.from(globalProgressState.completedLessons),
+      coursesCompleted: globalProgressState.coursesCompleted,
+      totalXP: globalProgressState.totalXP
+    });
+    
+    // CRITICAL: Save progress to localStorage (without calculated values)
     if (typeof window !== 'undefined') {
       localStorage.setItem('learningProgress', JSON.stringify({
         completedLessons: Array.from(globalProgressState.completedLessons),
         totalXP: globalProgressState.totalXP,
-        coursesCompleted: globalProgressState.coursesCompleted,
         lastUpdateTime: globalProgressState.lastUpdateTime
+        // Note: Removed coursesCompleted and currentLevel - these are calculated dynamically
       }));
+      
+      // CRITICAL: Aggressive cache invalidation to prevent stale data
+      // Set invalidation flag BEFORE clearing caches
+      sessionStorage.setItem('progressCacheInvalidated', Date.now().toString());
+      
+      // Clear all relevant caches
+      sessionStorage.removeItem('fastStatsCache');
+      
+      // Call global cache invalidation function if available
+      if ((window as any).invalidateProgressCache) {
+        (window as any).invalidateProgressCache();
+      }
+      
+      // CRITICAL: Force immediate recalculation of course completion stats
+      // This prevents the 0/7 bug by ensuring fresh data on next access
+      setTimeout(async () => {
+        try {
+          // Pre-warm cache with fresh data to prevent race conditions
+          if (typeof window !== 'undefined') {
+            const { getCachedCourseData } = await import('../services/progressService');
+            await getCachedCourseData(true); // Force refresh
+          }
+        } catch (e) {
+          // Ignore errors in cache pre-warming
+        }
+      }, 0); // Immediate async execution
     }
     
     return new Promise((resolve) => {
-      setTimeout(resolve, 200);
+      // Immediate resolve for instant UI response
+      resolve();
     });
   }
 };
@@ -680,16 +844,35 @@ export const updateLessonProgress = async (courseId: string, lessonId: string, c
 export const loadProgressFromStorage = (): void => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('learningProgress');
+    console.log('💾 LOADING FROM STORAGE:', { stored });
+    
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
+        console.log('💾 PARSED STORAGE DATA:', parsed);
+        
+        const beforeLoad = {
+          completedLessonsCount: globalProgressState.completedLessons.size,
+          completedLessons: Array.from(globalProgressState.completedLessons)
+        };
+        
         globalProgressState.completedLessons = new Set(parsed.completedLessons || []);
         globalProgressState.totalXP = parsed.totalXP || 2450;
-        globalProgressState.coursesCompleted = parsed.coursesCompleted || 3;
         globalProgressState.lastUpdateTime = parsed.lastUpdateTime || Date.now();
+        
+        const afterLoad = {
+          completedLessonsCount: globalProgressState.completedLessons.size,
+          completedLessons: Array.from(globalProgressState.completedLessons)
+        };
+        
+        console.log('💾 STORAGE LOAD RESULT:', { beforeLoad, afterLoad });
+        // Note: coursesCompleted and currentLevel will be recalculated in getAllCourses()
+        // This prevents stale data from causing the 0/7 bug
       } catch (e) {
         console.warn('Failed to load progress from storage:', e);
       }
+    } else {
+      console.log('💾 NO STORAGE DATA FOUND');
     }
   }
 };
@@ -700,4 +883,9 @@ export const getCurrentProgress = () => {
     ...globalProgressState,
     completedLessons: Array.from(globalProgressState.completedLessons)
   };
+};
+
+// Get current user level
+export const getCurrentUserLevel = () => {
+  return globalProgressState.currentLevel;
 };

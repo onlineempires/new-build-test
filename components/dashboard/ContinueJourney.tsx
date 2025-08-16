@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { COURSE_CONFIG } from '../../lib/config/courseConfig';
 
 interface ContinueJourneyProps {
   course: {
@@ -8,6 +9,7 @@ interface ContinueJourneyProps {
     progressPercent: number;
     href: string;
     thumbnailUrl?: string;
+    isNewUser?: boolean;
   };
 }
 
@@ -23,7 +25,19 @@ export default function ContinueJourney({ course }: ContinueJourneyProps) {
           <h2 className="text-lg sm:text-xl font-bold text-gray-900">Continue Learning</h2>
         </div>
         <div className="bg-blue-50 px-3 py-1 rounded-full">
-          <span className="text-xs sm:text-sm text-blue-600 font-bold">{course.progressPercent}% Complete</span>
+          {course.isNewUser ? (
+            <span className="text-xs sm:text-sm text-green-600 font-bold">
+              <i className="fas fa-star mr-1"></i>
+              New Journey
+            </span>
+          ) : course.progressPercent === 100 ? (
+            <span className="text-xs sm:text-sm text-green-600 font-bold">
+              <i className="fas fa-trophy mr-1"></i>
+              Completed
+            </span>
+          ) : (
+            <span className="text-xs sm:text-sm text-blue-600 font-bold">{course.progressPercent}% Complete</span>
+          )}
         </div>
       </div>
       
@@ -72,8 +86,22 @@ export default function ContinueJourney({ course }: ContinueJourneyProps) {
         {/* Continue Button */}
         <Link href={course.href}>
           <a className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 font-bold text-sm sm:text-base text-center block transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
-            <i className="fas fa-play mr-2"></i>
-            Continue Learning
+            {course.isNewUser ? (
+              <>
+                <i className={`${COURSE_CONFIG.NEW_USER_MESSAGES.continueButtonIcon} mr-2`}></i>
+                {COURSE_CONFIG.NEW_USER_MESSAGES.continueButtonText}
+              </>
+            ) : course.progressPercent === 100 ? (
+              <>
+                <i className={`${COURSE_CONFIG.COMPLETED_COURSE_MESSAGES.continueButtonIcon} mr-2`}></i>
+                {COURSE_CONFIG.COMPLETED_COURSE_MESSAGES.continueButtonText}
+              </>
+            ) : (
+              <>
+                <i className={`${COURSE_CONFIG.RETURNING_USER_MESSAGES.continueButtonIcon} mr-2`}></i>
+                {COURSE_CONFIG.RETURNING_USER_MESSAGES.continueButtonText}
+              </>
+            )}
           </a>
         </Link>
       </div>

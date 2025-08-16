@@ -3,9 +3,11 @@ import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 import StatsCards from '../components/dashboard/StatsCards';
 import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
+import { getFastStats } from '../lib/services/progressService';
 
 export default function AllCourses() {
   const [data, setData] = useState<CourseData | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,8 +66,13 @@ export default function AllCourses() {
     try {
       setLoading(true);
       setError(null);
-      const coursesData = await getAllCourses();
+      // Load both courses data and stats in parallel for better performance
+      const [coursesData, fastStats] = await Promise.all([
+        getAllCourses(),
+        getFastStats()
+      ]);
       setData(coursesData);
+      setStats(fastStats);
     } catch (err) {
       console.error('Failed to load courses:', err);
       setError('Failed to load courses data');
@@ -126,12 +133,14 @@ export default function AllCourses() {
           
           {/* Statistics Cards */}
           <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sm:py-6">
-            <StatsCards stats={{
-              coursesCompleted: 3,
-              coursesTotal: 6,
-              learningStreakDays: 12,
-              commissions: 1250,
-              newLeads: 23
+            <StatsCards stats={stats || {
+              coursesCompleted: 0,
+              coursesTotal: 0,
+              learningStreakDays: 0,
+              commissions: 0,
+              newLeads: 0,
+              xpPoints: 0,
+              level: 'Rookie'
             }} />
           </div>
 

@@ -4,13 +4,17 @@ interface Stats {
   learningStreakDays: number;
   commissions: number;
   newLeads: number;
+  xpPoints: number;
+  level: string;
 }
 
 interface StatsCardsProps {
   stats: Stats;
 }
 
-export default function StatsCards({ stats }: StatsCardsProps) {
+import React from 'react';
+
+function StatsCards({ stats }: StatsCardsProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -38,20 +42,20 @@ export default function StatsCards({ stats }: StatsCardsProps) {
       borderColor: 'border-green-100',
     },
     {
-      iconClass: 'fas fa-dollar-sign',
-      label: 'Commissions Earned',
-      value: formatCurrency(stats.commissions),
-      bgColor: 'bg-yellow-50',
-      iconColor: 'text-yellow-600',
-      borderColor: 'border-yellow-100',
-    },
-    {
-      iconClass: 'fas fa-user-plus',
-      label: 'New Leads',
-      value: stats.newLeads.toString(),
+      iconClass: 'fas fa-star',
+      label: 'Experience Points',
+      value: `${stats.xpPoints.toLocaleString()} XP`,
       bgColor: 'bg-purple-50',
       iconColor: 'text-purple-600',
       borderColor: 'border-purple-100',
+    },
+    {
+      iconClass: 'fas fa-trophy',
+      label: 'Current Level',
+      value: stats.level,
+      bgColor: 'bg-amber-50',
+      iconColor: 'text-amber-600',
+      borderColor: 'border-amber-100',
     },
   ];
 
@@ -122,3 +126,5 @@ export default function StatsCards({ stats }: StatsCardsProps) {
     </>
   );
 }
+
+export default React.memo(StatsCards);

@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
 import { getCourse, updateLessonProgress, loadProgressFromStorage, Course, Lesson, Module } from '../../../lib/api/courses';
+import Confetti from '../../../components/ui/Confetti';
+import { checkCourseCompletion, checkXPMilestone, checkLevelUp } from '../../../lib/services/achievementsService';
 
 interface LessonPageData {
   course: Course;
@@ -26,6 +28,8 @@ export default function LessonPage() {
   const [userSubscriptionType] = useState<'free' | 'monthly' | 'annual'>('monthly');
   const shouldShowUpgrade = userSubscriptionType !== 'annual' && showUpgradeBanner;
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [courseJustCompleted, setCourseJustCompleted] = useState(false);
 
   useEffect(() => {
     // Load progress from storage on component mount
@@ -127,6 +131,29 @@ export default function LessonPage() {
             : lesson
         )
       }));
+      
+      // Check if course is now complete
+      const totalLessons = updatedData.course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
+      const completedLessons = updatedData.course.modules.reduce((acc, module) => 
+        acc + module.lessons.filter(l => l.isCompleted).length, 0
+      );
+      
+      const courseCompleted = completedLessons === totalLessons;
+      
+      // If course just got completed, show confetti and trigger achievements
+      if (courseCompleted && completed && !updatedData.course.isCompleted) {
+        setShowConfetti(true);
+        setCourseJustCompleted(true);
+        updatedData.course.isCompleted = true;
+        updatedData.course.progress = 100;
+        
+        // Trigger course completion achievement
+        await checkCourseCompletion(data.course.id, data.course.title);
+        
+        // Check for XP and level achievements
+        await checkXPMilestone(completedLessons * 25); // 25 XP per lesson
+        await checkLevelUp(completedLessons); // This will be recalculated properly in the progress service
+      }
       
       setData(updatedData);
       
@@ -453,13 +480,21 @@ export default function LessonPage() {
                         </label>
                       </div>
 
-                      {/* Continue Button */}
-                      {data.nextLesson && (
+                      {/* Continue Button or Return to Courses */}
+                      {data.nextLesson ? (
                         <button
                           onClick={() => navigateToLesson(data.nextLesson!)}
                           className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                         >
                           Continue to Next Lesson
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => router.push('/courses')}
+                          className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
+                        >
+                          <i className="fas fa-graduation-cap mr-2"></i>
+                          Return to All Courses
                         </button>
                       )}
                     </div>
@@ -495,6 +530,12 @@ export default function LessonPage() {
             </div>
           </div>
         </div>
+        
+        {/* Confetti Celebration */}
+        <Confetti 
+          isActive={showConfetti} 
+          onComplete={() => setShowConfetti(false)} 
+        />
       </AppLayout>
     </>
   );
