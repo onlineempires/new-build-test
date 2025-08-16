@@ -212,6 +212,31 @@ const mockExperts: Expert[] = [
       { id: 'slot-23', date: '2025-08-18', time: '10:30 AM EST', available: true, timezone: 'EST' },
       { id: 'slot-24', date: '2025-08-18', time: '7:30 PM EST', available: true, timezone: 'EST' }
     ]
+  },
+  {
+    id: 'alex-martinez',
+    name: 'Alex Martinez',
+    title: 'Multi-Level Marketing Expert',
+    level: '6A Leader',
+    rating: 5.0,
+    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face',
+    specialties: ['Network building', 'Team recruitment', 'Compensation plans', 'Leadership training', 'Event planning', 'Product knowledge'],
+    description: 'Comprehensive MLM expert with deep knowledge in all aspects of network marketing and team development.',
+    experience: '15+ years',
+    sessionDuration: 60,
+    price: 450,
+    commission: 25,
+    stats: {
+      totalSessions: 2156,
+      averageRating: 4.97,
+      responseTime: '< 1 hour'
+    },
+    availability: [
+      { id: 'slot-25', date: '2025-08-17', time: '8:00 AM EST', available: true, timezone: 'EST' },
+      { id: 'slot-26', date: '2025-08-17', time: '9:00 PM EST', available: true, timezone: 'EST' },
+      { id: 'slot-27', date: '2025-08-18', time: '8:30 AM EST', available: true, timezone: 'EST' },
+      { id: 'slot-28', date: '2025-08-18', time: '8:30 PM EST', available: true, timezone: 'EST' }
+    ]
   }
 ];
 
