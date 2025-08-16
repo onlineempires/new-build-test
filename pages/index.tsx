@@ -8,11 +8,14 @@ import StartHereGrid from '../components/dashboard/StartHereGrid';
 import RecentAchievements from '../components/dashboard/RecentAchievements';
 import FeedbackModal from '../components/dashboard/FeedbackModal';
 import LevelBadge from '../components/ui/LevelBadge';
+import { StreakUpgradePrompt } from '../components/upgrades/UpgradePrompts';
 import { getDashboard, DashboardData } from '../lib/api/dashboard';
+import { useCourseAccess } from '../hooks/useCourseAccess';
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { currentRole } = useCourseAccess();
   const [error, setError] = useState<string | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -151,6 +154,9 @@ export default function Dashboard() {
 
           {/* Stats Cards */}
           <StatsCards stats={data.stats} />
+
+          {/* Streak upgrade prompt - only for free users */}
+          {currentRole === 'free' && <StreakUpgradePrompt days={data.stats.learningStreakDays} />}
 
           {/* Continue Your Journey */}
           <ContinueJourney course={data.continue} />

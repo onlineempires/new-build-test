@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import { useUserRole } from '../../contexts/UserRoleContext';
 
 interface User {
   id: number;
@@ -16,6 +18,8 @@ interface ProfileDropdownProps {
 export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
+  const { currentRole, setUserRole } = useUserRole();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,7 +50,14 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
   };
 
   const handleLogoutClick = () => {
-    onLogout();
+    // If admin is authenticated, handle admin logout
+    if (isAdminAuthenticated && currentRole === 'admin') {
+      adminLogout();
+      setUserRole('free'); // Reset to free user after admin logout
+    } else {
+      // Regular user logout
+      onLogout();
+    }
     setIsOpen(false);
   };
 
@@ -72,8 +83,12 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
-                <div className="font-medium text-gray-900">{user.name}</div>
-                <div className="text-sm text-gray-500">View Profile</div>
+                <div className="font-medium text-gray-900">
+                  {isAdminAuthenticated && currentRole === 'admin' ? adminUser?.username : user.name}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {isAdminAuthenticated && currentRole === 'admin' ? 'Admin User' : 'View Profile'}
+                </div>
               </div>
             </div>
           </div>
@@ -119,12 +134,20 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
             </a>
             
             <div className="border-t border-gray-200 mt-2 pt-2">
+              {isAdminAuthenticated && currentRole === 'admin' && (
+                <div className="px-4 py-2 bg-blue-50 mb-2 rounded mx-2">
+                  <div className="flex items-center text-sm text-blue-800">
+                    <i className="fas fa-shield-alt mr-2"></i>
+                    Admin Session Active
+                  </div>
+                </div>
+              )}
               <button
                 onClick={handleLogoutClick}
                 className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-left"
               >
                 <span className="mr-3">🚪</span>
-                Logout
+                {isAdminAuthenticated && currentRole === 'admin' ? 'Admin Logout' : 'Logout'}
               </button>
             </div>
           </div>

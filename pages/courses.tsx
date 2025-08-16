@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 import StatsCards from '../components/dashboard/StatsCards';
+import UpgradeButton from '../components/upgrades/UpgradeButton';
+import IndividualCourseModal from '../components/courses/IndividualCourseModal';
+import { ProgressMilestoneUpgrade } from '../components/upgrades/UpgradePrompts';
+import { useCourseAccess } from '../hooks/useCourseAccess';
+import { useUserRole } from '../contexts/UserRoleContext';
 import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
 import { getFastStats } from '../lib/services/progressService';
 
@@ -10,49 +15,127 @@ export default function AllCourses() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [showIndividualPurchase, setShowIndividualPurchase] = useState(false);
+  const { isPurchased, purchaseCourse, refreshPurchases, currentRole } = useCourseAccess();
+  const { permissions } = useUserRole();
+
+  const handleIndividualPurchase = (course: any) => {
+    setSelectedCourse(course);
+    setShowIndividualPurchase(true);
+  };
+
+  const handlePurchaseSuccess = (courseId: string) => {
+    purchaseCourse(courseId);
+    refreshPurchases(); // Refresh state from localStorage
+    setShowIndividualPurchase(false);
+    setSelectedCourse(null);
+    
+    // Force page refresh to ensure UI updates correctly
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
 
   // Helper function to render course button based on status
   const getCourseButton = (course: any) => {
-    if (course.isCompleted) {
+    // Check if user has purchased this individual course
+    if (isPurchased(course.id)) {
+      if (course.isCompleted) {
+        return (
+          <a 
+            href={`/courses/${course.id}`}
+            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm w-full"
+          >
+            <i className="fas fa-redo mr-2"></i>Completed - Watch Again
+          </a>
+        );
+      }
+      
+      if (course.progress > 0) {
+        const completedLessons = Math.round((course.progress / 100) * course.lessonCount);
+        return (
+          <a 
+            href={`/courses/${course.id}`}
+            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm w-full"
+          >
+            <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
+          </a>
+        );
+      }
+      
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm"
+          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm w-full"
         >
-          <i className="fas fa-redo mr-2"></i>Completed - Watch Again
+          <i className="fas fa-rocket mr-2"></i>Start Course
         </a>
       );
     }
     
-    if (course.progress > 0) {
-      const completedLessons = Math.round((course.progress / 100) * course.lessonCount);
+    // Special masterclasses (paid only, no premium option)
+    const paidMasterclasses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
+    if (paidMasterclasses.includes(course.id)) {
+      const coursePrice = 49;
       return (
-        <a 
-          href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm"
+        <button
+          onClick={() => handleIndividualPurchase({...course, price: coursePrice})}
+          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm w-full"
         >
-          <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
-        </a>
-      );
-    }
-    
-    // Check if course should be locked (for demonstration purposes, let's make some courses locked)
-    const lockedCourses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
-    if (lockedCourses.includes(course.id)) {
-      return (
-        <button className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm">
-          <i className="fas fa-lock mr-2"></i>Unlock Access for $49
+          <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${coursePrice}
         </button>
       );
     }
     
+    // Regular courses - check if user has access to all courses
+    if (permissions.canAccessAllCourses) {
+      // User has paid access - show course access button
+      if (course.isCompleted) {
+        return (
+          <a 
+            href={`/courses/${course.id}`}
+            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm w-full"
+          >
+            <i className="fas fa-redo mr-2"></i>Completed - Watch Again
+          </a>
+        );
+      }
+      
+      if (course.progress > 0) {
+        const completedLessons = Math.round((course.progress / 100) * course.lessonCount);
+        return (
+          <a 
+            href={`/courses/${course.id}`}
+            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm w-full"
+          >
+            <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
+          </a>
+        );
+      }
+      
+      return (
+        <a 
+          href={`/courses/${course.id}`}
+          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm w-full"
+        >
+          <i className="fas fa-rocket mr-2"></i>Start Course
+        </a>
+      );
+    }
+
+    // Users without full access - show appropriate upgrade option
     return (
-      <a 
-        href={`/courses/${course.id}`}
-        className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm"
+      <UpgradeButton 
+        variant="secondary" 
+        className="text-sm py-2 px-4 w-full"
+        currentPlan={currentRole}
       >
-        <i className="fas fa-rocket mr-2"></i>Start Course
-      </a>
+        <span className="flex items-center justify-center">
+          <i className="fas fa-crown mr-2"></i>
+          {currentRole === 'free' || currentRole === 'trial' ? 'Upgrade to Access' : 'Unlock with Premium'}
+        </span>
+      </UpgradeButton>
     );
   };
 
@@ -144,6 +227,13 @@ export default function AllCourses() {
             }} />
           </div>
 
+          {/* Progress-based upgrade prompts - only for limited access users */}
+          {stats && stats.coursesCompleted >= 2 && !permissions.canAccessAllCourses && (
+            <div className="px-6 pt-4">
+              <ProgressMilestoneUpgrade milestone={`${stats.coursesCompleted} courses completed`} />
+            </div>
+          )}
+
           {/* Compact Achievement Banner */}
           <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 shadow-sm">
             <div className="flex items-center justify-between">
@@ -228,7 +318,7 @@ export default function AllCourses() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"} 
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -308,7 +398,7 @@ export default function AllCourses() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"} 
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -345,8 +435,17 @@ export default function AllCourses() {
                         <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
                       </div>
                     </div>
-                    <button className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm">
-                      <i className="fas fa-lock mr-2"></i>Unlock Access for $49
+                    <button
+                      onClick={() => handleIndividualPurchase({
+                        id: 'email-marketing-secrets',
+                        title: 'Email Marketing Secrets',
+                        description: 'Build profitable email sequences and automated funnels',
+                        lessonCount: 16,
+                        price: 49
+                      })}
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm"
+                    >
+                      <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $49
                     </button>
                   </div>
                 </div>
@@ -372,6 +471,19 @@ export default function AllCourses() {
               </div>
             </div>
           </div>
+
+          {/* Individual Course Purchase Modal */}
+          {selectedCourse && (
+            <IndividualCourseModal
+              isOpen={showIndividualPurchase}
+              onClose={() => {
+                setShowIndividualPurchase(false);
+                setSelectedCourse(null);
+              }}
+              course={selectedCourse}
+              onPurchaseSuccess={handlePurchaseSuccess}
+            />
+          )}
         </div>
       </AppLayout>
     </>

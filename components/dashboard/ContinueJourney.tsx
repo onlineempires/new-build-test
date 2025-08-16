@@ -45,7 +45,7 @@ export default function ContinueJourney({ course }: ContinueJourneyProps) {
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
         <div className="flex items-center mb-4">
           {/* Course Thumbnail */}
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mr-3 sm:mr-4 overflow-hidden flex-shrink-0 shadow-sm">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl mr-3 sm:mr-4 overflow-hidden flex-shrink-0 shadow-sm">
             {course.thumbnailUrl ? (
               <img 
                 src={course.thumbnailUrl} 

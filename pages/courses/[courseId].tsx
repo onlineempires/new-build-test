@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AppLayout from '../../components/layout/AppLayout';
+import { useUpgrade } from '../../contexts/UpgradeContext';
+import { useCourseAccess } from '../../hooks/useCourseAccess';
 import { getCourse, updateLessonProgress, Course, Lesson } from '../../lib/api/courses';
 
 export default function CoursePage() {
@@ -10,6 +12,8 @@ export default function CoursePage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { showUpgradeModal } = useUpgrade();
+  const { isPurchased, currentRole } = useCourseAccess();
 
   useEffect(() => {
     if (courseId) {
@@ -65,6 +69,20 @@ export default function CoursePage() {
     return null;
   };
 
+  // Access control check
+  const hasAccess = () => {
+    if (!course) return false;
+    
+    // Special masterclasses require individual purchase
+    const paidMasterclasses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
+    if (paidMasterclasses.includes(course.id)) {
+      return isPurchased(course.id);
+    }
+    
+    // Use the updated isPurchased logic which handles role-based access
+    return isPurchased(course.id);
+  };
+
   if (loading) {
     return (
       <AppLayout user={{ id: 0, name: 'Loading...', avatarUrl: '' }}>
@@ -94,6 +112,48 @@ export default function CoursePage() {
             >
               Back to Courses
             </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Check access after course is loaded
+  if (!hasAccess()) {
+    return (
+      <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
+        <div className="p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-lock text-yellow-600 text-2xl"></i>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Course Access Required</h3>
+            <p className="text-gray-600 mb-6">
+              You need to purchase this course or upgrade your plan to access this content.
+            </p>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/courses')}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                Back to Courses
+              </button>
+              {course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery' ? (
+                <button
+                  onClick={() => router.push('/courses')}
+                  className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                >
+                  Purchase Course - $49
+                </button>
+              ) : (
+                <button
+                  onClick={() => showUpgradeModal(currentRole)}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <i className="fas fa-crown mr-2"></i>Upgrade to Premium
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </AppLayout>
@@ -335,6 +395,17 @@ export default function CoursePage() {
                         <i className="fas fa-download mr-2"></i>
                         Download Materials
                       </button>
+
+                      {/* Upgrade prompt for free users only */}
+                      {currentRole === 'free' && !isPurchased(courseId as string) && (
+                        <button
+                          onClick={() => showUpgradeModal('free')}
+                          className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-colors mt-2"
+                        >
+                          <i className="fas fa-crown mr-2"></i>
+                          Unlock All Courses
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

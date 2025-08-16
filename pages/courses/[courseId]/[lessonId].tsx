@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
+import { useUpgrade } from '../../../contexts/UpgradeContext';
 import { getCourse, updateLessonProgress, loadProgressFromStorage, Course, Lesson, Module } from '../../../lib/api/courses';
 import Confetti from '../../../components/ui/Confetti';
 import { checkCourseCompletion, checkXPMilestone, checkLevelUp } from '../../../lib/services/achievementsService';
@@ -19,6 +20,7 @@ interface LessonPageData {
 export default function LessonPage() {
   const router = useRouter();
   const { courseId, lessonId } = router.query;
+  const { showUpgradeModal } = useUpgrade();
   const [data, setData] = useState<LessonPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -518,7 +520,11 @@ export default function LessonPage() {
                             </div>
                           </div>
                           
-                          <button className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                          <button 
+                            onClick={() => showUpgradeModal(userSubscriptionType)}
+                            className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <i className="fas fa-crown mr-2"></i>
                             Upgrade Now
                           </button>
                         </div>

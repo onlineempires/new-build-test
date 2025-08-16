@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { useUserRole } from '../../contexts/UserRoleContext';
+import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 interface User {
   id: number;
@@ -14,19 +16,26 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { name: 'Dashboard', href: '/', icon: 'fas fa-home', section: 'dashboard' },
-  { name: 'All Courses', href: '/courses', icon: 'fas fa-book', section: 'courses' },
-  { name: 'Expert Directory', href: '/experts', icon: 'fas fa-users', section: 'experts' },
-  { name: 'Daily Method (DMO)', href: '/dmo', icon: 'fas fa-tasks', section: 'dmo' },
-  { name: 'Affiliate Portal', href: '/affiliate', icon: 'fas fa-link', section: 'affiliate' },
-  { name: 'Statistics', href: '/stats', icon: 'fas fa-chart-bar', section: 'statistics' },
-  { name: 'Leads', href: '/leads', icon: 'fas fa-user-plus', section: 'leads' },
-  { name: 'Profile', href: '/profile', icon: 'fas fa-user', section: 'profile' },
+  { name: 'Dashboard', href: '/', icon: 'fas fa-home', section: 'dashboard', requiredPermission: null },
+  { name: 'All Courses', href: '/courses', icon: 'fas fa-book', section: 'courses', requiredPermission: null },
+  { name: 'Expert Directory', href: '/experts', icon: 'fas fa-users', section: 'experts', requiredPermission: 'canAccessExpertDirectory' },
+  { name: 'Daily Method (DMO)', href: '/dmo', icon: 'fas fa-tasks', section: 'dmo', requiredPermission: 'canAccessDMO' },
+  { name: 'Affiliate Portal', href: '/affiliate', icon: 'fas fa-link', section: 'affiliate', requiredPermission: 'canAccessAffiliate' },
+  { name: 'Statistics', href: '/stats', icon: 'fas fa-chart-bar', section: 'statistics', requiredPermission: 'canAccessStats' },
+  { name: 'Leads', href: '/leads', icon: 'fas fa-user-plus', section: 'leads', requiredPermission: 'canAccessLeads' },
+  { name: 'Admin', href: '/admin', icon: 'fas fa-cog', section: 'admin', requiredPermission: 'isAdmin' },
+  { name: 'Profile', href: '/profile', icon: 'fas fa-user', section: 'profile', requiredPermission: null },
 ];
 
 export default function Sidebar({ user, onLogout }: SidebarProps) {
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { permissions, hasPermission, currentRole, setUserRole } = useUserRole();
+  const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
+
+  const visibleMenuItems = menuItems.filter(item => 
+    !item.requiredPermission || hasPermission(item.requiredPermission as any)
+  );
 
   const isActive = (href: string) => {
     if (href === '/courses') {
@@ -69,7 +78,7 @@ export default function Sidebar({ user, onLogout }: SidebarProps) {
 
         {/* Menu Items - Completely seamless desktop */}
         <nav className="mt-2 px-4 lg:px-0 lg:mt-6 flex-1">
-          {menuItems.map((item, index) => (
+          {visibleMenuItems.map((item, index) => (
             <Link key={item.href} href={item.href}>
               <a
                 className={`nav-item flex items-center px-4 lg:px-6 py-4 lg:py-3 text-sm transition-colors hover:bg-gray-50 lg:hover:bg-sidebar-hover min-h-[56px] lg:min-h-[48px] focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-inset text-white ${

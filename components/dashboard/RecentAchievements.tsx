@@ -1,8 +1,11 @@
+import { useState } from 'react';
+
 interface RecentAchievementsProps {
   achievements: string[];
 }
 
 export default function RecentAchievements({ achievements }: RecentAchievementsProps) {
+  const [showAll, setShowAll] = useState(false);
   const getAchievementData = (achievement: string) => {
     const lower = achievement.toLowerCase();
     
@@ -74,11 +77,12 @@ export default function RecentAchievements({ achievements }: RecentAchievementsP
       
       {/* Achievements List - Mobile Optimized */}
       <div className="space-y-2 sm:space-y-3">
-        {achievements.map((achievement, index) => {
+        {(showAll ? achievements : achievements.slice(-3)).map((achievement, index, array) => {
+          const originalIndex = showAll ? index : achievements.length - 3 + index;
           const data = getAchievementData(achievement);
           return (
             <div 
-              key={index} 
+              key={originalIndex} 
               className={`flex items-center p-3 sm:p-4 rounded-xl border ${data.borderColor} ${data.bgColor} hover:shadow-sm transition-all duration-200 group`}
             >
               {/* Achievement Icon */}
@@ -93,8 +97,8 @@ export default function RecentAchievements({ achievements }: RecentAchievementsP
                 </span>
               </div>
               
-              {/* New Badge for recent achievements */}
-              {index < 2 && (
+              {/* New Badge for most recent achievements */}
+              {originalIndex >= achievements.length - 2 && (
                 <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-bold ml-2">
                   NEW
                 </div>
@@ -104,11 +108,24 @@ export default function RecentAchievements({ achievements }: RecentAchievementsP
         })}
       </div>
       
-      {/* View All Link */}
+      {/* Show More/Less Button */}
       {achievements.length > 3 && (
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <button className="w-full text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base py-2 hover:bg-blue-50 rounded-lg transition-colors duration-200">
-            View All Achievements ({achievements.length})
+          <button 
+            onClick={() => setShowAll(!showAll)}
+            className="w-full text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base py-2 hover:bg-blue-50 rounded-lg transition-colors duration-200 flex items-center justify-center"
+          >
+            {showAll ? (
+              <>
+                <i className="fas fa-chevron-up mr-2"></i>
+                Show Less
+              </>
+            ) : (
+              <>
+                <i className="fas fa-chevron-down mr-2"></i>
+                Show More ({achievements.length - 3} more)
+              </>
+            )}
           </button>
         </div>
       )}

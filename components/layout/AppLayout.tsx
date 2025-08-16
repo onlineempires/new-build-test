@@ -3,6 +3,10 @@ import Sidebar from './Sidebar';
 import { useRouter } from 'next/router';
 import NotificationDropdown from '../dashboard/NotificationDropdown';
 import ProfileDropdown from '../dashboard/ProfileDropdown';
+import UpgradeButton from '../upgrades/UpgradeButton';
+import RoleSwitcher from '../admin/RoleSwitcher';
+import EnvironmentIndicator from '../admin/EnvironmentIndicator';
+import { shouldShowRoleSwitcher } from '../../utils/environment';
 
 interface User {
   id: number;
@@ -56,6 +60,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <EnvironmentIndicator />
       <Sidebar user={user} onLogout={handleLogout} />
       
       {/* Fixed Header */}
@@ -75,6 +80,13 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
               
               {/* Right: Actions - Modern icons */}
               <div className="flex items-center gap-2">
+                <UpgradeButton 
+                  variant="compact" 
+                  currentPlan="free"
+                  className="sm:hidden w-8 h-8 !px-0 !py-0 rounded-full"
+                >
+                  <i className="fas fa-crown text-xs"></i>
+                </UpgradeButton>
                 {/* Search Toggle - Modern */}
                 <button
                   onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -152,8 +164,17 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                   </div>
                 </div>
                 
-                {/* Community and Feedback */}
+                {/* Community, Upgrade, and Feedback */}
                 <div className="flex items-center gap-3">
+                  {/* Role Switcher only in development - completely hidden in production */}
+                  {shouldShowRoleSwitcher() && <RoleSwitcher />}
+                  <UpgradeButton 
+                    variant="compact" 
+                    currentPlan="free"
+                    className="hidden sm:inline-flex w-10 h-10 !px-0 !py-0 rounded-full"
+                  >
+                    <i className="fas fa-crown text-sm"></i>
+                  </UpgradeButton>
                   <a 
                     href="https://www.facebook.com/groups/onlineempiresvip" 
                     target="_blank" 
