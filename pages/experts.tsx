@@ -223,11 +223,11 @@ const ExpertDirectory = () => {
 
                     {/* Specialties */}
                     <div>
-                      <div className={`flex gap-2 ${expert.specialties.length > 4 ? 'flex-wrap' : 'flex-nowrap'}`}>
-                        {expert.specialties.map((specialty, index) => (
+                      <div className="flex justify-center gap-1.5 flex-wrap">
+                        {expert.specialties.slice(0, 3).map((specialty, index) => (
                           <span
                             key={index}
-                            className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100 whitespace-nowrap"
+                            className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100 whitespace-nowrap inline-block"
                           >
                             {specialty}
                           </span>
