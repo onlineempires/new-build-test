@@ -152,20 +152,65 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <StatsCards stats={data.stats} />
+          {/* Clean Stats Cards - Simplified for new users */}
+          <div className="mb-8">
+            <StatsCards stats={data.stats} />
+          </div>
 
-          {/* Streak upgrade prompt - only for free users */}
-          {currentRole === 'free' && <StreakUpgradePrompt days={data.stats.learningStreakDays} />}
+          {/* Main Content - Conditional based on user progress */}
+          {data.stats.coursesCompleted === 0 ? (
+            /* NEW USER EXPERIENCE - Clean and Action-Oriented */
+            <>
+              {/* Welcome & Quick Start */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 mb-8">
+                <div className="flex items-start">
+                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mr-4 flex-shrink-0">
+                    <i className="fas fa-rocket text-green-600 text-xl"></i>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-green-900 mb-2">🎯 Let's Get You Started!</h2>
+                    <p className="text-green-800 text-base mb-4">
+                      Ready to build your online empire? Start with "The Business Blueprint" - it's just 15 minutes and will change how you think about online business.
+                    </p>
+                    <div className="flex flex-wrap gap-3 text-sm">
+                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
+                        <i className="fas fa-play mr-2"></i>
+                        <span className="font-medium">15 min lessons</span>
+                      </div>
+                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
+                        <i className="fas fa-star mr-2"></i>
+                        <span className="font-medium">Earn XP rewards</span>
+                      </div>
+                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
+                        <i className="fas fa-trophy mr-2"></i>
+                        <span className="font-medium">Track progress</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          {/* Continue Your Journey */}
-          <ContinueJourney course={data.continue} />
+              {/* Start Here - Simplified */}
+              <StartHereGrid courses={data.startHere} />
+            </>
+          ) : (
+            /* RETURNING USER EXPERIENCE - Show progress and continue */
+            <>
+              {/* Continue Learning - Only for users with progress */}
+              <ContinueJourney course={data.continue} />
 
-          {/* Start Here */}
-          <StartHereGrid courses={data.startHere} />
+              {/* Start Here */}
+              <StartHereGrid courses={data.startHere} />
 
-          {/* Recent Achievements */}
-          <RecentAchievements achievements={data.achievements} />
+              {/* Recent Achievements - Only for users with progress */}
+              {data.achievements && data.achievements.length > 0 && (
+                <RecentAchievements achievements={data.achievements} />
+              )}
+
+              {/* Streak upgrade prompt - only for free users with progress */}
+              {currentRole === 'free' && <StreakUpgradePrompt days={data.stats.learningStreakDays} />}
+            </>
+          )}
         </div>
 
         {/* Feedback Modal */}
