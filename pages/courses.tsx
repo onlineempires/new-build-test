@@ -259,20 +259,20 @@ export default function AllCourses() {
                 <span className="ml-3 text-sm text-purple-600 font-medium">Skill Builder</span>
               </div>
               
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 
                 {/* TikTok Mastery */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
                   <div className="h-32 bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center">
                     <i className="fab fa-tiktok text-white text-3xl"></i>
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">IN PROGRESS</span>
                       <span className="text-xs text-gray-500">INTERMEDIATE</span>
                     </div>
                     <h3 className="font-semibold text-gray-900 mb-2">TikTok Mastery</h3>
-                    <p className="text-sm text-gray-600 mb-3">Master TikTok marketing strategies and create viral content that converts</p>
+                    <p className="text-sm text-gray-600 mb-3 flex-1">Master TikTok marketing strategies and create viral content that converts</p>
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>25 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>6 hours</span>
@@ -313,9 +313,21 @@ export default function AllCourses() {
                       <span><i className="fas fa-clock mr-1"></i>8 hours</span>
                       <span className="text-green-600 font-medium">+500 XP</span>
                     </div>
-                    <button className="w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors">
-                      <i className="fas fa-redo mr-2"></i>Completed - Review
-                    </button>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>100%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                      </div>
+                    </div>
+                    <a 
+                      href="/courses/facebook-advertising"
+                      className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
+                    >
+                      <i className="fas fa-redo mr-2"></i>Review Course
+                    </a>
                   </div>
                 </div>
 
@@ -336,9 +348,21 @@ export default function AllCourses() {
                       <span><i className="fas fa-clock mr-1"></i>4.5 hours</span>
                       <span className="text-yellow-600 font-medium">+350 XP</span>
                     </div>
-                    <button className="w-full bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors">
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>0%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gray-600 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
+                    </div>
+                    <a 
+                      href="/courses/instagram-marketing"
+                      className="block w-full bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-center"
+                    >
                       <i className="fas fa-rocket mr-2"></i>Start Course
-                    </button>
+                    </a>
                   </div>
                 </div>
 
@@ -358,6 +382,15 @@ export default function AllCourses() {
                       <span><i className="fas fa-play-circle mr-1"></i>16 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>5 hours</span>
                       <span className="text-yellow-600 font-medium">+400 XP</span>
+                    </div>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>Coming Soon</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
                     </div>
                     <button className="w-full bg-orange-500 text-white py-2 px-4 rounded font-medium">
                       <i className="fas fa-clock mr-2"></i>Available Soon
@@ -382,9 +415,21 @@ export default function AllCourses() {
                       <span><i className="fas fa-clock mr-1"></i>3.5 hours</span>
                       <span className="text-green-600 font-medium">+300 XP</span>
                     </div>
-                    <button className="w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors">
-                      <i className="fas fa-redo mr-2"></i>Completed - Review
-                    </button>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>100%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                      </div>
+                    </div>
+                    <a 
+                      href="/courses/sales-psychology"
+                      className="block w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-center"
+                    >
+                      <i className="fas fa-redo mr-2"></i>Review Course
+                    </a>
                   </div>
                 </div>
 
