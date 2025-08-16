@@ -119,14 +119,45 @@ export default function LessonPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const calculateProgress = () => {
+    if (!data) return { courseProgress: 0, moduleProgress: 0, completedLessons: 0, totalLessons: 0, completedInModule: 0, totalInModule: 0 };
+    
+    const totalLessons = data.course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
+    const completedLessons = data.course.modules.reduce((acc, module) => 
+      acc + module.lessons.filter(l => l.isCompleted).length, 0
+    );
+    
+    const totalInModule = data.currentModule.lessons.length;
+    const completedInModule = data.currentModule.lessons.filter(l => l.isCompleted).length;
+    
+    return {
+      courseProgress: Math.round((completedLessons / totalLessons) * 100),
+      moduleProgress: Math.round((completedInModule / totalInModule) * 100),
+      completedLessons,
+      totalLessons,
+      completedInModule,
+      totalInModule
+    };
+  };
+
   if (loading) {
     return (
       <AppLayout user={{ id: 0, name: 'Loading...', avatarUrl: '' }}>
         <div className="p-6">
           <div className="animate-pulse">
-            <div className="aspect-video bg-gray-200 rounded-lg mb-6"></div>
-            <div className="h-8 bg-gray-200 rounded w-2/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-96 mb-6"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <div className="aspect-video bg-gray-200 rounded-lg mb-6"></div>
+                <div className="h-8 bg-gray-200 rounded w-2/3 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-32 bg-gray-200 rounded-lg"></div>
+                <div className="h-24 bg-gray-200 rounded-lg"></div>
+              </div>
+            </div>
           </div>
         </div>
       </AppLayout>
@@ -151,6 +182,8 @@ export default function LessonPage() {
     );
   }
 
+  const progress = calculateProgress();
+
   return (
     <>
       <Head>
@@ -165,74 +198,100 @@ export default function LessonPage() {
         onClearNotifications={() => {}}
       >
         <div className="min-h-screen bg-gray-50">
-          {/* Header Navigation */}
+          
+          {/* Breadcrumb Navigation */}
           <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button 
-                  onClick={() => router.push(`/courses/${courseId}`)}
-                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors mr-6"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Back to Course
-                </button>
-                
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm mr-3">
-                    {data.moduleIndex + 1}
-                  </div>
-                  <div>
-                    <h1 className="text-lg font-semibold text-gray-900">{data.currentModule.title}</h1>
-                    <p className="text-sm text-gray-500">
-                      Lesson {data.lessonIndex + 1} of {data.currentModule.lessons.length}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="text-sm text-gray-600">
-                {data.course.progress}% Course Complete
-              </div>
-            </div>
+            <nav className="flex text-sm text-gray-500">
+              <button 
+                onClick={() => router.push('/')}
+                className="hover:text-gray-700 transition-colors"
+              >
+                Dashboard
+              </button>
+              <span className="mx-2">></span>
+              <button 
+                onClick={() => router.push('/courses')}
+                className="hover:text-gray-700 transition-colors"
+              >
+                All Courses
+              </button>
+              <span className="mx-2">></span>
+              <button 
+                onClick={() => router.push(`/courses/${courseId}`)}
+                className="hover:text-gray-700 transition-colors"
+              >
+                {data.course.title}
+              </button>
+              <span className="mx-2">></span>
+              <span className="text-gray-900 font-medium">{data.currentLesson.title}</span>
+            </nav>
           </div>
 
           <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
-              {/* Main Content */}
-              <div className="lg:col-span-3">
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-                  
-                  {/* Video Player */}
-                  <div className="aspect-video bg-gray-900 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <i className="fas fa-play-circle text-6xl mb-4 opacity-75"></i>
-                      <p className="text-lg font-medium">Video Player</p>
-                      <p className="text-sm opacity-75">{data.currentLesson.title}</p>
-                      <p className="text-xs opacity-50 mt-2">{formatDuration(data.currentLesson.duration)}</p>
-                    </div>
-                  </div>
-
-                  {/* Lesson Content */}
-                  <div className="p-8">
-                    <div className="mb-6">
-                      <h1 className="text-2xl font-bold text-gray-900 mb-3">{data.currentLesson.title}</h1>
-                      <p className="text-gray-600 text-lg leading-relaxed">{data.currentLesson.description}</p>
-                    </div>
-
-                    {/* Lesson Transcript/Content Area */}
-                    <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                      <h3 className="font-semibold text-gray-900 mb-4">Lesson Content</h3>
-                      <div className="prose prose-gray max-w-none">
-                        <p className="text-gray-700 leading-relaxed">
-                          {data.currentLesson.transcripts || 
-                          "In this lesson, you'll learn the fundamental concepts and practical strategies that will help you master this topic. We'll cover key techniques, best practices, and real-world applications that you can implement immediately."}
-                        </p>
-                        <p className="text-gray-700 leading-relaxed mt-4">
-                          This comprehensive lesson is designed to give you actionable insights and practical knowledge that you can apply to your own projects and business goals.
-                        </p>
+              {/* Left Column - Video Player and Content */}
+              <div className="lg:col-span-2">
+                
+                {/* Video Player */}
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                  <div className="aspect-video bg-gray-900 relative">
+                    {/* Video Player Interface */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{
+                        backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=450&fit=crop')`
+                      }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <button className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center text-gray-800 hover:bg-opacity-100 transition-all">
+                          <i className="fas fa-play text-xl ml-1"></i>
+                        </button>
+                      </div>
+                      
+                      {/* Video Controls */}
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                        <div className="flex items-center justify-between text-white text-sm mb-2">
+                          <span>3:44 / {formatDuration(data.currentLesson.duration)}</span>
+                          <div className="flex items-center space-x-2">
+                            <button><i className="fas fa-volume-up"></i></button>
+                            <button><i className="fas fa-expand"></i></button>
+                            <button><i className="fas fa-ellipsis-v"></i></button>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-600 rounded-full h-1">
+                          <div className="bg-blue-500 h-1 rounded-full" style={{ width: '40%' }}></div>
+                        </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Lesson Overview */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Lesson Overview</h2>
+                  
+                  <p className="text-gray-700 leading-relaxed mb-6">
+                    {data.currentLesson.description || 
+                    "In this lesson, you'll learn how to identify and understand your target market. We'll cover market research techniques, customer personas, and how to position your business for maximum impact in your chosen niche."}
+                  </p>
+
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">Key Takeaways:</h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mt-1 mr-3"></i>
+                        <span className="text-gray-700">How to conduct effective market research</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mt-1 mr-3"></i>
+                        <span className="text-gray-700">Creating detailed customer personas</span>
+                      </li>
+                      <li className="flex items-start">
+                        <i className="fas fa-check text-green-500 mt-1 mr-3"></i>
+                        <span className="text-gray-700">Positioning strategies for your business</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
@@ -241,11 +300,94 @@ export default function LessonPage() {
               <div className="lg:col-span-1">
                 <div className="sticky top-8 space-y-6">
                   
-                  {/* Lesson Progress */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Lesson Progress</h3>
+                  {/* Your Progress */}
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="font-semibold text-gray-900">Your Progress</h3>
+                      <div className="relative w-16 h-16">
+                        <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831"
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                            strokeDasharray={`${progress.courseProgress}, 100`}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-sm font-bold text-blue-600">{progress.courseProgress}%</span>
+                        </div>
+                      </div>
+                    </div>
                     
-                    <div className="mb-6">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Module Progress</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {progress.completedInModule} of {progress.totalInModule} lessons
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Course Progress</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {progress.completedLessons} of {progress.totalLessons} lessons
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">XP Earned</span>
+                        <span className="text-sm font-medium text-green-600">+50 XP</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lesson Materials */}
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Lesson Materials</h3>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <i className="fas fa-file-pdf text-red-600 text-sm"></i>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">Market Research Works...</div>
+                            <div className="text-xs text-gray-500">PDF • 1.2 MB</div>
+                          </div>
+                        </div>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <i className="fas fa-download"></i>
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <i className="fas fa-file-word text-blue-600 text-sm"></i>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">Customer Persona Temp...</div>
+                            <div className="text-xs text-gray-500">DOCX • 856 KB</div>
+                          </div>
+                        </div>
+                        <button className="text-gray-400 hover:text-gray-600">
+                          <i className="fas fa-download"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lesson Completion */}
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <div className="mb-4">
                       <label className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
@@ -280,110 +422,36 @@ export default function LessonPage() {
                       </button>
                     )}
 
-                    {/* Previous/Next Navigation */}
-                    <div className="flex gap-2">
-                      {data.prevLesson && (
+                    {/* Upgrade Banner - Directly Below Blue Button */}
+                    {showUpgradeBanner && (
+                      <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
                         <button
-                          onClick={() => navigateToLesson(data.prevLesson!)}
-                          className="flex-1 text-gray-600 hover:text-gray-900 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-sm"
+                          onClick={() => setShowUpgradeBanner(false)}
+                          className="float-right text-white hover:text-gray-200 transition-colors mb-2"
                         >
-                          <i className="fas fa-chevron-left mr-1"></i>
-                          Previous
+                          <i className="fas fa-times text-sm"></i>
                         </button>
-                      )}
-                      {data.nextLesson && (
-                        <button
-                          onClick={() => navigateToLesson(data.nextLesson!)}
-                          className="flex-1 text-gray-600 hover:text-gray-900 py-2 px-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-sm"
-                        >
-                          Next
-                          <i className="fas fa-chevron-right ml-1"></i>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Upgrade Banner - Bottom Right Corner Seamless Integration */}
-                  {showUpgradeBanner && (
-                    <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white shadow-lg">
-                      <button
-                        onClick={() => setShowUpgradeBanner(false)}
-                        className="float-right text-white hover:text-gray-200 transition-colors mb-2"
-                      >
-                        <i className="fas fa-times text-sm"></i>
-                      </button>
-                      
-                      <div className="mb-4">
-                        <div className="inline-flex items-center bg-yellow-400 text-purple-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-                          <i className="fas fa-crown mr-1"></i>
-                          LIMITED TIME
-                        </div>
                         
-                        <h3 className="text-xl font-bold mb-2">Upgrade to Premium</h3>
-                        <p className="text-purple-100 text-sm mb-4">Get unlimited access to all courses</p>
-                        
-                        <div className="text-center mb-4">
-                          <span className="text-3xl font-bold">$799</span>
-                          <span className="text-purple-200 text-lg">/year</span>
-                        </div>
-                      </div>
-                      
-                      <button className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
-                        Upgrade Now
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Course Modules Overview */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Course Modules</h3>
-                    
-                    <div className="space-y-3">
-                      {data.course.modules.map((module, mIdx) => (
-                        <div key={module.id} className="border-b border-gray-100 pb-3 last:border-b-0">
-                          <div className={`flex items-center p-2 rounded-lg ${
-                            mIdx === data.moduleIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
-                          }`}>
-                            <span className="w-6 h-6 bg-gray-100 text-gray-600 rounded-full text-xs font-bold flex items-center justify-center mr-3">
-                              {mIdx + 1}
-                            </span>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{module.title}</div>
-                              <div className="text-xs text-gray-500">
-                                {module.lessons.length} lessons
-                              </div>
-                            </div>
+                        <div className="mb-4">
+                          <div className="inline-flex items-center bg-yellow-400 text-purple-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
+                            <i className="fas fa-crown mr-1"></i>
+                            LIMITED TIME
                           </div>
                           
-                          {mIdx === data.moduleIndex && (
-                            <div className="ml-9 mt-2 space-y-1">
-                              {module.lessons.map((lesson, lIdx) => (
-                                <button
-                                  key={lesson.id}
-                                  onClick={() => navigateToLesson(lesson)}
-                                  className={`w-full text-left p-2 rounded text-xs transition-colors ${
-                                    lesson.id === data.currentLesson.id
-                                      ? 'bg-blue-100 text-blue-700 font-medium'
-                                      : 'text-gray-600 hover:bg-gray-50'
-                                  }`}
-                                >
-                                  <div className="flex items-center">
-                                    <span className="w-3 h-3 mr-2">
-                                      {lesson.isCompleted ? (
-                                        <i className="fas fa-check-circle text-green-500"></i>
-                                      ) : (
-                                        <i className="fas fa-circle text-gray-300"></i>
-                                      )}
-                                    </span>
-                                    <span className="truncate">{lIdx + 1}. {lesson.title}</span>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                          <h3 className="text-xl font-bold mb-2">Upgrade to Premium</h3>
+                          <p className="text-purple-100 text-sm mb-4">Get unlimited access to all courses</p>
+                          
+                          <div className="text-center mb-4">
+                            <span className="text-3xl font-bold">$799</span>
+                            <span className="text-purple-200 text-lg">/year</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                        
+                        <button className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                          Upgrade Now
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
