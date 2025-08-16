@@ -159,18 +159,19 @@ lib/
 - **Video Progress Display**: Time indicator (3:44 / 9:56) with progress bar and control buttons
 - **Lesson Overview**: Comprehensive description and key takeaways with checkmark list
 
-### **Ultra-Clean Two-Column Completion Section**
-- **Separate White Cards**: Lesson completion and upgrade banner in individual white background cards
-- **Perfect Size Fit**: Left column sized precisely for checkbox and continue button (no excess whitespace)
-- **Clean Spacing**: Right column with upgrade banner has optimal padding and spacing
-- **Nested Purple Gradient**: Upgrade banner contained within white card for cleaner appearance
-- **Mobile Responsive**: Columns stack vertically on tablets and phones (md breakpoint)
-- **Enhanced Mobile UX**: Responsive padding (p-4 mobile, p-6 desktop) and touch-friendly spacing
-- **Flexible Grid System**: Adapts seamlessly from two columns to single stacked column
-- **Individual Card Shadows**: Each section has subtle drop shadows for depth and separation
-- **Optimized Close Button**: Positioned at top-right of upgrade card for easy dismissal
+### **Ultra-Clean Two-Rows Completion Section**
+- **Vertical Stacking Layout**: Lesson completion and upgrade banner in two separate rows
+- **Top Row**: Checkbox and "Continue to Next Lesson" button with perfect size fit
+- **Bottom Row**: Fixed upgrade banner (no close button) for consistent offer display
+- **Separate White Cards**: Each row has individual white background cards with subtle shadows
+- **Clean Alignment**: Lesson overview box aligned properly with sidebar elements (no overhanging)
+- **Enhanced Lesson Overview**: Added estimated time and improved height balance
+- **Subscription Logic**: Upgrade banner only shows for non-annual subscribers
+- **Admin Panel Ready**: User subscription type easily configurable for offer management
+- **Mobile Responsive**: Rows maintain clean stacking on all screen sizes
+- **Responsive Padding**: p-4 on mobile, p-6 on desktop for optimal touch targets
 - **Crown Icon + LIMITED TIME Badge**: Yellow badge with crown symbol for premium urgency
-- **Seamless Integration**: Natural flow from lesson completion to upgrade opportunity
+- **Fixed Offer Display**: No dismissal option - permanent upgrade opportunity for eligible users
 
 ## Mobile Responsiveness
 - **Breakpoints**: sm (640px), md (768px), lg (1024px)
