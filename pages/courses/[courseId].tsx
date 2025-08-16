@@ -156,10 +156,10 @@ export default function CoursePage() {
                     <div className="flex-1">
                       <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
                       <p className="text-gray-600 mb-2">{course.description}</p>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <span className="mr-4">{course.moduleCount} Modules</span>
-                        <span className="mr-4">{course.lessonCount} Lessons</span>
-                        <span>{progress.courseProgress}% Complete</span>
+                      <div className="flex items-center text-sm text-gray-500 flex-wrap gap-2 sm:gap-4">
+                        <span className="whitespace-nowrap">{course.moduleCount}&nbsp;Modules</span>
+                        <span className="whitespace-nowrap">{course.lessonCount}&nbsp;Lessons</span>
+                        <span className="whitespace-nowrap">{progress.courseProgress}%&nbsp;Complete</span>
                       </div>
                     </div>
                   </div>

@@ -56,35 +56,51 @@ export default function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-      {cards.map((card, index) => (
-        <div 
-          key={index} 
-          className={`bg-white rounded-xl p-4 sm:p-6 shadow-sm border ${card.borderColor} hover:shadow-md transition-all duration-200 hover:scale-[1.02]`}
-        >
-          {/* Mobile Layout - Stacked & Centered */}
-          <div className="sm:hidden">
-            <div className={`w-14 h-14 ${card.bgColor} rounded-xl flex items-center justify-center mb-3 mx-auto shadow-sm`}>
-              <i className={`${card.iconClass} ${card.iconColor} text-xl`}></i>
+    <>
+      {/* Mobile Layout - Horizontal scroll */}
+      <div className="sm:hidden mb-6">
+        <div className="flex gap-3 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {cards.map((card, index) => (
+            <div 
+              key={index} 
+              className={`bg-white rounded-xl p-3 shadow-sm border ${card.borderColor} flex-shrink-0 w-32`}
+            >
+              <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center mb-2 mx-auto`}>
+                <i className={`${card.iconClass} ${card.iconColor} text-sm`}></i>
+              </div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-gray-900 leading-tight truncate">{card.value}</div>
+                <div className="text-xs text-gray-600 font-medium leading-tight">{card.label}</div>
+              </div>
             </div>
-            <div className="text-center space-y-1">
-              <div className="text-2xl font-bold text-gray-900 leading-tight">{card.value}</div>
-              <div className="text-sm text-gray-600 font-medium leading-relaxed">{card.label}</div>
-            </div>
-          </div>
-          
-          {/* Desktop Layout - Side by side */}
-          <div className="hidden sm:flex items-center">
-            <div className={`w-12 h-12 lg:w-14 lg:h-14 ${card.bgColor} rounded-xl flex items-center justify-center mr-4 shadow-sm`}>
-              <i className={`${card.iconClass} ${card.iconColor} text-xl lg:text-2xl`}></i>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 truncate">{card.value}</div>
-              <div className="text-sm lg:text-base text-gray-600 font-medium">{card.label}</div>
-            </div>
-          </div>
+          ))}
         </div>
-      ))}
-    </div>
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+      </div>
+
+      {/* Desktop Layout - Grid */}
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+        {cards.map((card, index) => (
+          <div 
+            key={index} 
+            className={`bg-white rounded-xl p-6 shadow-sm border ${card.borderColor} hover:shadow-md transition-all duration-200 hover:scale-[1.02]`}
+          >
+            <div className="flex items-center">
+              <div className={`w-12 h-12 lg:w-14 lg:h-14 ${card.bgColor} rounded-xl flex items-center justify-center mr-4 shadow-sm`}>
+                <i className={`${card.iconClass} ${card.iconColor} text-xl lg:text-2xl`}></i>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 truncate">{card.value}</div>
+                <div className="text-sm lg:text-base text-gray-600 font-medium">{card.label}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

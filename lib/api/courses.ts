@@ -63,6 +63,29 @@ export interface Achievement {
   timeAgo: string;
 }
 
+// Helper function to generate lessons for a module
+const generateLessons = (moduleId: string, moduleIndex: number, lessonCount: number, completedCount: number = 0): Lesson[] => {
+  const lessons: Lesson[] = [];
+  const topics = [
+    'Introduction and Overview', 'Getting Started', 'Basic Fundamentals', 'Advanced Concepts',
+    'Best Practices', 'Implementation Strategy', 'Case Studies', 'Common Mistakes',
+    'Optimization Techniques', 'Analytics and Tracking', 'Scaling Strategies', 'Future Trends'
+  ];
+  
+  for (let i = 1; i <= lessonCount; i++) {
+    lessons.push({
+      id: `lesson-${moduleIndex + 1}-${i}`,
+      title: `${topics[(i - 1) % topics.length]} ${Math.ceil(i / topics.length) > 1 ? `Part ${Math.ceil(i / topics.length)}` : ''}`.trim(),
+      description: `Learn the essential concepts and practical applications for mastering this topic.`,
+      videoUrl: `https://example.com/video-${moduleId}-${i}`,
+      duration: 300 + Math.floor(Math.random() * 600), // 5-15 minutes
+      isCompleted: i <= completedCount
+    });
+  }
+  
+  return lessons;
+};
+
 // Mock data for development
 const mockData: CourseData = {
   user: { 
@@ -111,9 +134,66 @@ const mockData: CourseData = {
       thumbnailUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop",
       moduleCount: 8,
       lessonCount: 45,
-      progress: 0,
-      isCompleted: false,
-      modules: []
+      progress: 100,
+      isCompleted: true,
+      modules: [
+        {
+          id: "business-module-1",
+          title: "Foundation Principles",
+          description: "Build your business on solid fundamentals",
+          isCompleted: true,
+          lessons: generateLessons("business-module-1", 0, 6, 6)
+        },
+        {
+          id: "business-module-2", 
+          title: "Market Research",
+          description: "Understand your target market deeply",
+          isCompleted: true,
+          lessons: generateLessons("business-module-2", 1, 5, 5)
+        },
+        {
+          id: "business-module-3",
+          title: "Business Planning",
+          description: "Create a comprehensive business plan",
+          isCompleted: true,
+          lessons: generateLessons("business-module-3", 2, 7, 7)
+        },
+        {
+          id: "business-module-4",
+          title: "Legal Structure",
+          description: "Set up your business legally and properly",
+          isCompleted: true,
+          lessons: generateLessons("business-module-4", 3, 4, 4)
+        },
+        {
+          id: "business-module-5",
+          title: "Financial Management",
+          description: "Master business finances and accounting",
+          isCompleted: true,
+          lessons: generateLessons("business-module-5", 4, 6, 6)
+        },
+        {
+          id: "business-module-6",
+          title: "Operations & Systems",
+          description: "Build efficient business operations",
+          isCompleted: true,
+          lessons: generateLessons("business-module-6", 5, 5, 5)
+        },
+        {
+          id: "business-module-7",
+          title: "Marketing Foundation",
+          description: "Essential marketing principles",
+          isCompleted: true,
+          lessons: generateLessons("business-module-7", 6, 7, 7)
+        },
+        {
+          id: "business-module-8",
+          title: "Growth & Scaling",
+          description: "Scale your business to new heights",
+          isCompleted: true,
+          lessons: generateLessons("business-module-8", 7, 5, 5)
+        }
+      ]
     },
     {
       id: "discovery-process",
@@ -122,9 +202,31 @@ const mockData: CourseData = {
       thumbnailUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=225&fit=crop",
       moduleCount: 3,
       lessonCount: 15,
-      progress: 0,
+      progress: 67,
       isCompleted: false,
-      modules: []
+      modules: [
+        {
+          id: "discovery-module-1",
+          title: "Self Assessment",
+          description: "Discover your strengths and passions",
+          isCompleted: true,
+          lessons: generateLessons("discovery-module-1", 0, 5, 5)
+        },
+        {
+          id: "discovery-module-2",
+          title: "Market Opportunity Analysis", 
+          description: "Identify profitable market opportunities",
+          isCompleted: true,
+          lessons: generateLessons("discovery-module-2", 1, 6, 5)
+        },
+        {
+          id: "discovery-module-3",
+          title: "Niche Selection",
+          description: "Choose your perfect business niche",
+          isCompleted: false,
+          lessons: generateLessons("discovery-module-3", 2, 4, 0)
+        }
+      ]
     },
     {
       id: "next-steps",
@@ -135,7 +237,36 @@ const mockData: CourseData = {
       lessonCount: 20,
       progress: 0,
       isCompleted: false,
-      modules: []
+      modules: [
+        {
+          id: "nextsteps-module-1",
+          title: "30-Day Action Plan",
+          description: "Your first 30 days roadmap",
+          isCompleted: false,
+          lessons: generateLessons("nextsteps-module-1", 0, 5, 0)
+        },
+        {
+          id: "nextsteps-module-2",
+          title: "Tools & Resources Setup",
+          description: "Essential tools for your business",
+          isCompleted: false,
+          lessons: generateLessons("nextsteps-module-2", 1, 6, 0)
+        },
+        {
+          id: "nextsteps-module-3",
+          title: "Implementation Strategy",
+          description: "Execute your business plan effectively",
+          isCompleted: false,
+          lessons: generateLessons("nextsteps-module-3", 2, 5, 0)
+        },
+        {
+          id: "nextsteps-module-4",
+          title: "Monitoring & Optimization",
+          description: "Track progress and optimize performance",
+          isCompleted: false,
+          lessons: generateLessons("nextsteps-module-4", 3, 4, 0)
+        }
+      ]
     }
   ],
   socialMediaCourses: [
@@ -154,80 +285,42 @@ const mockData: CourseData = {
           title: "Getting Started with TikTok",
           description: "Learn the basics of TikTok marketing",
           isCompleted: true,
-          lessons: [
-            {
-              id: "lesson-1-1",
-              title: "Introduction to TikTok Marketing",
-              description: "Understanding the TikTok ecosystem",
-              videoUrl: "https://example.com/video1",
-              duration: 480,
-              isCompleted: true
-            },
-            {
-              id: "lesson-1-2", 
-              title: "Setting Up Your Business Account",
-              description: "Create and optimize your TikTok business profile",
-              videoUrl: "https://example.com/video2",
-              duration: 360,
-              isCompleted: true
-            }
-          ]
+          lessons: generateLessons("tiktok-module-1", 0, 4, 4)
         },
         {
           id: "tiktok-module-2",
           title: "Content Creation Basics",
           description: "Master the fundamentals of TikTok content",
           isCompleted: true,
-          lessons: [
-            {
-              id: "lesson-2-1",
-              title: "Planning Your Content Strategy",
-              description: "Develop a winning content strategy",
-              videoUrl: "https://example.com/video3",
-              duration: 600,
-              isCompleted: true
-            },
-            {
-              id: "lesson-2-2", 
-              title: "Video Production Basics",
-              description: "Learn to create engaging TikTok videos",
-              videoUrl: "https://example.com/video4",
-              duration: 720,
-              isCompleted: true
-            }
-          ]
+          lessons: generateLessons("tiktok-module-2", 1, 5, 5)
         },
         {
           id: "tiktok-module-3",
           title: "Advanced Strategies",
           description: "Take your TikTok marketing to the next level",
           isCompleted: false,
-          lessons: [
-            {
-              id: "lesson-3-1",
-              title: "Algorithm Optimization",
-              description: "Understand and leverage the TikTok algorithm",
-              videoUrl: "https://example.com/video5",
-              duration: 540,
-              isCompleted: true
-            },
-            {
-              id: "lesson-3-2", 
-              title: "Viral Content Creation",
-              description: "Create content that goes viral consistently",
-              videoUrl: "https://example.com/video6",
-              duration: 480,
-              isCompleted: false
-            },
-            {
-              id: "lesson-3-3", 
-              title: "Advanced Analytics",
-              description: "Track and optimize your performance",
-              videoUrl: "https://example.com/video7",
-              duration: 360,
-              isCompleted: false
-            }
-          ]
+          lessons: generateLessons("tiktok-module-3", 2, 4, 2)
+        },
+        {
+          id: "tiktok-module-4",
+          title: "Algorithm Mastery",
+          description: "Understand and leverage the TikTok algorithm",
+          isCompleted: false,
+          lessons: generateLessons("tiktok-module-4", 3, 4, 0)
+        },
+        {
+          id: "tiktok-module-5",
+          title: "Monetization Strategies",
+          description: "Turn your TikTok presence into profit",
+          isCompleted: false,
+          lessons: generateLessons("tiktok-module-5", 4, 4, 0)
+        },
+        {
+          id: "tiktok-module-6",
+          title: "Scaling & Automation",
+          description: "Scale your TikTok success systematically",
+          isCompleted: false,
+          lessons: generateLessons("tiktok-module-6", 5, 4, 0)
         }
       ]
     },
@@ -240,7 +333,64 @@ const mockData: CourseData = {
       lessonCount: 35,
       progress: 100,
       isCompleted: true,
-      modules: []
+      modules: [
+        {
+          id: "facebook-module-1",
+          title: "Facebook Ads Fundamentals",
+          description: "Master the basics of Facebook advertising",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-1", 0, 4, 4)
+        },
+        {
+          id: "facebook-module-2",
+          title: "Campaign Setup & Structure",
+          description: "Create winning campaign structures",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-2", 1, 5, 5)
+        },
+        {
+          id: "facebook-module-3",
+          title: "Audience Targeting",
+          description: "Target the right people effectively",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-3", 2, 4, 4)
+        },
+        {
+          id: "facebook-module-4",
+          title: "Creative & Copy",
+          description: "Create compelling ads that convert",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-4", 3, 5, 5)
+        },
+        {
+          id: "facebook-module-5",
+          title: "Landing Pages & Funnels",
+          description: "Build high-converting landing pages",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-5", 4, 4, 4)
+        },
+        {
+          id: "facebook-module-6",
+          title: "Analytics & Optimization",
+          description: "Track and optimize your campaigns",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-6", 5, 5, 5)
+        },
+        {
+          id: "facebook-module-7",
+          title: "Advanced Strategies",
+          description: "Advanced Facebook advertising techniques",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-7", 6, 4, 4)
+        },
+        {
+          id: "facebook-module-8",
+          title: "Scaling & Automation",
+          description: "Scale your campaigns profitably",
+          isCompleted: true,
+          lessons: generateLessons("facebook-module-8", 7, 4, 4)
+        }
+      ]
     },
     {
       id: "instagram-marketing",
@@ -251,7 +401,43 @@ const mockData: CourseData = {
       lessonCount: 22,
       progress: 0,
       isCompleted: false,
-      modules: []
+      modules: [
+        {
+          id: "instagram-module-1",
+          title: "Instagram Business Setup",
+          description: "Set up your Instagram business profile",
+          isCompleted: false,
+          lessons: generateLessons("instagram-module-1", 0, 4, 0)
+        },
+        {
+          id: "instagram-module-2",
+          title: "Content Strategy",
+          description: "Develop a winning content strategy",
+          isCompleted: false,
+          lessons: generateLessons("instagram-module-2", 1, 5, 0)
+        },
+        {
+          id: "instagram-module-3",
+          title: "Growth Tactics",
+          description: "Grow your Instagram following organically",
+          isCompleted: false,
+          lessons: generateLessons("instagram-module-3", 2, 5, 0)
+        },
+        {
+          id: "instagram-module-4",
+          title: "Instagram Ads",
+          description: "Master Instagram advertising",
+          isCompleted: false,
+          lessons: generateLessons("instagram-module-4", 3, 4, 0)
+        },
+        {
+          id: "instagram-module-5",
+          title: "Monetization",
+          description: "Turn followers into customers",
+          isCompleted: false,
+          lessons: generateLessons("instagram-module-5", 4, 4, 0)
+        }
+      ]
     },
     {
       id: "sales-funnel-mastery",
@@ -262,7 +448,57 @@ const mockData: CourseData = {
       lessonCount: 30,
       progress: 0,
       isCompleted: false,
-      modules: []
+      modules: [
+        {
+          id: "funnel-module-1",
+          title: "Funnel Fundamentals",
+          description: "Understanding sales funnel principles",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-1", 0, 4, 0)
+        },
+        {
+          id: "funnel-module-2",
+          title: "Lead Magnets",
+          description: "Create irresistible lead magnets",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-2", 1, 4, 0)
+        },
+        {
+          id: "funnel-module-3",
+          title: "Landing Page Design",
+          description: "Design high-converting landing pages",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-3", 2, 5, 0)
+        },
+        {
+          id: "funnel-module-4",
+          title: "Email Sequences",
+          description: "Build automated email sequences",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-4", 3, 5, 0)
+        },
+        {
+          id: "funnel-module-5",
+          title: "Sales Pages",
+          description: "Create compelling sales pages",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-5", 4, 4, 0)
+        },
+        {
+          id: "funnel-module-6",
+          title: "Upsells & Downsells",
+          description: "Maximize revenue per customer",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-6", 5, 4, 0)
+        },
+        {
+          id: "funnel-module-7",
+          title: "Optimization & Testing",
+          description: "Optimize your funnels for maximum conversion",
+          isCompleted: false,
+          lessons: generateLessons("funnel-module-7", 6, 4, 0)
+        }
+      ]
     }
   ],
   achievements: [
@@ -306,25 +542,30 @@ export const getCourse = async (courseId: string): Promise<Course> => {
     const { data } = await client.get(`/courses/${courseId}`);
     return data;
   } catch (error) {
-    console.warn('Using mock course data - API not available:', error);
+    console.warn('Using mock course data for courseId:', courseId);
+    
     // Find course in mock data
     const allCourses = [...mockData.startHereCourses, ...mockData.socialMediaCourses];
     const course = allCourses.find(c => c.id === courseId);
+    
     if (!course) {
       throw new Error(`Course ${courseId} not found`);
     }
-    return Promise.resolve(course);
+    
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(course), 300);
+    });
   }
 };
 
-export const updateLessonProgress = async (courseId: string, lessonId: string, completed: boolean) => {
+export const updateLessonProgress = async (courseId: string, lessonId: string, completed: boolean): Promise<void> => {
   try {
-    const { data } = await client.post(`/courses/${courseId}/lessons/${lessonId}/progress`, {
-      completed
-    });
-    return data;
+    await client.put(`/courses/${courseId}/lessons/${lessonId}/progress`, { completed });
   } catch (error) {
-    console.warn('Using mock lesson progress update - API not available:', error);
-    return { success: true };
+    console.warn('Mock: Lesson progress updated for:', lessonId, completed);
+    // In mock mode, just resolve
+    return new Promise((resolve) => {
+      setTimeout(resolve, 200);
+    });
   }
 };

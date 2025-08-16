@@ -134,16 +134,19 @@ export default function AllCourses() {
             </div>
           </div>
 
-          {/* Achievement Banner */}
-          <div className="bg-green-500 text-white px-6 py-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
-                <i className="fas fa-check text-white"></i>
+          {/* Compact Achievement Banner */}
+          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center min-w-0 flex-1">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                  <i className="fas fa-trophy text-white text-sm"></i>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-sm sm:text-base font-bold truncate">"Course Crusher" Unlocked!</span>
+                </div>
               </div>
-              <div className="flex-1">
-                <span className="font-semibold">Achievement Unlocked!</span>
-                <span className="mx-2">"Course Crusher" — Complete 8 courses!</span>
-                <span className="font-bold">+350 XP</span>
+              <div className="bg-white bg-opacity-20 px-2 sm:px-3 py-1 rounded-full ml-2 flex-shrink-0">
+                <span className="text-xs sm:text-sm font-bold">+350 XP</span>
               </div>
             </div>
           </div>
@@ -214,9 +217,9 @@ export default function AllCourses() {
                     <h3 className="font-semibold text-gray-900 mb-2">The Discovery Process</h3>
                     <p className="text-sm text-gray-600 mb-3">Learn how to identify opportunities and understand your target market deeply</p>
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                      <span><i className="fas fa-play-circle mr-1"></i>8 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>1.5 hours</span>
-                      <span className="text-yellow-600 font-medium">+160 XP</span>
+                      <span><i className="fas fa-play-circle mr-1"></i>8&nbsp;lessons</span>
+                      <span><i className="fas fa-clock mr-1"></i>1.5&nbsp;hours</span>
+                      <span className="text-yellow-600 font-medium">+160&nbsp;XP</span>
                     </div>
                     <div className="mb-3">
                       <div className="flex justify-between text-sm mb-1">
