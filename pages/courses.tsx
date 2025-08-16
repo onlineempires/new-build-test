@@ -288,7 +288,7 @@ export default function AllCourses() {
                       </div>
                     </div>
                     <a 
-                      href="/courses/tiktok-mastery"
+                      href="/courses/tiktok-mastery/lesson-3-2"
                       className="block w-full bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-center"
                     >
                       <i className="fas fa-play mr-2"></i>Continue Learning (16/24)

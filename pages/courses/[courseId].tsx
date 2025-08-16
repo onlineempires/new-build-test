@@ -204,8 +204,7 @@ export default function CoursePage() {
                           <button
                             key={lesson.id}
                             onClick={() => {
-                              setCurrentLesson(lesson);
-                              setShowVideo(true);
+                              router.push(`/courses/${courseId}/${lesson.id}`);
                             }}
                             className={`w-full text-left p-2 rounded-lg text-sm transition-colors ${
                               currentLesson?.id === lesson.id
