@@ -214,22 +214,24 @@ export default function AllCourses() {
             </div>
           )}
 
-          {/* Compact Achievement Banner */}
-          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-2 sm:py-3 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center min-w-0 flex-1">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
-                  <i className="fas fa-trophy text-white text-sm"></i>
+          {/* Conditional Achievement Banner - Only show when actually earned */}
+          {stats && stats.coursesCompleted >= 3 && (
+            <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
+                    <i className="fas fa-trophy text-white text-xs"></i>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs sm:text-sm font-bold truncate">"Course Crusher" Achievement Unlocked!</span>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <span className="text-sm sm:text-base font-bold truncate">"Course Crusher" Unlocked!</span>
+                <div className="bg-white bg-opacity-20 px-2 py-1 rounded-full ml-2 flex-shrink-0">
+                  <span className="text-xs font-bold">+350 XP</span>
                 </div>
-              </div>
-              <div className="bg-white bg-opacity-20 px-2 sm:px-3 py-1 rounded-full ml-2 flex-shrink-0">
-                <span className="text-xs sm:text-sm font-bold">+350 XP</span>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Main Content */}
           <div className="px-6 py-8">
@@ -242,8 +244,42 @@ export default function AllCourses() {
 
             {/* Start Here Section - Enhanced for Trial Users */}
             <div className="mb-8">
-              {/* Special message for free/trial users */}
-              {(currentRole === 'free' || currentRole === 'trial') && (
+              {/* Special message for new users (0 courses completed) */}
+              {(currentRole === 'free' || currentRole === 'trial') && stats && stats.coursesCompleted === 0 && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-start">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <i className="fas fa-play text-green-600"></i>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <h3 className="font-bold text-green-900 mr-2">
+                          👋 Welcome! Let's Get You Started
+                        </h3>
+                        <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                          <i className="fas fa-video mr-1"></i>Ready to Watch
+                        </span>
+                      </div>
+                      <p className="text-green-800 text-sm mb-3">
+                        Click <strong>"Start Course"</strong> on "The Business Blueprint" below to begin your journey. Each lesson is just 10-15 minutes and will transform how you think about building an online business.
+                      </p>
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="flex items-center text-green-700">
+                          <i className="fas fa-clock mr-1"></i>
+                          <span className="font-medium">Just 10-15 min per lesson</span>
+                        </div>
+                        <div className="flex items-center text-green-700">
+                          <i className="fas fa-trophy mr-1"></i>
+                          <span className="font-medium">Earn XP as you learn</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Progress message for users who have started */}
+              {(currentRole === 'free' || currentRole === 'trial') && stats && stats.coursesCompleted > 0 && (
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-6">
                   <div className="flex items-start">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
@@ -252,24 +288,24 @@ export default function AllCourses() {
                     <div className="flex-1">
                       <div className="flex items-center mb-2">
                         <h3 className="font-bold text-blue-900 mr-2">
-                          {currentRole === 'trial' ? 'Your Trial Includes:' : 'Get Started Free:'}
+                          🔥 Great Progress! Keep Going
                         </h3>
                         <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                          {currentRole === 'trial' ? '7 Days Remaining' : 'No Credit Card Required'}
+                          {stats.coursesCompleted}/{stats.coursesTotal} Completed
                         </span>
                       </div>
                       <p className="text-blue-800 text-sm mb-3">
-                        Complete access to all <strong>"Start Here"</strong> courses below. These foundational courses will teach you everything you need to get started with your online business journey.
+                        You've completed <strong>{stats.coursesCompleted} course{stats.coursesCompleted !== 1 ? 's' : ''}</strong>! Continue with the remaining foundation courses to unlock advanced training.
                       </p>
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-check mr-1"></i>3 Complete Courses
+                          <i className="fas fa-star mr-1"></i>{stats.xpPoints} XP Earned
                         </span>
                         <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-clock mr-1"></i>~15 Hours Content
+                          <i className="fas fa-fire mr-1"></i>{stats.learningStreakDays} Day Streak
                         </span>
                         <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
-                          <i className="fas fa-star mr-1"></i>1,350+ XP Points
+                          <i className="fas fa-crown mr-1"></i>{stats.level} Level
                         </span>
                       </div>
                     </div>
@@ -316,10 +352,29 @@ export default function AllCourses() {
                     return 'from-cyan-400 to-cyan-500';
                   };
 
+                  // Special highlighting for Business Blueprint for new users
+                  const isFirstCourse = course.id === 'business-blueprint';
+                  const isNewUser = stats && stats.coursesCompleted === 0;
+                  const shouldHighlight = isFirstCourse && isNewUser;
+
                   return (
-                    <div key={course.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
+                    <div key={course.id} className={`bg-white rounded-lg overflow-hidden ${
+                      shouldHighlight 
+                        ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
+                        : 'border border-gray-200'
+                    }`}>
+                      {shouldHighlight && (
+                        <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 text-xs font-bold text-center">
+                          <i className="fas fa-star mr-1"></i>START HERE FIRST
+                        </div>
+                      )}
+                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center relative`}>
                         <i className={`${getIcon()} text-white text-3xl`}></i>
+                        {shouldHighlight && (
+                          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">
+                            <i className="fas fa-arrow-down mr-1"></i>WATCH NOW
+                          </div>
+                        )}
                       </div>
                       <div className="p-4">
                         <div className="flex items-center justify-between mb-2">
