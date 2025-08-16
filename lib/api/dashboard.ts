@@ -28,6 +28,7 @@ export interface DashboardData {
     lessonTitle: string;
     progressPercent: number;
     href: string;
+    thumbnailUrl?: string;
   };
   startHere: Array<{
     id: string;
@@ -86,24 +87,25 @@ const mockData: DashboardData = {
     moduleTitle: "Module 3: Advanced Strategies",
     lessonTitle: "Lesson 2: Viral Content Creation",
     progressPercent: 67,
-    href: "/courses/tiktok/3-2"
+    href: "/courses/tiktok-mastery",
+    thumbnailUrl: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=64"
   },
   startHere: [
     {
-      id: "blueprint",
+      id: "business-blueprint",
       title: "The Business Blueprint",
       desc: "Foundation principles for building your online business",
       modules: 5,
       thumbnailUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop",
-      href: "/courses/blueprint"
+      href: "/courses/business-blueprint"
     },
     {
-      id: "discovery",
+      id: "discovery-process",
       title: "The Discovery Process",
       desc: "Find your niche and identify opportunities",
       modules: 3,
       thumbnailUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=225&fit=crop",
-      href: "/courses/discovery"
+      href: "/courses/discovery-process"
     },
     {
       id: "next-steps",

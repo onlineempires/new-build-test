@@ -61,15 +61,24 @@ export default function AppLayout({ children, user, onFeedbackClick, notificatio
                 </div>
               </div>
               
-              {/* Facebook and Feedback Icons */}
-              <div className="flex items-center gap-1">
-                <button className="p-2 text-white hover:opacity-90" aria-label="Facebook">
-                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill="currentColor" d="M22 12.06A10 10 0 1 0 10.25 22v-6.99H7.7v-3h2.55v-2.3c0-2.53 1.5-3.94 3.8-3.94 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v2.01h2.77l-.44 3H13.4V22A10 10 0 0 0 22 12.06z"/>
-                  </svg>
-                </button>
-                <button onClick={onFeedbackClick || (() => {})} className="p-2 text-white hover:opacity-90" aria-label="Send Feedback">
-                  💬
+              {/* Community and Feedback */}
+              <div className="flex items-center gap-4">
+                <a 
+                  href="https://www.facebook.com/groups/573287586948119" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <i className="fab fa-facebook-f mr-2"></i>
+                  Join The Community
+                </a>
+                <button 
+                  onClick={onFeedbackClick || (() => {})} 
+                  className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+                  aria-label="Send Feedback"
+                >
+                  <i className="fas fa-comment mr-2"></i>
+                  <span className="text-sm font-medium">Feedback</span>
                 </button>
               </div>
 

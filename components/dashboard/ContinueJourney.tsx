@@ -7,6 +7,7 @@ interface ContinueJourneyProps {
     lessonTitle: string;
     progressPercent: number;
     href: string;
+    thumbnailUrl?: string;
   };
 }
 
@@ -20,8 +21,18 @@ export default function ContinueJourney({ course }: ContinueJourneyProps) {
       
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg p-4 gap-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold mr-3 sm:mr-4 text-sm sm:text-base">
-            N
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg mr-3 sm:mr-4 overflow-hidden flex-shrink-0">
+            {course.thumbnailUrl ? (
+              <img 
+                src={course.thumbnailUrl} 
+                alt={course.courseTitle}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-red-600 flex items-center justify-center text-white font-bold text-sm sm:text-base">
+                N
+              </div>
+            )}
           </div>
           <div>
             <h3 className="font-bold text-base sm:text-lg text-gray-900">{course.courseTitle}</h3>

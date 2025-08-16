@@ -113,7 +113,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold mb-1">Hello, {data.user.name}!</h1>
-                <p className="text-purple-100">Welcome back {data.user.name} to The Digital Era!</p>
+                <p className="text-purple-100">Welcome back to The Digital Era!</p>
               </div>
             </div>
           </div>

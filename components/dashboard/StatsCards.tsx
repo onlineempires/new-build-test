@@ -1,10 +1,3 @@
-import {
-  AcademicCapIcon,
-  FireIcon,
-  BanknotesIcon,
-  UserPlusIcon,
-} from '@heroicons/react/24/outline';
-
 interface Stats {
   coursesCompleted: number;
   coursesTotal: number;
@@ -29,45 +22,60 @@ export default function StatsCards({ stats }: StatsCardsProps) {
 
   const cards = [
     {
-      icon: AcademicCapIcon,
+      iconClass: 'fas fa-graduation-cap',
       label: 'Courses Completed',
       value: `${stats.coursesCompleted}/${stats.coursesTotal}`,
       bgColor: 'bg-blue-100',
+      iconColor: 'text-blue-600',
     },
     {
-      icon: FireIcon,
+      iconClass: 'fas fa-fire',
       label: 'Learning Streak',
       value: `${stats.learningStreakDays} days`,
       bgColor: 'bg-green-100',
+      iconColor: 'text-green-600',
     },
     {
-      icon: BanknotesIcon,
+      iconClass: 'fas fa-dollar-sign',
       label: 'Commissions Earned',
       value: formatCurrency(stats.commissions),
       bgColor: 'bg-yellow-100',
+      iconColor: 'text-yellow-600',
     },
     {
-      icon: UserPlusIcon,
+      iconClass: 'fas fa-user-plus',
       label: 'New Leads',
       value: stats.newLeads.toString(),
       bgColor: 'bg-purple-100',
+      iconColor: 'text-purple-600',
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-      {cards.map((card, index) => {
-        const IconComponent = card.icon;
-        return (
-          <div key={index} className="rounded-xl border border-gray-200 bg-white p-5">
+    <>
+      {/* Font Awesome CDN */}
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossOrigin="anonymous"
+      />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {cards.map((card, index) => (
+          <div key={index} className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex items-center">
-              <IconComponent className="h-5 w-5 text-gray-400 mr-3" />
-              <div className="text-sm text-gray-600">{card.label}</div>
+              <div className={`w-12 h-12 ${card.bgColor} rounded-lg flex items-center justify-center mr-4`}>
+                <i className={`${card.iconClass} ${card.iconColor} text-xl`}></i>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+                <div className="text-sm text-gray-600">{card.label}</div>
+              </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900 mt-2">{card.value}</div>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

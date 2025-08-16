@@ -49,13 +49,13 @@ export default function NotificationDropdown({ notifications, onClear }: Notific
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
-        className="relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 rounded-lg" 
+        className="notification-bell relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 rounded-lg" 
         aria-label="Notifications"
         onClick={() => setIsOpen(!isOpen)}
       >
-        🔔
+        <i className="fas fa-bell"></i>
         {notifications.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {notifications.length}
           </span>
         )}
