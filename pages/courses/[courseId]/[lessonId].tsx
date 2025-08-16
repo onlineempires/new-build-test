@@ -200,8 +200,8 @@ export default function LessonPage() {
         <div className="min-h-screen bg-gray-50">
           
           {/* Breadcrumb Navigation */}
-          <div className="bg-white border-b border-gray-200 px-6 py-4">
-            <nav className="flex text-sm text-gray-500">
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+            <nav className="flex flex-wrap text-sm text-gray-500">
               <button 
                 onClick={() => router.push('/')}
                 className="hover:text-gray-700 transition-colors"
@@ -227,8 +227,8 @@ export default function LessonPage() {
             </nav>
           </div>
 
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               
               {/* Left Column - Video Player and Content */}
               <div className="lg:col-span-2">
@@ -268,7 +268,7 @@ export default function LessonPage() {
                 </div>
 
                 {/* Lesson Overview */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-4">Lesson Overview</h2>
                   
                   <p className="text-gray-700 leading-relaxed mb-6">
@@ -298,10 +298,10 @@ export default function LessonPage() {
 
               {/* Right Sidebar */}
               <div className="lg:col-span-1">
-                <div className="sticky top-8 space-y-6">
+                <div className="sticky top-4 lg:top-8 space-y-4 lg:space-y-6">
                   
                   {/* Your Progress */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="font-semibold text-gray-900">Your Progress</h3>
                       <div className="relative w-16 h-16">
@@ -349,7 +349,7 @@ export default function LessonPage() {
                   </div>
 
                   {/* Lesson Materials */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
+                  <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                     <h3 className="font-semibold text-gray-900 mb-4">Lesson Materials</h3>
                     
                     <div className="space-y-3">
@@ -385,71 +385,77 @@ export default function LessonPage() {
                     </div>
                   </div>
 
-                  {/* Lesson Completion */}
-                  <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="mb-4">
-                      <label className="flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isCompleted}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              handleLessonComplete();
-                            }
-                          }}
-                          className="sr-only"
-                        />
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 transition-colors ${
-                          isCompleted
-                            ? 'bg-green-500 border-green-500 text-white'
-                            : 'border-gray-300 hover:border-green-400'
-                        }`}>
-                          {isCompleted && (
-                            <i className="fas fa-check text-xs"></i>
-                          )}
-                        </div>
-                        <span className="text-gray-900 font-medium">Mark lesson as complete</span>
-                      </label>
+                  {/* Two-Column Layout for Lesson Completion & Upgrade */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    {/* Left Column - Lesson Completion */}
+                    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                      <div className="mb-4">
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isCompleted}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                handleLessonComplete();
+                              }
+                            }}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center mr-3 transition-colors ${
+                            isCompleted
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : 'border-gray-300 hover:border-green-400'
+                          }`}>
+                            {isCompleted && (
+                              <i className="fas fa-check text-xs"></i>
+                            )}
+                          </div>
+                          <span className="text-gray-900 font-medium">Mark lesson as complete</span>
+                        </label>
+                      </div>
+
+                      {/* Continue Button */}
+                      {data.nextLesson && (
+                        <button
+                          onClick={() => navigateToLesson(data.nextLesson!)}
+                          className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                        >
+                          Continue to Next Lesson
+                        </button>
+                      )}
                     </div>
 
-                    {/* Continue Button */}
-                    {data.nextLesson && (
-                      <button
-                        onClick={() => navigateToLesson(data.nextLesson!)}
-                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors mb-4"
-                      >
-                        Continue to Next Lesson
-                      </button>
-                    )}
-
-                    {/* Upgrade Banner - Directly Below Blue Button */}
+                    {/* Right Column - Upgrade Banner */}
                     {showUpgradeBanner && (
-                      <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+                      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 relative">
                         <button
                           onClick={() => setShowUpgradeBanner(false)}
-                          className="float-right text-white hover:text-gray-200 transition-colors mb-2"
+                          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           <i className="fas fa-times text-sm"></i>
                         </button>
                         
-                        <div className="mb-4">
-                          <div className="inline-flex items-center bg-yellow-400 text-purple-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
-                            <i className="fas fa-crown mr-1"></i>
-                            LIMITED TIME
+                        <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+                          <div className="mb-4">
+                            <div className="inline-flex items-center bg-yellow-400 text-purple-900 px-3 py-1 rounded-full text-xs font-bold mb-3">
+                              <i className="fas fa-crown mr-1"></i>
+                              LIMITED TIME
+                            </div>
+                            
+                            <h3 className="text-xl font-bold mb-2">Upgrade to Premium</h3>
+                            <p className="text-purple-100 text-sm mb-4">Get unlimited access to all courses</p>
+                            
+                            <div className="text-center mb-4">
+                              <span className="text-3xl font-bold">$799</span>
+                              <span className="text-purple-200 text-lg">/year</span>
+                            </div>
                           </div>
                           
-                          <h3 className="text-xl font-bold mb-2">Upgrade to Premium</h3>
-                          <p className="text-purple-100 text-sm mb-4">Get unlimited access to all courses</p>
-                          
-                          <div className="text-center mb-4">
-                            <span className="text-3xl font-bold">$799</span>
-                            <span className="text-purple-200 text-lg">/year</span>
-                          </div>
+                          <button className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                            Upgrade Now
+                          </button>
                         </div>
-                        
-                        <button className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors">
-                          Upgrade Now
-                        </button>
                       </div>
                     )}
                   </div>
