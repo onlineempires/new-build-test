@@ -43,12 +43,16 @@ const ExpertDirectory = () => {
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'GA Leader':
+      case '6A Leader':
         return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'GA3 Leader':
+      case '6A2 Leader':
         return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'GA2 Leader':
+      case '6A4-3 Leader':
         return 'bg-green-100 text-green-800 border-green-200';
+      case '6A2-3 Leader':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case '6A8-4 Leader':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -158,9 +162,11 @@ const ExpertDirectory = () => {
                 className="h-12 pl-4 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
               >
                 <option value="all">All Levels</option>
-                <option value="GA Leader">GA Leader</option>
-                <option value="GA3 Leader">GA3 Leader</option>
-                <option value="GA2 Leader">GA2 Leader</option>
+                <option value="6A Leader">6A Leader</option>
+                <option value="6A2 Leader">6A2 Leader</option>
+                <option value="6A4-3 Leader">6A4-3 Leader</option>
+                <option value="6A2-3 Leader">6A2-3 Leader</option>
+                <option value="6A8-4 Leader">6A8-4 Leader</option>
               </select>
             </div>
           </div>
@@ -170,7 +176,7 @@ const ExpertDirectory = () => {
             {filteredExperts.map((expert) => (
               <div
                 key={expert.id}
-                className="group bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                className="group bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
               >
                 {/* Expert Avatar & Header */}
                 <div className="p-6 text-center border-b border-gray-100">
@@ -208,52 +214,56 @@ const ExpertDirectory = () => {
                 </div>
 
                 {/* Expert Details */}
-                <div className="p-6">
-                  <div className="mb-4">
-                    <h4 className="font-semibold text-gray-900 mb-2">{expert.title}</h4>
-                    <p className="text-sm text-gray-600 line-clamp-3">{expert.description}</p>
-                  </div>
+                <div className="p-6 flex-grow flex flex-col">
+                  <div className="flex-grow">
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">{expert.title}</h4>
+                      <p className="text-sm text-gray-600 line-clamp-3">{expert.description}</p>
+                    </div>
 
-                  {/* Specialties */}
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {expert.specialties.slice(0, 3).map((specialty, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-100"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
+                    {/* Specialties */}
+                    <div className="mb-4">
+                      <div className={`flex gap-1 ${expert.specialties.length > 4 ? 'flex-wrap' : 'flex-nowrap'}`}>
+                        {expert.specialties.map((specialty, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-100 whitespace-nowrap flex-shrink-0"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-4">
+                      <div className="text-center">
+                        <div className="font-semibold text-gray-900">{expert.stats.totalSessions}</div>
+                        <div>Sessions</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold text-gray-900">{expert.stats.responseTime}</div>
+                        <div>Response</div>
+                      </div>
+                    </div>
+
+                    {/* Duration & Price */}
+                    <div className="text-center mb-4">
+                      <div className="text-gray-600 text-sm mb-1">{expert.sessionDuration} Minutes</div>
+                      <div className="text-2xl font-bold text-blue-600">${expert.price}</div>
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-4">
-                    <div className="text-center">
-                      <div className="font-semibold text-gray-900">{expert.stats.totalSessions}</div>
-                      <div>Sessions</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold text-gray-900">{expert.stats.responseTime}</div>
-                      <div>Response</div>
-                    </div>
+                  {/* Book Call Button - Always at bottom */}
+                  <div className="mt-auto">
+                    <button
+                      onClick={() => handleBookCall(expert)}
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 group-hover:bg-blue-700 flex items-center justify-center"
+                    >
+                      <i className="fas fa-calendar-plus mr-2"></i>
+                      Book Call
+                    </button>
                   </div>
-
-                  {/* Duration & Price */}
-                  <div className="text-center mb-4">
-                    <div className="text-gray-600 text-sm mb-1">{expert.sessionDuration} Minutes</div>
-                    <div className="text-2xl font-bold text-blue-600">${expert.price}</div>
-                  </div>
-
-                  {/* Book Call Button */}
-                  <button
-                    onClick={() => handleBookCall(expert)}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 group-hover:bg-blue-700 flex items-center justify-center"
-                  >
-                    <i className="fas fa-calendar-plus mr-2"></i>
-                    Book Call
-                  </button>
                 </div>
 
                 {/* Hover Overlay */}

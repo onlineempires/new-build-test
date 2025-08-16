@@ -4,7 +4,7 @@ export interface Expert {
   id: string;
   name: string;
   title: string;
-  level: 'GA Leader' | 'GA3 Leader' | 'GA2 Leader';
+  level: '6A Leader' | '6A2 Leader' | '6A4-3 Leader' | '6A2-3 Leader' | '6A8-4 Leader';
   rating: number;
   avatarUrl: string;
   specialties: string[];
@@ -67,7 +67,7 @@ const mockExperts: Expert[] = [
     id: 'john-smith',
     name: 'John Smith',
     title: 'Sales Expert',
-    level: 'GA Leader',
+    level: '6A Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     specialties: ['High-ticket closing', 'Team building', 'Sales strategies'],
@@ -92,7 +92,7 @@ const mockExperts: Expert[] = [
     id: 'sarah-johnson',
     name: 'Sarah Johnson',
     title: 'Marketing Genius',
-    level: 'GA3 Leader',
+    level: '6A2 Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face',
     specialties: ['Social media growth', 'Content strategy', '7-figure funnels'],
@@ -117,7 +117,7 @@ const mockExperts: Expert[] = [
     id: 'mike-davis',
     name: 'Mike Davis',
     title: 'Lead Generation Specialist',
-    level: 'GA Leader',
+    level: '6A4-3 Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     specialties: ['Paid advertising', 'Conversion optimization', 'Lead generation'],
@@ -142,7 +142,7 @@ const mockExperts: Expert[] = [
     id: 'lisa-chen',
     name: 'Lisa Chen',
     title: 'Mindset & Personal Development',
-    level: 'GA3 Leader',
+    level: '6A2-3 Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
     specialties: ['Mindset coaching', 'Limiting beliefs', 'Scale faster'],
@@ -167,7 +167,7 @@ const mockExperts: Expert[] = [
     id: 'robert-wilson',
     name: 'Robert Wilson',
     title: 'Systems & Automation Expert',
-    level: 'GA Leader',
+    level: '6A8-4 Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
     specialties: ['Business systems', 'Automation', 'Efficiency'],
@@ -192,7 +192,7 @@ const mockExperts: Expert[] = [
     id: 'emma-rodriguez',
     name: 'Emma Rodriguez',
     title: 'E-commerce & Dropshipping',
-    level: 'GA2 Leader',
+    level: '6A Leader',
     rating: 5.0,
     avatarUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face',
     specialties: ['E-commerce', 'Dropshipping', '6-figure stores'],
