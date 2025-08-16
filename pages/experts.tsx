@@ -179,20 +179,19 @@ const ExpertDirectory = () => {
                 className="group bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
               >
                 {/* Expert Avatar & Header */}
-                <div className="p-6 text-center border-b border-gray-100">
+                <div className="p-5 text-center border-b border-gray-100">
                   <div className="relative mb-4">
                     <img
                       src={expert.avatarUrl}
                       alt={expert.name}
-                      className="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-lg group-hover:scale-105 transition-transform duration-300"
+                      className="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300"
                     />
-
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{expert.name}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{expert.name}</h3>
                   
                   {/* Rating */}
-                  <div className="flex items-center justify-center mb-2">
+                  <div className="flex items-center justify-center mb-3">
                     <div className="flex text-yellow-400 mr-2">
                       {[...Array(5)].map((_, i) => (
                         <i 
@@ -203,31 +202,32 @@ const ExpertDirectory = () => {
                         ></i>
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600">({expert.stats.averageRating})</span>
+                    <span className="text-sm text-gray-600 font-medium">({expert.stats.averageRating})</span>
                   </div>
 
                   {/* Level Badge */}
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getLevelColor(expert.level)}`}>
+                  <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getLevelColor(expert.level)}`}>
                     <i className="fas fa-award mr-1"></i>
                     {expert.level}
                   </div>
                 </div>
 
                 {/* Expert Details */}
-                <div className="p-6 flex-grow flex flex-col">
-                  <div className="flex-grow">
-                    <div className="mb-4">
-                      <h4 className="font-semibold text-gray-900 mb-2">{expert.title}</h4>
-                      <p className="text-sm text-gray-600 line-clamp-3">{expert.description}</p>
+                <div className="p-5 flex-grow flex flex-col">
+                  <div className="flex-grow space-y-4">
+                    {/* Title and Description */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 text-lg mb-2">{expert.title}</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">{expert.description}</p>
                     </div>
 
                     {/* Specialties */}
-                    <div className="mb-4">
-                      <div className={`flex gap-1 ${expert.specialties.length > 4 ? 'flex-wrap' : 'flex-nowrap'}`}>
+                    <div>
+                      <div className={`flex gap-2 ${expert.specialties.length > 4 ? 'flex-wrap' : 'flex-nowrap'}`}>
                         {expert.specialties.map((specialty, index) => (
                           <span
                             key={index}
-                            className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-100 whitespace-nowrap flex-shrink-0"
+                            className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100 whitespace-nowrap"
                           >
                             {specialty}
                           </span>
@@ -236,29 +236,29 @@ const ExpertDirectory = () => {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-4">
+                    <div className="grid grid-cols-2 gap-6 py-3">
                       <div className="text-center">
-                        <div className="font-semibold text-gray-900">{expert.stats.totalSessions}</div>
-                        <div>Sessions</div>
+                        <div className="text-lg font-bold text-gray-900">{expert.stats.totalSessions}</div>
+                        <div className="text-xs text-gray-500 font-medium">Sessions</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-semibold text-gray-900">{expert.stats.responseTime}</div>
-                        <div>Response</div>
+                        <div className="text-lg font-bold text-gray-900">{expert.stats.responseTime}</div>
+                        <div className="text-xs text-gray-500 font-medium">Response</div>
                       </div>
                     </div>
 
                     {/* Duration & Price */}
-                    <div className="text-center mb-4">
-                      <div className="text-gray-600 text-sm mb-1">{expert.sessionDuration} Minutes</div>
-                      <div className="text-2xl font-bold text-blue-600">${expert.price}</div>
+                    <div className="text-center py-2">
+                      <div className="text-gray-600 text-sm font-medium mb-1">{expert.sessionDuration} Minutes</div>
+                      <div className="text-3xl font-bold text-blue-600">${expert.price}</div>
                     </div>
                   </div>
 
                   {/* Book Call Button - Always at bottom */}
-                  <div className="mt-auto">
+                  <div className="pt-4">
                     <button
                       onClick={() => handleBookCall(expert)}
-                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 group-hover:bg-blue-700 flex items-center justify-center"
+                      className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 group-hover:bg-blue-700 flex items-center justify-center"
                     >
                       <i className="fas fa-calendar-plus mr-2"></i>
                       Book Call
