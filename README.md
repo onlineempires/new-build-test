@@ -71,11 +71,14 @@
 1. **Dashboard Navigation**: Use sidebar to navigate between Dashboard, All Courses, and other sections
 2. **Courses Page**: View your learning journey with progress tracking and achievement system
 3. **Course Selection**: Click any course card to access detailed course content and lesson overview
-4. **Lesson Learning**: Click individual lessons to access dedicated lesson pages with video player
-5. **Lesson Completion**: Use the checkbox to mark lessons as complete and track your progress
-6. **Continue Learning**: Use "Continue to Next Lesson" button for seamless lesson progression
-7. **Progress Tracking**: Your progress is automatically saved and continues where you left off
-8. **Premium Upgrade**: Seamless upgrade banner appears in bottom right for premium features
+4. **Lesson Learning**: Click individual lessons to access dedicated two-column lesson pages
+5. **Video Learning**: Watch lessons with enhanced video player and progress tracking
+6. **Download Materials**: Access lesson worksheets and templates from the materials section
+7. **Track Progress**: Monitor your advancement with circular progress indicators and detailed stats
+8. **Lesson Completion**: Use the checkbox to mark lessons complete and unlock next content
+9. **Continue Learning**: Use "Continue to Next Lesson" button for seamless progression
+10. **Premium Upgrade**: Upgrade banner appears naturally below the continue button
+11. **Progress Tracking**: Your progress is automatically saved and continues where you left off
 9. **Achievements**: Unlock achievements by completing courses and maintaining learning streaks
 10. **Level System**: Earn XP points to advance through levels and unlock new content
 
@@ -146,18 +149,21 @@ lib/
 - **Course Categories**: Structured learning path with foundational and advanced sections
 - **Visual Course Cards**: Gradient backgrounds with relevant icons for each course
 
-## Lesson Page Features (NEW)
-- **Seamless Upgrade Banner**: Premium upgrade banner positioned in bottom right corner with natural flow
-- **Purple Gradient Design**: Beautiful gradient background matching reference design exactly
-- **Crown Icon & LIMITED TIME Badge**: Yellow/gold premium badge with crown symbol for urgency
-- **Video Player Interface**: Full-width video player with lesson title and duration
-- **Lesson Completion System**: Easy checkbox to mark lessons as complete with instant feedback
-- **Continue to Next Lesson**: Blue button for seamless progression through course content
-- **Navigation Controls**: Previous/Next lesson buttons with proper lesson flow logic
-- **Sticky Right Sidebar**: Progress tracking, navigation, and upgrade banner stay visible while scrolling
-- **Module Overview**: Collapsible course structure showing current position and completion status
-- **Responsive Layout**: Mobile-optimized design that works perfectly on all devices
-- **Lesson Content Area**: Dedicated space for transcripts, notes, and supplementary materials
+## Lesson Page Features (REDESIGNED)
+- **Two-Column Layout**: Video player on left (2/3 width) + progress sidebar on right (1/3 width)
+- **Breadcrumb Navigation**: Dashboard > All Courses > Course Name > Lesson Name navigation path
+- **Your Progress Section**: Circular progress indicator showing course completion percentage (67%)
+- **Detailed Progress Stats**: Module progress (2 of 5 lessons), Course progress (8 of 15 lessons), XP Earned (+50 XP)
+- **Lesson Materials**: Downloadable resources with file icons (PDF worksheets, DOCX templates)
+- **Enhanced Video Player**: Realistic landscape background with play button and video controls
+- **Video Progress Display**: Time indicator (3:44 / 9:56) with progress bar and control buttons
+- **Lesson Overview**: Comprehensive description and key takeaways with checkmark list
+- **Upgrade Banner Below Button**: Premium banner positioned directly below "Continue to Next Lesson" button
+- **Purple Gradient Design**: Beautiful gradient background with crown icon and LIMITED TIME badge
+- **Seamless Integration**: Upgrade offer feels natural in the lesson completion flow
+- **Lesson Completion System**: Easy checkbox to mark lessons complete with progress tracking
+- **Sticky Right Sidebar**: All progress and navigation elements stay visible while scrolling
+- **Mobile Responsive**: Optimized layout that stacks properly on smaller screens
 
 ## Mobile Responsiveness
 - **Breakpoints**: sm (640px), md (768px), lg (1024px)
