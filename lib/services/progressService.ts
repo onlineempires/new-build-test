@@ -61,27 +61,42 @@ export const getUnifiedProgress = async (): Promise<UnifiedProgress> => {
   // Get current progress
   const progress = getCurrentProgress();
   
+  // Get user role to determine accessible courses
+  const userRole = (typeof window !== 'undefined') ? localStorage.getItem('userRole') || 'free' : 'free';
+  const canAccessAllCourses = ['monthly', 'annual', 'admin'].includes(userRole);
+  
   // Force fresh course data if cache might be stale
   const shouldForceRefresh = typeof window !== 'undefined' && 
     sessionStorage.getItem('progressCacheInvalidated');
   
   // Get course data (cached or forced refresh)
   const courseData = await getCachedCourseData(!!shouldForceRefresh);
-  const totalCourses = courseData.startHereCourses.length + courseData.socialMediaCourses.length;
+  
+  // Calculate accessible courses based on user permissions
+  let accessibleCourses = [...courseData.startHereCourses]; // Everyone gets Start Here courses
+  if (canAccessAllCourses) {
+    accessibleCourses = [...courseData.startHereCourses, ...courseData.socialMediaCourses];
+  }
+  
+  const totalCourses = accessibleCourses.length;
   
   // Calculate completed courses by checking actual lesson completion status
   // CRITICAL: Use ONLY lesson-based completion to avoid double-counting
+  // FIXED: Only count accessible courses based on user permissions
   let actualCompletedCourses = 0;
-  const allCourses = [...courseData.startHereCourses, ...courseData.socialMediaCourses];
+  const coursesToCheck = accessibleCourses; // Use only accessible courses, not all courses
   
   console.log('🔍 PROGRESS CALCULATION DEBUG:', {
-    totalCourses: allCourses.length,
+    userRole,
+    canAccessAllCourses,
+    accessibleCoursesCount: accessibleCourses.length,
+    totalCoursesInSystem: [...courseData.startHereCourses, ...courseData.socialMediaCourses].length,
     completedLessonsInGlobalState: progress.completedLessons.length,
     completedLessonsArray: progress.completedLessons,
     cacheForced: !!shouldForceRefresh
   });
   
-  allCourses.forEach((course, index) => {
+  coursesToCheck.forEach((course, index) => {
     // Count course as completed ONLY if ALL lessons are actually completed
     const totalLessonsInCourse = course.modules.reduce((sum, module) => sum + module.lessons.length, 0);
     
@@ -120,7 +135,9 @@ export const getUnifiedProgress = async (): Promise<UnifiedProgress> => {
   
   console.log('🏆 FINAL CALCULATION:', {
     actualCompletedCourses,
-    totalCourses: allCourses.length
+    totalAccessibleCourses: accessibleCourses.length,
+    userRole,
+    canAccessAllCourses
   });
   
   // Calculate current level based on ACTUAL completed courses

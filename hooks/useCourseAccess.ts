@@ -1,37 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useUserRole } from '../contexts/UserRoleContext';
+import { useCourseAccess as useCourseAccessContext } from '../contexts/CourseAccessContext';
 
 export function useCourseAccess() {
   const [purchasedCourses, setPurchasedCourses] = useState<string[]>([]);
   const { currentRole, permissions } = useUserRole();
+  const { canAccessCourse, getCourseUpgradeMessage, getRestrictedMessage } = useCourseAccessContext();
 
   useEffect(() => {
-    // Check purchased individual courses
+    // Check purchased individual courses (mainly for masterclasses)
     const purchases = JSON.parse(localStorage.getItem('purchasedCourses') || '[]');
     const courseIds = purchases.map((p: any) => p.courseId);
     setPurchasedCourses(courseIds);
   }, []);
 
   const isPurchased = (courseId: string) => {
-    // Special masterclasses require individual purchase regardless of plan
-    const paidMasterclasses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
-    if (paidMasterclasses.includes(courseId)) {
-      return purchasedCourses.includes(courseId);
-    }
-
-    // Check if user has access to all courses based on their role
-    if (permissions.canAccessAllCourses) {
-      return true;
-    }
-
-    // Check if it's an intro video course for limited access roles
-    const introCourses = ['business-blueprint', 'discovery-process', 'next-steps'];
-    if (introCourses.includes(courseId) && permissions.canAccessIntroVideos) {
-      return true;
-    }
-
-    // Individual purchase access
-    return purchasedCourses.includes(courseId);
+    // Use the new centralized course access system
+    return canAccessCourse(courseId) || purchasedCourses.includes(courseId);
   };
 
   const purchaseCourse = (courseId: string) => {
@@ -68,6 +53,10 @@ export function useCourseAccess() {
     refreshPurchases,
     purchasedCourses,
     currentRole,
-    permissions
+    permissions,
+    // New methods from CourseAccessContext
+    canAccessCourse,
+    getCourseUpgradeMessage,
+    getRestrictedMessage
   };
 }

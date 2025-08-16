@@ -4,9 +4,9 @@ import AppLayout from '../components/layout/AppLayout';
 import StatsCards from '../components/dashboard/StatsCards';
 import UpgradeButton from '../components/upgrades/UpgradeButton';
 import IndividualCourseModal from '../components/courses/IndividualCourseModal';
+import TrialUpgradePrompt from '../components/courses/TrialUpgradePrompt';
 import { ProgressMilestoneUpgrade } from '../components/upgrades/UpgradePrompts';
 import { useCourseAccess } from '../hooks/useCourseAccess';
-import { useUserRole } from '../contexts/UserRoleContext';
 import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
 import { getFastStats } from '../lib/services/progressService';
 
@@ -17,8 +17,7 @@ export default function AllCourses() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [showIndividualPurchase, setShowIndividualPurchase] = useState(false);
-  const { isPurchased, purchaseCourse, refreshPurchases, currentRole } = useCourseAccess();
-  const { permissions } = useUserRole();
+  const { isPurchased, purchaseCourse, refreshPurchases, currentRole, canAccessCourse, getCourseUpgradeMessage, purchasedCourses, permissions } = useCourseAccess();
 
   const handleIndividualPurchase = (course: any) => {
     setSelectedCourse(course);
@@ -39,8 +38,8 @@ export default function AllCourses() {
 
   // Helper function to render course button based on status
   const getCourseButton = (course: any) => {
-    // Check if user has purchased this individual course
-    if (isPurchased(course.id)) {
+    // Check if user can access this course using the new system
+    if (canAccessCourse && canAccessCourse(course.id)) {
       if (course.isCompleted) {
         return (
           <a 
@@ -74,8 +73,21 @@ export default function AllCourses() {
       );
     }
     
-    // Special masterclasses (paid only, no premium option)
-    const paidMasterclasses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
+    // Check if it's a masterclass that requires individual purchase
+    if (purchasedCourses.includes(course.id)) {
+      // User has purchased this masterclass individually
+      return (
+        <a 
+          href={`/courses/${course.id}`}
+          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded font-medium hover:bg-purple-700 transition-colors text-sm w-full"
+        >
+          <i className="fas fa-crown mr-2"></i>Access Masterclass
+        </a>
+      );
+    }
+
+    // Special masterclasses (require separate purchase)
+    const paidMasterclasses = ['advanced-copywriting-masterclass', 'scaling-systems-masterclass'];
     if (paidMasterclasses.includes(course.id)) {
       const coursePrice = 49;
       return (
@@ -87,44 +99,10 @@ export default function AllCourses() {
         </button>
       );
     }
-    
-    // Regular courses - check if user has access to all courses
-    if (permissions.canAccessAllCourses) {
-      // User has paid access - show course access button
-      if (course.isCompleted) {
-        return (
-          <a 
-            href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm w-full"
-          >
-            <i className="fas fa-redo mr-2"></i>Completed - Watch Again
-          </a>
-        );
-      }
-      
-      if (course.progress > 0) {
-        const completedLessons = Math.round((course.progress / 100) * course.lessonCount);
-        return (
-          <a 
-            href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm w-full"
-          >
-            <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
-          </a>
-        );
-      }
-      
-      return (
-        <a 
-          href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm w-full"
-        >
-          <i className="fas fa-rocket mr-2"></i>Start Course
-        </a>
-      );
-    }
 
-    // Users without full access - show appropriate upgrade option
+    // Users without access - show appropriate upgrade option with messaging
+    const upgradeMessage = getCourseUpgradeMessage ? getCourseUpgradeMessage(course.id) : 'Upgrade to Access';
+    
     return (
       <UpgradeButton 
         variant="secondary" 
@@ -133,7 +111,7 @@ export default function AllCourses() {
       >
         <span className="flex items-center justify-center">
           <i className="fas fa-crown mr-2"></i>
-          {currentRole === 'free' || currentRole === 'trial' ? 'Upgrade to Access' : 'Unlock with Premium'}
+          {currentRole === 'trial' ? 'Upgrade to Unlock' : 'Start Trial to Access'}
         </span>
       </UpgradeButton>
     );
@@ -227,6 +205,8 @@ export default function AllCourses() {
             }} />
           </div>
 
+
+
           {/* Progress-based upgrade prompts - only for limited access users */}
           {stats && stats.coursesCompleted >= 2 && !permissions.canAccessAllCourses && (
             <div className="px-6 pt-4">
@@ -260,14 +240,56 @@ export default function AllCourses() {
               <div className="text-sm text-blue-600 font-medium">18 courses available</div>
             </div>
 
-            {/* Start Here Section */}
+            {/* Start Here Section - Enhanced for Trial Users */}
             <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-2">
-                  1
+              {/* Special message for free/trial users */}
+              {(currentRole === 'free' || currentRole === 'trial') && (
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 mb-6">
+                  <div className="flex items-start">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <i className="fas fa-rocket text-blue-600"></i>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <h3 className="font-bold text-blue-900 mr-2">
+                          {currentRole === 'trial' ? 'Your Trial Includes:' : 'Get Started Free:'}
+                        </h3>
+                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                          {currentRole === 'trial' ? '7 Days Remaining' : 'No Credit Card Required'}
+                        </span>
+                      </div>
+                      <p className="text-blue-800 text-sm mb-3">
+                        Complete access to all <strong>"Start Here"</strong> courses below. These foundational courses will teach you everything you need to get started with your online business journey.
+                      </p>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
+                          <i className="fas fa-check mr-1"></i>3 Complete Courses
+                        </span>
+                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
+                          <i className="fas fa-clock mr-1"></i>~15 Hours Content
+                        </span>
+                        <span className="bg-white text-blue-700 px-2 py-1 rounded-full border border-blue-200">
+                          <i className="fas fa-star mr-1"></i>1,350+ XP Points
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">Start Here</h2>
-                <span className="ml-3 text-sm text-gray-500">Required</span>
+              )}
+
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <i className="fas fa-play"></i>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900">Start Here - Foundation Training</h2>
+                  <p className="text-sm text-gray-600">Essential courses to build your online business foundation</p>
+                </div>
+                {(currentRole === 'free' || currentRole === 'trial') && (
+                  <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <i className="fas fa-unlock mr-1"></i>INCLUDED
+                  </span>
+                )}
               </div>
               
               <div className="grid gap-4 md:grid-cols-3">
@@ -331,14 +353,132 @@ export default function AllCourses() {
               </div>
             </div>
 
+            {/* Enhanced Upgrade Section for Trial/Free Users */}
+            {(currentRole === 'free' || currentRole === 'trial') && (
+              <div className="mb-8">
+                <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 rounded-2xl overflow-hidden shadow-2xl">
+                  {/* Header Section */}
+                  <div className="px-6 pt-6 pb-4 text-center text-white relative">
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-yellow-400/10 to-pink-400/10"></div>
+                    <div className="relative z-10">
+                      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4 shadow-lg">
+                        <i className="fas fa-crown text-white text-3xl"></i>
+                      </div>
+                      <h3 className="text-2xl font-bold mb-2">Unlock Advanced Training</h3>
+                      <p className="text-purple-100 text-lg max-w-lg mx-auto">
+                        Join <span className="text-yellow-300 font-bold">2,847+ entrepreneurs</span> scaling their businesses with our complete system
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Benefits Grid */}
+                  <div className="px-6 pb-6">
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <div className="flex items-center mb-2">
+                          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                            <i className="fas fa-graduation-cap text-white text-sm"></i>
+                          </div>
+                          <h4 className="text-white font-bold">Advanced Courses</h4>
+                        </div>
+                        <ul className="text-purple-100 text-sm space-y-1">
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>TikTok Mastery System</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Facebook Advertising Secrets</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Instagram Growth Blueprint</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Sales Funnel Mastery</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <div className="flex items-center mb-2">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                            <i className="fas fa-users text-white text-sm"></i>
+                          </div>
+                          <h4 className="text-white font-bold">Premium Features</h4>
+                        </div>
+                        <ul className="text-purple-100 text-sm space-y-1">
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Expert Directory Access</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Done-For-You Templates</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Priority Support</li>
+                          <li><i className="fas fa-check text-green-400 mr-2"></i>Affiliate Portal (30% commissions)</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Value Proposition */}
+                    <div className="bg-yellow-400/20 border border-yellow-400/30 rounded-xl p-4 mb-6">
+                      <div className="flex items-center justify-center text-center">
+                        <div className="mr-4">
+                          <div className="text-yellow-300 text-lg font-bold">$2,497 Value</div>
+                          <div className="text-purple-100 text-sm">Course Library</div>
+                        </div>
+                        <div className="text-white text-2xl">+</div>
+                        <div className="mx-4">
+                          <div className="text-yellow-300 text-lg font-bold">$997 Value</div>
+                          <div className="text-purple-100 text-sm">Expert Directory</div>
+                        </div>
+                        <div className="text-white text-2xl">=</div>
+                        <div className="ml-4">
+                          <div className="text-green-300 text-xl font-bold">$3,494 Total</div>
+                          <div className="text-purple-100 text-sm">Your Price: ${currentRole === 'trial' ? '99/mo' : '$1 trial'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CTA Section */}
+                    <div className="text-center">
+                      {currentRole === 'trial' ? (
+                        <div>
+                          <TrialUpgradePrompt 
+                            message="Your trial expires soon - upgrade now to keep access to all courses and unlock advanced training!"
+                          />
+                          <div className="mt-3 text-purple-200 text-sm">
+                            <i className="fas fa-clock mr-1"></i>
+                            Limited time: Complete Start Here courses and save 50% on annual plan
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto mb-3">
+                            <UpgradeButton 
+                              variant="secondary" 
+                              className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
+                              currentPlan={currentRole}
+                            >
+                              <i className="fas fa-rocket mr-2"></i>Start $1 Trial Now
+                            </UpgradeButton>
+                          </div>
+                          <div className="text-purple-200 text-sm">
+                            <i className="fas fa-shield-alt mr-1"></i>
+                            30-day money-back guarantee • Cancel anytime • No setup fees
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Advanced Training Section */}
             <div className="mb-8">
               <div className="flex items-center mb-4">
-                <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-2">
-                  2
+                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  <i className="fas fa-graduation-cap"></i>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">Advanced Training</h2>
-                <span className="ml-3 text-sm text-purple-600 font-medium">Skill Builder</span>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900">Advanced Training</h2>
+                  <p className="text-sm text-gray-600">Specialized courses for scaling your business</p>
+                </div>
+                {(currentRole === 'free' || currentRole === 'trial') ? (
+                  <span className="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <i className="fas fa-lock mr-1"></i>UPGRADE REQUIRED
+                  </span>
+                ) : (
+                  <span className="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">
+                    <i className="fas fa-unlock mr-1"></i>INCLUDED
+                  </span>
+                )}
               </div>
               
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">

@@ -8,6 +8,7 @@ export interface UserPermissions {
   // Course Access
   canAccessIntroVideos: boolean;
   canAccessAllCourses: boolean;
+  canAccessStartHereOnly: boolean; // NEW: Trial members restricted to "Start Here" courses
   canAccessMasterclasses: boolean;
   
   // Feature Access  
@@ -36,10 +37,11 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   free: {
     canAccessIntroVideos: true,
     canAccessAllCourses: false,
+    canAccessStartHereOnly: true, // FREE users get Start Here courses only
     canAccessMasterclasses: false,
     canAccessAffiliate: false,
-    canAccessExpertDirectory: false,
-    canAccessDMO: true,
+    canAccessExpertDirectory: false, // No expert directory access
+    canAccessDMO: false, // No DMO access for free users
     canAccessStats: false,
     canAccessLeads: false,
     canUpgradeToMonthly: true,
@@ -56,10 +58,11 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   trial: {
     canAccessIntroVideos: true,
     canAccessAllCourses: false,
+    canAccessStartHereOnly: true, // RESTRICTED: Trial members only get "Start Here" courses
     canAccessMasterclasses: false,
     canAccessAffiliate: false,
-    canAccessExpertDirectory: true,
-    canAccessDMO: true,
+    canAccessExpertDirectory: false, // No expert directory access for trial
+    canAccessDMO: false, // No DMO access for trial users
     canAccessStats: false,
     canAccessLeads: false,
     canUpgradeToMonthly: true,
@@ -76,6 +79,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   monthly: {
     canAccessIntroVideos: true,
     canAccessAllCourses: true,
+    canAccessStartHereOnly: false,
     canAccessMasterclasses: false, // Must purchase individually
     canAccessAffiliate: true,
     canAccessExpertDirectory: true,
@@ -96,6 +100,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   annual: {
     canAccessIntroVideos: true,
     canAccessAllCourses: true,
+    canAccessStartHereOnly: false,
     canAccessMasterclasses: false, // Must purchase individually
     canAccessAffiliate: true,
     canAccessExpertDirectory: true,
@@ -116,6 +121,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   downsell: {
     canAccessIntroVideos: true,
     canAccessAllCourses: false,
+    canAccessStartHereOnly: false,
     canAccessMasterclasses: false,
     canAccessAffiliate: true, // Key feature for downsell
     canAccessExpertDirectory: false,
@@ -136,6 +142,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   admin: {
     canAccessIntroVideos: true,
     canAccessAllCourses: true,
+    canAccessStartHereOnly: false,
     canAccessMasterclasses: true,
     canAccessAffiliate: true,
     canAccessExpertDirectory: true,
@@ -169,7 +176,7 @@ export const ROLE_DETAILS: Record<UserRole, RoleDetails> = {
     price: 0,
     billing: 'one-time',
     description: 'Basic access to intro content',
-    features: ['Intro video courses', 'Daily Method access', 'Community access']
+    features: ['Start Here courses only', '7-day access period', 'Basic intro content']
   },
 
   trial: {
@@ -177,7 +184,7 @@ export const ROLE_DETAILS: Record<UserRole, RoleDetails> = {
     price: 1,
     billing: 'one-time',
     description: 'Try our platform for just $1',
-    features: ['Intro video courses', 'Expert Directory', 'Daily Method', '7-day trial period']
+    features: ['Start Here courses only', '7-day trial period', 'Basic intro content']
   },
 
   monthly: {
@@ -218,7 +225,6 @@ interface UserRoleContextType {
   permissions: UserPermissions;
   roleDetails: RoleDetails;
   setUserRole: (role: UserRole) => void;
-  upgradeToRole: (targetRole: UserRole) => Promise<boolean>;
   hasPermission: (permission: keyof UserPermissions) => boolean;
   canAccessFeature: (feature: string) => boolean;
   getRoleHierarchyLevel: (role: UserRole) => number;
@@ -241,9 +247,9 @@ const ROLE_HIERARCHY: Record<UserRole, number> = {
 };
 
 export function UserRoleProvider({ children }: UserRoleProviderProps) {
-  const [currentRole, setCurrentRole] = useState<UserRole>('monthly'); // Default for demo
-  const [permissions, setPermissions] = useState<UserPermissions>(ROLE_PERMISSIONS.monthly);
-  const [roleDetails, setRoleDetails] = useState<RoleDetails>(ROLE_DETAILS.monthly);
+  const [currentRole, setCurrentRole] = useState<UserRole>('free'); // Default to free for proper testing
+  const [permissions, setPermissions] = useState<UserPermissions>(ROLE_PERMISSIONS.free);
+  const [roleDetails, setRoleDetails] = useState<RoleDetails>(ROLE_DETAILS.free);
 
   useEffect(() => {
     // Load role from localStorage or API
@@ -264,31 +270,8 @@ export function UserRoleProvider({ children }: UserRoleProviderProps) {
     updateRole(role);
   };
 
-  const upgradeToRole = async (targetRole: UserRole): Promise<boolean> => {
-    // Simulate payment processing
-    try {
-      // Here you would integrate with actual payment processor
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Store purchase record
-      const purchases = JSON.parse(localStorage.getItem('rolePurchases') || '[]');
-      purchases.push({
-        fromRole: currentRole,
-        toRole: targetRole,
-        price: ROLE_DETAILS[targetRole].price,
-        purchaseDate: new Date().toISOString(),
-        purchaseId: `role_upgrade_${Date.now()}`
-      });
-      localStorage.setItem('rolePurchases', JSON.stringify(purchases));
-      
-      // Update role
-      updateRole(targetRole);
-      return true;
-    } catch (error) {
-      console.error('Role upgrade failed:', error);
-      return false;
-    }
-  };
+  // Note: upgradeToRole removed - upgrades now happen only after successful payment
+  // Use setUserRole after payment confirmation instead
 
   const hasPermission = (permission: keyof UserPermissions): boolean => {
     return permissions[permission] as boolean;
@@ -321,7 +304,6 @@ export function UserRoleProvider({ children }: UserRoleProviderProps) {
         permissions,
         roleDetails,
         setUserRole,
-        upgradeToRole,
         hasPermission,
         canAccessFeature,
         getRoleHierarchyLevel,

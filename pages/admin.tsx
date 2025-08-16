@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AppLayout from '../components/layout/AppLayout';
 import AdminRouteGuard from '../components/admin/AdminRouteGuard';
+import CourseAccessManager from '../components/admin/CourseAccessManager';
 import { useUserRole, UserRole, ROLE_DETAILS } from '../contexts/UserRoleContext';
 import { useAdminAuth, withAdminAuth } from '../contexts/AdminAuthContext';
 
@@ -40,7 +41,7 @@ function AdminDashboard() {
   const router = useRouter();
   const { currentRole, hasPermission, setUserRole } = useUserRole();
   const { adminUser, logout: adminLogout, checkSession } = useAdminAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'payments' | 'funnels' | 'calendar'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'courses' | 'payments' | 'access' | 'funnels' | 'calendar'>('overview');
   
   // Mock data - in real app, this would come from API
   const [users] = useState<User[]>([
@@ -367,6 +368,7 @@ function AdminDashboard() {
     { id: 'users', name: 'Users', icon: 'fas fa-users' },
     { id: 'courses', name: 'Courses', icon: 'fas fa-book' },
     { id: 'payments', name: 'Payments', icon: 'fas fa-credit-card' },
+    { id: 'access', name: 'Course Access', icon: 'fas fa-key' },
     { id: 'funnels', name: 'Funnels', icon: 'fas fa-share-alt' },
     { id: 'calendar', name: 'Calendar', icon: 'fas fa-calendar' }
   ];
@@ -434,6 +436,7 @@ function AdminDashboard() {
             {activeTab === 'users' && renderUsers()}
             {activeTab === 'courses' && renderCourses()}
             {activeTab === 'payments' && renderPayments()}
+            {activeTab === 'access' && <CourseAccessManager />}
             {activeTab === 'funnels' && (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                 <i className="fas fa-share-alt text-4xl text-gray-400 mb-4"></i>

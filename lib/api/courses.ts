@@ -691,7 +691,7 @@ export const getCourse = async (courseId: string): Promise<Course> => {
 
 // Leveling system configuration
 export const LEVEL_TIERS = {
-  ROOKIE: { min: 1, max: 2, name: 'Rookie', color: '#3B82F6', icon: 'fas fa-rocket', tailwind: 'bg-blue-600 text-white border-blue-600' },
+  ROOKIE: { min: 0, max: 2, name: 'Rookie', color: '#3B82F6', icon: 'fas fa-rocket', tailwind: 'bg-blue-600 text-white border-blue-600' },
   OPERATOR: { min: 3, max: 5, name: 'Operator', color: '#10B981', icon: 'fas fa-cog', tailwind: 'bg-emerald-600 text-white border-emerald-600' },
   VETERAN: { min: 6, max: 8, name: 'Veteran', color: '#8B5CF6', icon: 'fas fa-shield-alt', tailwind: 'bg-violet-600 text-white border-violet-600' },
   ELITE: { min: 9, max: 12, name: 'Elite', color: '#6B7280', icon: 'fas fa-crown', tailwind: 'bg-gray-600 text-white border-gray-600' },

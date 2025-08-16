@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserRole, UserRole, ROLE_DETAILS } from '../../contexts/UserRoleContext';
+import PaymentModal from '../payments/PaymentModal';
 
 interface RoleUpgradeModalProps {
   isOpen: boolean;
@@ -14,31 +15,45 @@ export default function RoleUpgradeModal({
   currentPlan,
   onUpgradeSuccess 
 }: RoleUpgradeModalProps) {
-  const { upgradeToRole, getRoleHierarchyLevel } = useUserRole();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const { setUserRole, getRoleHierarchyLevel } = useUserRole();
   const [selectedPlan, setSelectedPlan] = useState<UserRole>('monthly');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [affiliateId, setAffiliateId] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
-  const handleUpgrade = async () => {
-    setIsProcessing(true);
-    
-    const success = await upgradeToRole(selectedPlan);
-    
-    if (success) {
-      setIsProcessing(false);
-      setShowSuccess(true);
+  // Check for affiliate tracking on component mount
+  useEffect(() => {
+    if (isOpen) {
+      // Check for affiliate ID in URL params or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const affiliateFromUrl = urlParams.get('ref') || urlParams.get('affiliate');
+      const affiliateFromStorage = localStorage.getItem('affiliateReferrer');
       
-      // Auto-close after success
-      setTimeout(() => {
-        setShowSuccess(false);
-        onClose();
-        if (onUpgradeSuccess) onUpgradeSuccess();
-      }, 3000);
-    } else {
-      setIsProcessing(false);
-      // Handle error
+      if (affiliateFromUrl) {
+        setAffiliateId(affiliateFromUrl);
+        // Store affiliate ID for future purchases
+        localStorage.setItem('affiliateReferrer', affiliateFromUrl);
+      } else if (affiliateFromStorage) {
+        setAffiliateId(affiliateFromStorage);
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen && !showPaymentModal) return null;
+
+  const handleProceedToPayment = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (purchaseData: any) => {
+    // Upgrade user role after successful payment
+    setUserRole(selectedPlan);
+    
+    // Close modals
+    setShowPaymentModal(false);
+    onClose();
+    
+    if (onUpgradeSuccess) {
+      onUpgradeSuccess();
     }
   };
 
@@ -60,24 +75,20 @@ export default function RoleUpgradeModal({
 
   const upgradeOptions = getUpgradeOptions();
 
-  if (showSuccess) {
+  // Show payment modal if triggered
+  if (showPaymentModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-        <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fas fa-check text-green-600 text-2xl"></i>
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Upgrade Successful!</h3>
-          <p className="text-gray-600 mb-4">
-            Welcome to {ROLE_DETAILS[selectedPlan].name}!
-          </p>
-          <div className="bg-green-50 rounded-lg p-3">
-            <p className="text-sm text-green-800 font-medium">
-              🎉 You now have access to all {ROLE_DETAILS[selectedPlan].name} features!
-            </p>
-          </div>
-        </div>
-      </div>
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => {
+          setShowPaymentModal(false);
+          // Don't close the upgrade modal, let user go back to plan selection
+        }}
+        selectedPlan={selectedPlan}
+        currentPlan={currentPlan}
+        onPaymentSuccess={handlePaymentSuccess}
+        affiliateId={affiliateId}
+      />
     );
   }
 
@@ -150,34 +161,32 @@ export default function RoleUpgradeModal({
             })}
           </div>
 
-          {/* Upgrade Button */}
+          {/* Proceed to Payment Button */}
           <button
-            onClick={handleUpgrade}
-            disabled={isProcessing}
-            className="w-full bg-white text-purple-700 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4 sm:mt-6"
+            onClick={handleProceedToPayment}
+            className="w-full bg-white text-purple-700 py-3 sm:py-4 rounded-xl font-bold text-sm sm:text-base lg:text-lg hover:bg-gray-50 transition-colors mt-4 sm:mt-6"
           >
-            {isProcessing ? (
-              <span className="flex items-center justify-center">
-                <i className="fas fa-spinner fa-spin mr-2"></i>
-                Processing Payment...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center">
-                <i className="fas fa-crown mr-2"></i>
-                <span className="hidden sm:inline">Upgrade to {ROLE_DETAILS[selectedPlan].name} - </span>
-                ${ROLE_DETAILS[selectedPlan].price}
-              </span>
-            )}
+            <span className="flex items-center justify-center">
+              <i className="fas fa-credit-card mr-2"></i>
+              <span className="hidden sm:inline">Proceed to Payment - </span>
+              ${ROLE_DETAILS[selectedPlan].price}
+            </span>
           </button>
 
-          {/* Terms */}
+          {/* Terms & Affiliate Info */}
           <div className="text-xs text-purple-200 text-center mt-3 sm:mt-4 px-2">
+            {affiliateId && (
+              <p className="mb-2 bg-white/10 rounded-lg py-2 px-3">
+                <i className="fas fa-users mr-1"></i>
+                Referred by Member #{affiliateId} • 30% commission credited
+              </p>
+            )}
             <p className="mb-1">
               <i className="fas fa-info-circle mr-1"></i>
               All purchases are final - no refunds policy applies
             </p>
             <p>
-              Secure payment processing • Instant account upgrade
+              Secure payment processing • Account upgraded after payment confirmation
             </p>
           </div>
         </div>

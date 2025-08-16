@@ -41,8 +41,8 @@ const calculateCourseProgress = (course: Course) => {
   return totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 };
 
-// Find the first incomplete course based on priority order
-const findFirstIncompleteCourse = (startHereCourses: Course[], socialMediaCourses: Course[]) => {
+// Find the first incomplete course based on priority order and user permissions
+const findFirstIncompleteCourse = (startHereCourses: Course[], socialMediaCourses: Course[], canAccessAllCourses = false) => {
   const priorityOrder = getStartCoursePriority();
   
   // First, check Start Here courses in priority order
@@ -67,15 +67,17 @@ const findFirstIncompleteCourse = (startHereCourses: Course[], socialMediaCourse
     }
   }
   
-  // Finally, check Social Media courses
-  for (const course of socialMediaCourses) {
-    const progress = calculateCourseProgress(course);
-    if (progress < 100) {
-      return course;
+  // Only check Social Media courses if user has access to all courses (not free/trial)
+  if (canAccessAllCourses) {
+    for (const course of socialMediaCourses) {
+      const progress = calculateCourseProgress(course);
+      if (progress < 100) {
+        return course;
+      }
     }
   }
   
-  return null; // All courses completed
+  return null; // All accessible courses completed
 };
 
 // Get the first "Start Here" course for new users based on configuration
@@ -101,7 +103,9 @@ export const getContinueData = async (): Promise<ContinueData | null> => {
     const progress = getCurrentProgress();
     const courseData = await getCachedCourseData();
     
-    const allCourses = [...courseData.startHereCourses, ...courseData.socialMediaCourses];
+    // Get user role to determine course access
+    const userRole = (typeof window !== 'undefined') ? localStorage.getItem('userRole') || 'free' : 'free';
+    const canAccessAllCourses = ['monthly', 'annual', 'admin'].includes(userRole);
     
     // Check if user has any progress at all
     const hasAnyProgress = progress.completedLessons.length > 0;
@@ -109,9 +113,9 @@ export const getContinueData = async (): Promise<ContinueData | null> => {
     let targetCourse: Course | null = null;
     let isNewUser = false;
     
-    // Always show the first incomplete course based on priority order
-    // This ensures proper learning progression
-    targetCourse = findFirstIncompleteCourse(courseData.startHereCourses, courseData.socialMediaCourses);
+    // Find the first incomplete course based on user permissions
+    // Free/trial users only see Start Here courses, paid users see all courses
+    targetCourse = findFirstIncompleteCourse(courseData.startHereCourses, courseData.socialMediaCourses, canAccessAllCourses);
     
     // If no incomplete course found (all completed), show first course
     if (!targetCourse) {
