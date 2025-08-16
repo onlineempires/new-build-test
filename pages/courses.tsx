@@ -186,6 +186,15 @@ export default function AllCourses() {
                       <span><i className="fas fa-clock mr-1"></i>2.5 hours</span>
                       <span className="text-green-600 font-medium">+200 XP</span>
                     </div>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>100%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                      </div>
+                    </div>
                     <button className="w-full bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors">
                       <i className="fas fa-check mr-2"></i>Completed
                     </button>
@@ -240,6 +249,15 @@ export default function AllCourses() {
                       <span><i className="fas fa-play-circle mr-1"></i>4 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>1 hour</span>
                       <span className="text-yellow-600 font-medium">+100 XP</span>
+                    </div>
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Progress</span>
+                        <span>Locked</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-gray-400 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
                     </div>
                     <button className="w-full bg-gray-300 text-gray-500 py-2 px-4 rounded font-medium cursor-not-allowed">
                       <i className="fas fa-lock mr-2"></i>Complete Discovery Process First
@@ -467,47 +485,7 @@ export default function AllCourses() {
               </div>
             </div>
 
-            {/* Recent Achievements */}
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h2>
-              <div className="flex items-center gap-4">
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-2">
-                    <i className="fas fa-graduation-cap text-white text-xl"></i>
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Course Master</div>
-                </div>
 
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-2">
-                    <i className="fas fa-bolt text-white text-xl"></i>
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Quick Learner</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-2">
-                    <i className="fas fa-fire text-white text-xl"></i>
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">7-Day Streak</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mb-2">
-                    <i className="fas fa-trophy text-white text-xl"></i>
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">First Master</div>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-2">
-                    <i className="fas fa-star text-white text-xl"></i>
-                  </div>
-                  <div className="text-xs font-medium text-gray-700">Fast Finisher</div>
-                </div>
-              </div>
-            </div>
 
             {/* Level 13 Preview */}
             <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg p-6 text-white text-center">
