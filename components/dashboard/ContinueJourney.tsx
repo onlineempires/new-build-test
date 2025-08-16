@@ -13,15 +13,25 @@ interface ContinueJourneyProps {
 
 export default function ContinueJourney({ course }: ContinueJourneyProps) {
   return (
-    <div className="bg-white rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-        <h2 className="text-lg sm:text-xl font-semibold">Continue Your Journey</h2>
-        <span className="text-xs sm:text-sm text-gray-600 font-medium">{course.progressPercent}% Complete</span>
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
+            <i className="fas fa-play text-blue-600 text-sm"></i>
+          </div>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">Continue Learning</h2>
+        </div>
+        <div className="bg-blue-50 px-3 py-1 rounded-full">
+          <span className="text-xs sm:text-sm text-blue-600 font-bold">{course.progressPercent}% Complete</span>
+        </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg p-4 gap-4">
-        <div className="flex items-center">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg mr-3 sm:mr-4 overflow-hidden flex-shrink-0">
+      {/* Course Card */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
+        <div className="flex items-center mb-4">
+          {/* Course Thumbnail */}
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl mr-3 sm:mr-4 overflow-hidden flex-shrink-0 shadow-sm">
             {course.thumbnailUrl ? (
               <img 
                 src={course.thumbnailUrl} 
@@ -29,33 +39,43 @@ export default function ContinueJourney({ course }: ContinueJourneyProps) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-red-600 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                N
+              <div className="w-full h-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-bold text-lg">
+                <i className="fas fa-graduation-cap"></i>
               </div>
             )}
           </div>
-          <div>
-            <h3 className="font-bold text-base sm:text-lg text-gray-900">{course.courseTitle}</h3>
-            <p className="text-xs sm:text-sm text-gray-600">
-              {course.moduleTitle} - {course.lessonTitle}
+          
+          {/* Course Info */}
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 truncate">{course.courseTitle}</h3>
+            <p className="text-xs sm:text-sm text-gray-600 mb-1 truncate">
+              <i className="fas fa-book-open mr-1"></i>
+              {course.moduleTitle}
+            </p>
+            <p className="text-xs text-gray-500 truncate">
+              <i className="fas fa-video mr-1"></i>
+              {course.lessonTitle}
             </p>
           </div>
         </div>
         
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="w-full bg-white bg-opacity-50 rounded-full h-3 shadow-inner">
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-sm"
+              style={{ width: `${course.progressPercent}%` }}
+            />
+          </div>
+        </div>
+        
+        {/* Continue Button */}
         <Link href={course.href}>
-          <a className="bg-brand-primary text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm sm:text-base text-center">
+          <a className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 font-bold text-sm sm:text-base text-center block transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02]">
+            <i className="fas fa-play mr-2"></i>
             Continue Learning
           </a>
         </Link>
-      </div>
-      
-      <div className="mt-4">
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-brand-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${course.progressPercent}%` }}
-          />
-        </div>
       </div>
     </div>
   );
