@@ -118,6 +118,8 @@ export interface PaginationParams {
   sortOrder?: 'asc' | 'desc';
   search?: string;
   status?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 // Form interfaces for creating/editing

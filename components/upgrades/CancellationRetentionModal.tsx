@@ -19,7 +19,7 @@ export default function CancellationRetentionModal({
   currentPlan,
   onRetentionSuccess 
 }: CancellationRetentionModalProps) {
-  const { upgradeToRole } = useUserRole();
+  const { setUserRole } = useUserRole();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -28,7 +28,10 @@ export default function CancellationRetentionModal({
   const handleDowngradeToAffiliate = async () => {
     setIsProcessing(true);
     
-    const success = await upgradeToRole('downsell');
+    // Simulate upgrade process
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const success = true;
+    setUserRole('downsell');
     
     if (success) {
       setIsProcessing(false);

@@ -56,9 +56,9 @@ export function useCourseAccess() {
     permissions: {
       ...permissions,
       // Affiliate system permissions
-      canAccessAffiliate: currentRole === 'admin' || currentRole === 'affiliate' || permissions.canAccessAffiliate || false,
-      canManageFunnels: currentRole === 'admin' || permissions.canManageFunnels || false,
-      canViewStats: currentRole === 'admin' || currentRole === 'affiliate' || permissions.canViewStats || false,
+      canAccessAffiliate: currentRole === 'admin' || currentRole === 'downsell' || permissions.canAccessAffiliate || false,
+      canManageFunnels: currentRole === 'admin' || permissions.canCreateFunnels || false,
+      canViewStats: currentRole === 'admin' || currentRole === 'downsell' || permissions.canAccessStats || false,
     },
     // New methods from CourseAccessContext
     canAccessCourse,

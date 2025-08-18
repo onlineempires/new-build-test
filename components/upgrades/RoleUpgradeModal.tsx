@@ -87,7 +87,7 @@ export default function RoleUpgradeModal({
         selectedPlan={selectedPlan}
         currentPlan={currentPlan}
         onPaymentSuccess={handlePaymentSuccess}
-        affiliateId={affiliateId}
+        affiliateId={affiliateId || undefined}
       />
     );
   }

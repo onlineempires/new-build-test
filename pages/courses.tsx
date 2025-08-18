@@ -44,7 +44,7 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded font-medium hover:bg-green-600 transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors text-sm w-full"
           >
             <i className="fas fa-redo mr-2"></i>Completed - Watch Again
           </a>
@@ -56,9 +56,9 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm w-full"
           >
-            <i className="fas fa-play mr-2"></i>Continue Learning ({completedLessons}/{course.lessonCount})
+            <i className="fas fa-play mr-2"></i>Continue ({completedLessons}/{course.lessonCount})
           </a>
         );
       }
@@ -66,7 +66,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded font-medium hover:bg-gray-700 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors text-sm w-full"
         >
           <i className="fas fa-rocket mr-2"></i>Start Course
         </a>
@@ -79,7 +79,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded font-medium hover:bg-purple-700 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:purple-700 transition-colors text-sm w-full"
         >
           <i className="fas fa-crown mr-2"></i>Access Masterclass
         </a>
@@ -93,7 +93,7 @@ export default function AllCourses() {
       return (
         <button
           onClick={() => handleIndividualPurchase({...course, price: coursePrice})}
-          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full"
         >
           <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${coursePrice}
         </button>
@@ -106,7 +106,7 @@ export default function AllCourses() {
     return (
       <UpgradeButton 
         variant="secondary" 
-        className="text-sm py-2 px-4 w-full"
+        className="text-sm py-2 px-4 w-full font-semibold rounded-lg"
         currentPlan={currentRole}
       >
         <span className="flex items-center justify-center">
@@ -205,36 +205,19 @@ export default function AllCourses() {
             }} />
           </div>
 
-          {/* Conditional Achievement Banner - Only show when actually earned */}
-          {stats && stats.coursesCompleted >= 3 && (
-            <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-4 sm:px-6 py-1.5 sm:py-2 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center min-w-0 flex-1">
-                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-2 flex-shrink-0">
-                    <i className="fas fa-trophy text-white text-xs"></i>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs sm:text-sm font-bold truncate">"Course Crusher" Achievement Unlocked!</span>
-                  </div>
-                </div>
-                <div className="bg-white bg-opacity-20 px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                  <span className="text-xs font-bold">+350 XP</span>
-                </div>
-              </div>
-            </div>
-          )}
+
 
           {/* Main Content */}
-          <div className="px-6 py-8">
+          <div className="px-6 py-6">
             
             {/* Your Learning Journey Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-5">
               <h1 className="text-2xl font-bold text-gray-900">Your Learning Journey</h1>
-              <div className="text-sm text-blue-600 font-medium">18 courses available</div>
+              <div className="text-sm text-blue-600 font-semibold">18 courses available</div>
             </div>
 
             {/* Start Here Section - Enhanced for Trial Users */}
-            <div className="mb-8">
+            <div className="mb-6">
               {/* Special message for new users (0 courses completed) */}
               {(currentRole === 'free' || currentRole === 'trial') && stats && stats.coursesCompleted === 0 && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
@@ -271,13 +254,13 @@ export default function AllCourses() {
 
               {/* Progress message for users who have started - REMOVED for cleaner UX */}
 
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+              <div className="flex items-center mb-3">
+                <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
                   <i className="fas fa-play"></i>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-gray-900">Start Here - Foundation Training</h2>
-                  <p className="text-sm text-gray-600">Essential courses to build your online business foundation</p>
+                  <h2 className="text-lg font-bold text-gray-900">Start Here - Foundation Training</h2>
+                  <p className="text-xs text-gray-500">Essential courses to build your online business foundation</p>
                 </div>
                 {(currentRole === 'free' || currentRole === 'trial') && (
                   <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
@@ -286,7 +269,7 @@ export default function AllCourses() {
                 )}
               </div>
               
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {data?.startHereCourses.map((course, index) => {
                   const getStatusBadge = () => {
                     if (course.isCompleted) {
@@ -316,7 +299,7 @@ export default function AllCourses() {
                   const shouldHighlight = isFirstCourse && isNewUser;
 
                   return (
-                    <div key={course.id} className={`bg-white rounded-lg overflow-hidden ${
+                    <div key={course.id} className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
                       shouldHighlight 
                         ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
                         : 'border border-gray-200'
@@ -326,30 +309,51 @@ export default function AllCourses() {
                           <i className="fas fa-star mr-1"></i>START HERE FIRST
                         </div>
                       )}
-                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center relative`}>
-                        <i className={`${getIcon()} text-white text-3xl`}></i>
+                      <div className="relative h-40 bg-gray-100 overflow-hidden">
+                        <img 
+                          src={`https://images.unsplash.com/photo-${course.id === 'business-blueprint' ? '1542744173-a8b0effd0ae5' : course.id === 'discovery-process' ? '1551288049-2d49e87156bd' : '1519389950473-47ba1d7aa83c'}?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75`}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = `data:image/svg+xml;base64,${btoa(`
+                              <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                  <linearGradient id="grad${course.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:${course.id === 'business-blueprint' ? '#8B5CF6' : course.id === 'discovery-process' ? '#EC4899' : '#06B6D4'};stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:${course.id === 'business-blueprint' ? '#7C3AED' : course.id === 'discovery-process' ? '#DB2777' : '#0891B2'};stop-opacity:1" />
+                                  </linearGradient>
+                                </defs>
+                                <rect width="400" height="240" fill="url(#grad${course.id})" />
+                                <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">${getIcon().includes('building') ? '🏢' : getIcon().includes('search') ? '🔍' : '📈'}</text>
+                              </svg>
+                            `)}`;
+                          }}
+                        />
                         {shouldHighlight && (
-                          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">
+                          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full shadow-lg">
                             <i className="fas fa-arrow-down mr-1"></i>WATCH NOW
                           </div>
                         )}
+                        <div className="absolute top-2 left-2">
+                          {getStatusBadge()}
+                        </div>
                       </div>
                       <div className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          {getStatusBadge()}
-                          <span className="text-xs text-gray-500">BEGINNER</span>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">BEGINNER</span>
+                          <span className="text-green-600 font-semibold text-sm">+{course.lessonCount * 15} XP</span>
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-2">{course.title}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{course.description}</p>
+                        <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 leading-relaxed">{course.description}</p>
                         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                          <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount}&nbsp;lessons</span>
-                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.17)}&nbsp;hours</span>
-                          <span className="text-green-600 font-medium">+{course.lessonCount * 15}&nbsp;XP</span>
+                          <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount} lessons</span>
+                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.17)}h</span>
                         </div>
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <div className="flex justify-between text-sm mb-1">
-                            <span>Progress</span>
-                            <span>{course.progress}%</span>
+                            <span className="text-gray-600 font-medium">Progress</span>
+                            <span className="font-semibold text-gray-900">{course.progress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
@@ -368,7 +372,7 @@ export default function AllCourses() {
 
             {/* Enhanced Upgrade Section for Trial/Free Users */}
             {(currentRole === 'free' || currentRole === 'trial') && (
-              <div className="mb-8">
+              <div className="mb-6">
                 <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 rounded-2xl overflow-hidden shadow-2xl">
                   {/* Header Section */}
                   <div className="px-6 pt-6 pb-4 text-center text-white relative">
@@ -474,14 +478,14 @@ export default function AllCourses() {
             )}
 
             {/* Advanced Training Section */}
-            <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <div className="w-7 h-7 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
                   <i className="fas fa-graduation-cap"></i>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-gray-900">Advanced Training</h2>
-                  <p className="text-sm text-gray-600">Specialized courses for scaling your business</p>
+                  <h2 className="text-lg font-bold text-gray-900">Advanced Training</h2>
+                  <p className="text-xs text-gray-500">Specialized courses for scaling your business</p>
                 </div>
                 {(currentRole === 'free' || currentRole === 'trial') ? (
                   <span className="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">
@@ -494,7 +498,7 @@ export default function AllCourses() {
                 )}
               </div>
               
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 {data?.socialMediaCourses.map((course, index) => {
                   const getStatusBadge = () => {
                     if (course.isCompleted) {
@@ -528,26 +532,63 @@ export default function AllCourses() {
                   };
 
                   return (
-                    <div key={course.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
-                      <div className={`h-32 bg-gradient-to-br ${getGradient()} flex items-center justify-center`}>
-                        <i className={`${getIcon()} text-white text-3xl`}></i>
+                    <div key={course.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="relative h-40 bg-gray-100 overflow-hidden">
+                        <img 
+                          src={`https://images.unsplash.com/photo-${
+                            course.id === 'tiktok-mastery' ? '1611605698323-b1e54d4fb6ed' : 
+                            course.id === 'facebook-advertising' ? '1432888622747-4eb5a91485ee' : 
+                            course.id === 'instagram-marketing' ? '1551817958-d9d86fb29431' : 
+                            course.id === 'sales-funnel-mastery' ? '1460925895917-afdab827c52f' : 
+                            '1542744173-a8b0effd0ae5'
+                          }?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75`}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const iconEmoji = course.id === 'tiktok-mastery' ? '🎵' : 
+                                             course.id === 'facebook-advertising' ? '📱' : 
+                                             course.id === 'instagram-marketing' ? '📸' : 
+                                             course.id === 'sales-funnel-mastery' ? '🧠' : '👥';
+                            const gradientColors = course.id === 'tiktok-mastery' ? '#10B981,#059669' : 
+                                                   course.id === 'facebook-advertising' ? '#F59E0B,#D97706' : 
+                                                   course.id === 'instagram-marketing' ? '#6B7280,#4B5563' : 
+                                                   course.id === 'sales-funnel-mastery' ? '#F97316,#EA580C' : '#8B5CF6,#7C3AED';
+                            const [color1, color2] = gradientColors.split(',');
+                            
+                            target.src = `data:image/svg+xml;base64,${btoa(`
+                              <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                  <linearGradient id="grad${course.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:${color1};stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:${color2};stop-opacity:1" />
+                                  </linearGradient>
+                                </defs>
+                                <rect width="400" height="240" fill="url(#grad${course.id})" />
+                                <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">${iconEmoji}</text>
+                              </svg>
+                            `)}`;
+                          }}
+                        />
+                        <div className="absolute top-2 left-2">
+                          {getStatusBadge()}
+                        </div>
                       </div>
                       <div className="p-4 flex-1 flex flex-col">
                         <div className="flex items-center justify-between mb-2">
-                          {getStatusBadge()}
-                          <span className="text-xs text-gray-500">{getDifficulty()}</span>
+                          <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">{getDifficulty()}</span>
+                          <span className="text-green-600 font-semibold text-sm">+{course.lessonCount * 20} XP</span>
                         </div>
-                        <h3 className="font-semibold text-gray-900 mb-2">{course.title}</h3>
-                        <p className="text-sm text-gray-600 mb-3 flex-1">{course.description}</p>
+                        <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 flex-1 leading-relaxed">{course.description}</p>
                         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                           <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount} lessons</span>
-                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.2)} hours</span>
-                          <span className="text-green-600 font-medium">+{course.lessonCount * 20} XP</span>
+                          <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.2)}h</span>
                         </div>
-                        <div className="mb-3">
+                        <div className="mb-4">
                           <div className="flex justify-between text-sm mb-1">
-                            <span>Progress</span>
-                            <span>{course.progress}%</span>
+                            <span className="text-gray-600 font-medium">Progress</span>
+                            <span className="font-semibold text-gray-900">{course.progress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
@@ -563,26 +604,47 @@ export default function AllCourses() {
                 })}
                 
                 {/* Add Email Marketing Secrets as a locked course */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="h-32 bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center">
-                    <i className="fas fa-envelope text-white text-3xl"></i>
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="relative h-40 bg-gray-100 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75"
+                      alt="Email Marketing Secrets"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `data:image/svg+xml;base64,${btoa(`
+                          <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <linearGradient id="gradEmail" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#DB2777;stop-opacity:1" />
+                              </linearGradient>
+                            </defs>
+                            <rect width="400" height="240" fill="url(#gradEmail)" />
+                            <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">📧</text>
+                          </svg>
+                        `)}`;
+                      }}
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
+                    </div>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
-                      <span className="text-xs text-gray-500">INTERMEDIATE</span>
+                      <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">INTERMEDIATE</span>
+                      <span className="text-yellow-600 font-semibold text-sm">+400 XP</span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Email Marketing Secrets</h3>
-                    <p className="text-sm text-gray-600 mb-3">Build profitable email sequences and automated funnels</p>
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Email Marketing Secrets</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build profitable email sequences and automated funnels</p>
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>16 lessons</span>
-                      <span><i className="fas fa-clock mr-1"></i>5 hours</span>
-                      <span className="text-yellow-600 font-medium">+400 XP</span>
+                      <span><i className="fas fa-clock mr-1"></i>5h</span>
                     </div>
-                    <div className="mb-3">
+                    <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span>Progress</span>
-                        <span>Locked</span>
+                        <span className="text-gray-600 font-medium">Progress</span>
+                        <span className="font-semibold text-gray-900">Locked</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
@@ -596,7 +658,7 @@ export default function AllCourses() {
                         lessonCount: 16,
                         price: 49
                       })}
-                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded font-medium hover:bg-orange-600 transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $49
                     </button>

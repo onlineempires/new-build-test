@@ -15,7 +15,7 @@ export const affiliateApiClient: AxiosInstance = axios.create({
 
 // Request interceptor - add auth token if available
 affiliateApiClient.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
+  (config) => {
     // Get auth token from localStorage or cookies
     const token = localStorage.getItem('authToken') || 
                   document.cookie

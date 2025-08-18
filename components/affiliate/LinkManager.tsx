@@ -47,9 +47,15 @@ export const LinkManager: React.FC<LinkManagerProps> = ({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [showQrCode, setShowQrCode] = useState<string | null>(null);
-  const [newLink, setNewLink] = useState({
+  const [newLink, setNewLink] = useState<{
+    name: string;
+    type: 'custom' | 'utm';
+    utmSource: string;
+    utmMedium: string;
+    utmCampaign: string;
+  }>({
     name: '',
-    type: 'custom' as const,
+    type: 'custom',
     utmSource: '',
     utmMedium: '',
     utmCampaign: ''
@@ -190,7 +196,7 @@ export const LinkManager: React.FC<LinkManagerProps> = ({
               </label>
               <select
                 value={newLink.type}
-                onChange={(e) => setNewLink(prev => ({ ...prev, type: e.target.value as any }))}
+                onChange={(e) => setNewLink(prev => ({ ...prev, type: e.target.value as 'custom' | 'utm' }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="custom">Custom Link</option>

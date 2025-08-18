@@ -16,8 +16,14 @@ const mockUser = {
 export default function AffiliatePage() {
   const router = useRouter();
   const { permissions } = useCourseAccess();
-  const [stats, setStats] = useState(null);
-  const [allFunnels, setAllFunnels] = useState([]);
+  const [stats, setStats] = useState<{
+    totalClicks: number;
+    totalSignups: number;
+    totalCommissions: number;
+    conversionRate: number;
+    lastUpdated: string;
+  } | null>(null);
+  const [allFunnels, setAllFunnels] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('opt-in');
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState('');
@@ -198,7 +204,7 @@ export default function AffiliatePage() {
     }));
   };
 
-  const copyToClipboard = async (text, label) => {
+  const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopySuccess(label);
@@ -216,7 +222,7 @@ export default function AffiliatePage() {
     }
   };
 
-  const shareLink = async (url, title) => {
+  const shareLink = async (url: string, title: string) => {
     if (navigator.share) {
       try {
         await navigator.share({
@@ -231,11 +237,11 @@ export default function AffiliatePage() {
     }
   };
 
-  const openLink = (url) => {
+  const openLink = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const FunnelThumbnail = ({ src, alt, type }) => {
+  const FunnelThumbnail = ({ src, alt, type }: { src: string; alt: string; type: string }) => {
     return (
       <div className="relative w-32 h-20 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
         <img
@@ -244,12 +250,15 @@ export default function AffiliatePage() {
           className="w-full h-full object-cover"
           onError={(e) => {
             // Fallback to gradient background with icon if image fails
-            e.target.style.display = 'none';
-            e.target.parentElement.innerHTML = `
-              <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 text-2xl">
-                ${type === 'opt-in' ? '📧' : type === 'vsl' ? '▶️' : type === 'checkout' ? '💳' : '🎁'}
-              </div>
-            `;
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            if (target.parentElement) {
+              target.parentElement.innerHTML = `
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 text-2xl">
+                  ${type === 'opt-in' ? '📧' : type === 'vsl' ? '▶️' : type === 'checkout' ? '💳' : '🎁'}
+                </div>
+              `;
+            }
           }}
         />
       </div>
