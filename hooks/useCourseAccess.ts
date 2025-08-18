@@ -53,7 +53,13 @@ export function useCourseAccess() {
     refreshPurchases,
     purchasedCourses,
     currentRole,
-    permissions,
+    permissions: {
+      ...permissions,
+      // Affiliate system permissions
+      canAccessAffiliate: currentRole === 'admin' || currentRole === 'affiliate' || permissions.canAccessAffiliate || false,
+      canManageFunnels: currentRole === 'admin' || permissions.canManageFunnels || false,
+      canViewStats: currentRole === 'admin' || currentRole === 'affiliate' || permissions.canViewStats || false,
+    },
     // New methods from CourseAccessContext
     canAccessCourse,
     getCourseUpgradeMessage,
