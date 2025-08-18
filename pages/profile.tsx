@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 
 const ProfilePage = () => {
+  // Early return if not mounted to prevent hydration issues
+  const [isMounted, setIsMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,6 +56,8 @@ const ProfilePage = () => {
   });
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isClient, setIsClient] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: '👤' },
@@ -62,6 +66,32 @@ const ProfilePage = () => {
     { id: 'tax', label: 'Tax Details', icon: '📄' },
     { id: 'payout', label: 'Payout Info', icon: '💰' }
   ];
+
+  // Handle client-side mounting to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+    setIsClient(true);
+    setCurrentTime(new Date().toLocaleString());
+  }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return (
+      <>
+        <Head>
+          <title>Profile Settings - Online Empire</title>
+          <meta name="description" content="Manage your profile settings, billing information, and account preferences" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading Profile...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -262,7 +292,7 @@ const ProfilePage = () => {
               </select>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Current time: {new Date().toLocaleString()}
+              Current time: {isClient ? currentTime : 'Loading...'}
             </p>
           </div>
         </div>
@@ -378,7 +408,7 @@ const ProfilePage = () => {
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
               />
             </div>
-            {profileData.calendarBookingLink && (
+            {isClient && profileData.calendarBookingLink && (
               <a
                 href={profileData.calendarBookingLink}
                 target="_blank"
