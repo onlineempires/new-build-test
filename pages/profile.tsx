@@ -77,6 +77,7 @@ const ProfilePage = () => {
   const [cancellationReason, setCancellationReason] = useState('');
   const [showDownsellOffer, setShowDownsellOffer] = useState(false);
   const [showPauseAccountModal, setShowPauseAccountModal] = useState(false);
+  const [showMonthlyUpgradeModal, setShowMonthlyUpgradeModal] = useState(false);
   
   // Cancellation flow data
   const [userProgress, setUserProgress] = useState({
@@ -852,7 +853,7 @@ const ProfilePage = () => {
                   </ul>
                   
                   <button 
-                    onClick={() => alert('Upgrading to Monthly Membership...')}
+                    onClick={() => setShowMonthlyUpgradeModal(true)}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
                   >
                     Upgrade to Monthly
@@ -1380,13 +1381,25 @@ const ProfilePage = () => {
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="bg-white rounded-lg p-3 border">
                   <p className="text-sm text-gray-600">Current</p>
-                  <p className="text-lg font-bold text-gray-900">$99/month</p>
-                  <p className="text-xs text-gray-500">$1,188/year</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {currentRole === 'downsell' ? '$37 one-time' : 
+                     currentRole === 'monthly' ? '$99/month' : 
+                     currentRole === 'trial' ? '$1 trial' : 'Free'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {currentRole === 'monthly' ? '$1,188/year' : 
+                     currentRole === 'downsell' ? 'Lite Access' : 
+                     currentRole === 'trial' ? '7-day trial' : 'Basic access'}
+                  </p>
                 </div>
                 <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
                   <p className="text-sm text-blue-600">Annual</p>
                   <p className="text-lg font-bold text-blue-600">$799/year</p>
-                  <p className="text-xs text-green-600 font-semibold">Save $388!</p>
+                  <p className="text-xs text-green-600 font-semibold">
+                    {currentRole === 'monthly' ? 'Save $388!' : 
+                     currentRole === 'downsell' ? 'Save $999!' : 
+                     'Best Value!'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1427,8 +1440,8 @@ const ProfilePage = () => {
                 <p className="font-medium mb-1">What happens next:</p>
                 <ul className="space-y-1 text-xs">
                   <li>• You'll be charged $799 today</li>
-                  <li>• Your monthly billing will be cancelled</li>
-                  <li>• You'll save $388 compared to monthly billing</li>
+                  <li>• {currentRole === 'monthly' ? 'Your monthly billing will be cancelled' : 'Your current plan will be upgraded'}</li>
+                  <li>• You'll save {currentRole === 'monthly' ? '$388' : currentRole === 'downsell' ? '$999' : '$388'} compared to monthly billing</li>
                   <li>• Your annual plan starts immediately</li>
                 </ul>
               </div>
@@ -1757,6 +1770,145 @@ const ProfilePage = () => {
     return null;
   };
 
+  const renderMonthlyUpgradeModal = () => {
+    if (!showMonthlyUpgradeModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-900">Upgrade to Monthly</h3>
+            <button
+              onClick={() => setShowMonthlyUpgradeModal(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          {/* Upgrade Summary */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-calendar-alt text-white text-2xl"></i>
+              </div>
+              <h4 className="text-lg font-bold text-gray-900 mb-2">🚀 Upgrade to Full Access</h4>
+              <p className="text-gray-700 mb-4">Get unlimited access to all courses and features!</p>
+              
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="bg-white rounded-lg p-3 border">
+                  <p className="text-sm text-gray-600">Current</p>
+                  <p className="text-lg font-bold text-gray-900">
+                    {currentRole === 'downsell' ? '$37 one-time' : 
+                     currentRole === 'trial' ? '$1 trial' : 'Free'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {currentRole === 'downsell' ? 'Lite Access' : 
+                     currentRole === 'trial' ? '7-day trial' : 'Basic access'}
+                  </p>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+                  <p className="text-sm text-blue-600">Monthly</p>
+                  <p className="text-lg font-bold text-blue-600">$99/month</p>
+                  <p className="text-xs text-green-600 font-semibold">Full Access!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Features Comparison */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h5 className="font-semibold text-green-900 mb-3">✨ What You'll Get:</h5>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center">
+                <i className="fas fa-check text-green-600 mr-3"></i>
+                <span className="text-green-800">All premium courses & masterclasses</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check text-green-600 mr-3"></i>
+                <span className="text-green-800">Expert directory access</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check text-green-600 mr-3"></i>
+                <span className="text-green-800">Advanced statistics & lead management</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check text-green-600 mr-3"></i>
+                <span className="text-green-800">25% affiliate commissions</span>
+              </div>
+              <div className="flex items-center">
+                <i className="fas fa-check text-green-600 mr-3"></i>
+                <span className="text-green-800">Priority customer support</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method */}
+          <div className="mb-6">
+            <h5 className="font-medium text-gray-900 mb-3">Payment Method</h5>
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded flex items-center justify-center">
+                    <i className="fab fa-cc-visa text-white text-sm"></i>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{paymentCard.cardNumber}</p>
+                    <p className="text-sm text-gray-600">Expires {paymentCard.expiryDate}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowMonthlyUpgradeModal(false);
+                    setShowBillingCardModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Terms */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-2">
+              <i className="fas fa-info-circle text-blue-600 mt-0.5 text-sm"></i>
+              <div className="text-sm text-gray-700">
+                <p className="font-medium mb-1">What happens next:</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• You'll be charged $99 today</li>
+                  <li>• Your plan will be upgraded immediately</li>
+                  <li>• Billing cycle starts today</li>
+                  <li>• Cancel anytime with one click</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setShowMonthlyUpgradeModal(false);
+                alert('🎉 Congratulations! You\'ve successfully upgraded to Monthly membership! You now have full access to all courses and features.');
+              }}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-medium"
+            >
+              Confirm Upgrade - $99/month
+            </button>
+            <button
+              onClick={() => setShowMonthlyUpgradeModal(false)}
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderPauseAccountModal = () => {
     if (!showPauseAccountModal) return null;
 
@@ -1898,6 +2050,7 @@ const ProfilePage = () => {
         {renderUpgradeConfirmModal()}
         {renderCancellationFlow()}
         {renderPauseAccountModal()}
+        {renderMonthlyUpgradeModal()}
       </AppLayout>
     </>
   );
