@@ -604,8 +604,27 @@ export default function AllCourses() {
                     </div>
                   );
                 })}
-                
-                {/* Add Email Marketing Secrets as a locked course */}
+
+              </div>
+            </div>
+
+            {/* Masterclass Training Section */}
+            <div className="mb-6">
+              <div className="flex items-center mb-3">
+                <div className="w-7 h-7 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
+                  <i className="fas fa-crown"></i>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-gray-900">Masterclass Training</h2>
+                  <p className="text-xs text-gray-500">Premium courses for advanced business growth</p>
+                </div>
+                <span className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full border border-yellow-300">
+                  <i className="fas fa-star mr-1"></i>PREMIUM
+                </span>
+              </div>
+              
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+                {/* Email Marketing Secrets */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative h-40 bg-gray-100 overflow-hidden">
                     <img 
@@ -614,7 +633,6 @@ export default function AllCourses() {
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        // Use simple gradient background as fallback
                         target.style.display = 'none';
                         if (target.parentElement) {
                           target.parentElement.innerHTML = `
@@ -628,6 +646,11 @@ export default function AllCourses() {
                     <div className="absolute top-2 left-2">
                       <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
                     </div>
+                    <div className="absolute top-2 right-2">
+                      <span className="text-xs font-bold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full border border-yellow-300">
+                        <i className="fas fa-crown mr-1"></i>PREMIUM
+                      </span>
+                    </div>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -635,7 +658,7 @@ export default function AllCourses() {
                       <span className="text-yellow-600 font-semibold text-sm">+400 XP</span>
                     </div>
                     <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Email Marketing Secrets</h3>
-                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build profitable email sequences and automated funnels</p>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build profitable email sequences and automated funnels that convert</p>
                     <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>16 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>5h</span>
@@ -653,13 +676,139 @@ export default function AllCourses() {
                       onClick={() => handleIndividualPurchase({
                         id: 'email-marketing-secrets',
                         title: 'Email Marketing Secrets',
-                        description: 'Build profitable email sequences and automated funnels',
+                        description: 'Build profitable email sequences and automated funnels that convert',
                         lessonCount: 16,
                         price: 49
                       })}
                       className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $49
+                    </button>
+                  </div>
+                </div>
+
+                {/* Advanced Copywriting Masterclass */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="relative h-40 bg-gray-100 overflow-hidden">
+                    <img 
+                      src="https://via.placeholder.com/400x240/8B5CF6/FFFFFF?text=Copywriting"
+                      alt="Advanced Copywriting Masterclass"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        if (target.parentElement) {
+                          target.parentElement.innerHTML = `
+                            <div class="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                              <div class="text-4xl">✍️</div>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className="text-xs font-bold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full border border-yellow-300">
+                        <i className="fas fa-crown mr-1"></i>PREMIUM
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">ADVANCED</span>
+                      <span className="text-yellow-600 font-semibold text-sm">+500 XP</span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Advanced Copywriting Masterclass</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Master the art of persuasive writing that sells and converts at scale</p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                      <span><i className="fas fa-play-circle mr-1"></i>20 lessons</span>
+                      <span><i className="fas fa-clock mr-1"></i>8h</span>
+                    </div>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600 font-medium">Progress</span>
+                        <span className="font-semibold text-gray-900">Locked</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleIndividualPurchase({
+                        id: 'advanced-copywriting-masterclass',
+                        title: 'Advanced Copywriting Masterclass',
+                        description: 'Master the art of persuasive writing that sells and converts at scale',
+                        lessonCount: 20,
+                        price: 97
+                      })}
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
+                    >
+                      <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $97
+                    </button>
+                  </div>
+                </div>
+
+                {/* Scaling Systems Masterclass */}
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                  <div className="relative h-40 bg-gray-100 overflow-hidden">
+                    <img 
+                      src="https://via.placeholder.com/400x240/059669/FFFFFF?text=Scaling+Systems"
+                      alt="Scaling Systems Masterclass"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        if (target.parentElement) {
+                          target.parentElement.innerHTML = `
+                            <div class="w-full h-full bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center">
+                              <div class="text-4xl">⚙️</div>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
+                    <div className="absolute top-2 left-2">
+                      <span className="text-xs font-medium text-orange-600 bg-orange-100 px-2 py-1 rounded">LOCKED</span>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <span className="text-xs font-bold text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full border border-yellow-300">
+                        <i className="fas fa-crown mr-1"></i>PREMIUM
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">EXPERT</span>
+                      <span className="text-yellow-600 font-semibold text-sm">+600 XP</span>
+                    </div>
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Scaling Systems Masterclass</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build automated systems and processes to scale your business to 7-figures</p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                      <span><i className="fas fa-play-circle mr-1"></i>24 lessons</span>
+                      <span><i className="fas fa-clock mr-1"></i>12h</span>
+                    </div>
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600 font-medium">Progress</span>
+                        <span className="font-semibold text-gray-900">Locked</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-orange-500 h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleIndividualPurchase({
+                        id: 'scaling-systems-masterclass',
+                        title: 'Scaling Systems Masterclass',
+                        description: 'Build automated systems and processes to scale your business to 7-figures',
+                        lessonCount: 24,
+                        price: 197
+                      })}
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
+                    >
+                      <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $197
                     </button>
                   </div>
                 </div>
