@@ -193,7 +193,7 @@ export default function AllCourses() {
         <div className="min-h-screen bg-gray-50 pb-8">
           
           {/* Statistics Cards - Clean Layout */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-6 sm:py-8">
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
             <StatsCards stats={stats || {
               coursesCompleted: 0,
               coursesTotal: 0,
@@ -204,8 +204,6 @@ export default function AllCourses() {
               level: 'Rookie'
             }} />
           </div>
-
-
 
           {/* Main Content */}
           <div className="px-6 py-6">
