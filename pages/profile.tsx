@@ -41,6 +41,13 @@ const ProfilePage = () => {
     bankDetails: ''
   });
 
+  const [membershipType, setMembershipType] = useState('monthly'); // or 'annual'
+  const [paymentCard, setPaymentCard] = useState({
+    cardNumber: '**** **** **** 4532',
+    expiryDate: '12/26',
+    cardHolder: 'Ashley Kemp'
+  });
+
   const [taxForms, setTaxForms] = useState({
     w9Uploaded: false,
     w8benUploaded: false
@@ -409,6 +416,32 @@ const ProfilePage = () => {
         <h3 className="text-xl font-semibold text-gray-900">Billing Information</h3>
         <p className="text-gray-600 mt-1">Update your billing address and payment information</p>
       </div>
+
+      {/* Payment Card Section */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <i className="fas fa-credit-card text-blue-600"></i>
+          Payment Method
+        </h4>
+        
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded flex items-center justify-center">
+            <i className="fab fa-cc-visa text-white text-lg"></i>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900">{paymentCard.cardNumber}</p>
+            <p className="text-sm text-gray-600">Expires {paymentCard.expiryDate} • {paymentCard.cardHolder}</p>
+          </div>
+        </div>
+        
+        <button 
+          onClick={() => alert('Card update functionality would open a secure payment form')}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          <i className="fas fa-edit mr-2"></i>
+          Update Card Details
+        </button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -500,7 +533,9 @@ const ProfilePage = () => {
           <div>
             <h4 className="text-xl font-bold text-gray-900">Online Empire Member</h4>
             <p className="text-gray-600">Active Subscription</p>
-            <p className="text-sm text-blue-600 font-medium">Next billing: September 18, 2025</p>
+            <p className="text-sm text-blue-600 font-medium">
+              Next billing: {membershipType === 'monthly' ? 'September 18, 2025' : 'March 15, 2025'}
+            </p>
           </div>
         </div>
       </div>
@@ -508,8 +543,8 @@ const ProfilePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <h5 className="font-semibold text-gray-900 mb-2">Plan Type</h5>
-          <p className="text-gray-600">Monthly Membership</p>
-          <p className="text-sm text-gray-500 mt-1">$99/month</p>
+          <p className="text-gray-600">{membershipType === 'monthly' ? 'Monthly Membership' : 'Annual Membership'}</p>
+          <p className="text-sm text-gray-500 mt-1">{membershipType === 'monthly' ? '$99/month' : '$990/year'}</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
@@ -541,6 +576,46 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Option for Monthly Users */}
+      {membershipType === 'monthly' && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+              <i className="fas fa-star text-white text-xl"></i>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Upgrade to Annual Membership</h4>
+              <p className="text-gray-700 mb-3">Save $198 per year with our annual plan!</p>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Monthly</p>
+                  <p className="text-lg font-bold text-gray-900">$99/month</p>
+                  <p className="text-xs text-gray-500">$1,188/year</p>
+                </div>
+                <div className="flex-1 border-t border-dashed border-gray-300 relative">
+                  <span className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs text-gray-500">vs</span>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-green-600">Annual</p>
+                  <p className="text-lg font-bold text-green-700">$82.50/month</p>
+                  <p className="text-xs text-green-600">$990/year</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setMembershipType('annual');
+                  alert('Upgrading to annual membership...');
+                }}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+              >
+                <i className="fas fa-arrow-up mr-2"></i>
+                Upgrade to Annual
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-4">
         <button 
@@ -675,29 +750,46 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-4">Payment Options & Fees</h4>
+      {/* Payment Options Information - Not Clickable */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <i className="fas fa-info-circle text-blue-600"></i>
+          <h4 className="font-semibold text-blue-900">Payment Options & Fees</h4>
+        </div>
         
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
-            <div>
-              <h5 className="font-medium text-gray-900">Bank Transfer</h5>
-              <p className="text-gray-600 text-sm">Direct deposit to your bank account via Wise.com</p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fas fa-university text-gray-600 w-5"></i>
+              <div>
+                <p className="font-medium text-gray-900">Bank Transfer</p>
+                <p className="text-gray-600 text-sm">Direct deposit via Wise.com</p>
+              </div>
             </div>
-            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
               0% Fees
-            </div>
+            </span>
           </div>
-
-          <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
-            <div>
-              <h5 className="font-medium text-gray-900">PayPal</h5>
-              <p className="text-gray-600 text-sm">Receive payments via PayPal</p>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fab fa-paypal text-gray-600 w-5"></i>
+              <div>
+                <p className="font-medium text-gray-900">PayPal</p>
+                <p className="text-gray-600 text-sm">Standard PayPal transfer</p>
+              </div>
             </div>
-            <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
               2.9% + $0.30
-            </div>
+            </span>
           </div>
+        </div>
+        
+        <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+          <p className="text-blue-800 text-sm">
+            <i className="fas fa-lightbulb mr-2"></i>
+            <strong>Recommendation:</strong> Bank transfer offers 0% fees and is the most cost-effective option.
+          </p>
         </div>
       </div>
 
@@ -727,16 +819,18 @@ const ProfilePage = () => {
                 <p>Press "Complete your transfer", add your banking details, and collect your commissions direct to your bank.</p>
               </div>
               
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email for notifications:</label>
-                <input
-                  type="email"
-                  value={payoutData.email}
-                  onChange={(e) => setPayoutData({...payoutData, email: e.target.value})}
-                  className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                  placeholder="your@email.com"
-                />
-              </div>
+              {payoutData.method === 'bank' && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email for notifications:</label>
+                  <input
+                    type="email"
+                    value={payoutData.email}
+                    onChange={(e) => setPayoutData({...payoutData, email: e.target.value})}
+                    className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
