@@ -4,18 +4,30 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AppLayout from '../../components/layout/AppLayout';
 import { useCourseAccess } from '../../hooks/useCourseAccess';
+import { useUserRole } from '../../contexts/UserRoleContext';
+import { generateAffiliateLink, updateAffiliateLinksForUser } from '../../utils/affiliateLinks';
 import { Copy, ExternalLink, Share2, TrendingUp, Users, DollarSign, Eye } from 'lucide-react';
 
-// Mock user data - replace with real user context
-const mockUser = {
-  id: 1,
-  name: 'Online Empire Member',
-  avatarUrl: '/api/placeholder/40/40'
+// Get username from localStorage (profile data)
+const getProfileUsername = () => {
+  if (typeof window !== 'undefined') {
+    const profileData = localStorage.getItem('profileData');
+    if (profileData) {
+      try {
+        const parsed = JSON.parse(profileData);
+        return parsed.username || 'kemp-17';
+      } catch {
+        return 'kemp-17';
+      }
+    }
+  }
+  return 'kemp-17';
 };
 
 export default function AffiliatePage() {
   const router = useRouter();
   const { permissions } = useCourseAccess();
+  const { roleDetails } = useUserRole();
   const [stats, setStats] = useState<{
     totalClicks: number;
     totalSignups: number;
@@ -27,6 +39,7 @@ export default function AffiliatePage() {
   const [activeTab, setActiveTab] = useState('opt-in');
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState('');
+  const [currentUsername, setCurrentUsername] = useState('kemp-17');
 
   const funnelTypes = [
     { id: 'opt-in', label: 'Lead Generation', icon: '📧', count: 0, color: 'from-blue-500 to-blue-600' },
@@ -35,12 +48,30 @@ export default function AffiliatePage() {
     { id: 'free-trial', label: 'Free Trials', icon: '🎁', count: 0, color: 'from-orange-500 to-orange-600' }
   ];
 
+  // Function to refresh affiliate links when username changes
+  const refreshAffiliateLinks = () => {
+    const username = getProfileUsername();
+    setCurrentUsername(username);
+    
+    // Update existing funnels with new links
+    setAllFunnels(prevFunnels => 
+      prevFunnels.map((funnel, index) => ({
+        ...funnel,
+        affiliateLink: generateAffiliateLink(username, (10 + index).toString(), funnel.type)
+      }))
+    );
+  };
+
   useEffect(() => {
     // Check affiliate access permission
     if (!permissions.canAccessAffiliate) {
       router.push('/courses');
       return;
     }
+    
+    // Set current username
+    const username = getProfileUsername();
+    setCurrentUsername(username);
     setLoading(false);
     
     // Set demo stats
@@ -54,15 +85,16 @@ export default function AffiliatePage() {
       });
     }, 500);
 
-    // Set comprehensive demo funnels with thumbnails
+    // Set comprehensive demo funnels with dynamic affiliate links
     setTimeout(() => {
-      const funnels = [
+      const currentUsername = getProfileUsername();
+      
+      const baseFunnels = [
         // Opt-In Pages
         {
           id: '1',
           name: 'Sam Budow Free Training',
           description: 'Lead magnet - 3 keys to success online leveraging high ticket affiliate marketing',
-          affiliateLink: `https://yoursite.com/opt-in/sam-budow/ref/kemp-17`,
           type: 'opt-in',
           clicks: 129,
           conversions: 44,
@@ -73,7 +105,6 @@ export default function AffiliatePage() {
           id: '2',
           name: 'Marissa $1 Trial Opt-In',
           description: 'Chase your passions & set up your office anywhere in the world',
-          affiliateLink: `https://yoursite.com/opt-in/marissa/ref/kemp-17`,
           type: 'opt-in',
           clicks: 93,
           conversions: 41,
@@ -84,7 +115,6 @@ export default function AffiliatePage() {
           id: '3',
           name: 'Brodie & Team Free Training',
           description: 'The incredible journeys of Brodie, Bryan, Andrea, and Colin - 20 mins free trial',
-          affiliateLink: `https://yoursite.com/opt-in/brodie-team/ref/kemp-17`,
           type: 'opt-in',
           clicks: 54,
           conversions: 22,
@@ -97,7 +127,6 @@ export default function AffiliatePage() {
           id: '4',
           name: 'Ashley Krooks 2024 VSL',
           description: 'Our newest funnel - Highly recommended. Ashley Krooks breaks down the online opportunity',
-          affiliateLink: `https://yoursite.com/vsl/ashley-krooks/ref/kemp-17`,
           type: 'vsl',
           clicks: 11,
           conversions: 6,
@@ -108,7 +137,6 @@ export default function AffiliatePage() {
           id: '5',
           name: 'Kristen Braun Business VSL',
           description: 'Step-by-step method to creating a highly profitable & automated online business',
-          affiliateLink: `https://yoursite.com/vsl/kristen-braun/ref/kemp-17`,
           type: 'vsl',
           clicks: 27,
           conversions: 5,
@@ -119,7 +147,6 @@ export default function AffiliatePage() {
           id: '6',
           name: 'Sam Budow Premium VSL',
           description: 'Advanced training program for serious entrepreneurs',
-          affiliateLink: `https://yoursite.com/vsl/sam-budow-premium/ref/kemp-17`,
           type: 'vsl',
           clicks: 45,
           conversions: 3,
@@ -132,7 +159,6 @@ export default function AffiliatePage() {
           id: '7',
           name: '$1 Trial Order Form',
           description: '$1 Trial order form to Online Empires for 7 days, then $99 per month',
-          affiliateLink: `https://yoursite.com/checkout/trial-1/ref/kemp-17`,
           type: 'checkout',
           clicks: 30,
           conversions: 15,
@@ -143,7 +169,6 @@ export default function AffiliatePage() {
           id: '8',
           name: 'Marissa Funnel Direct Sale',
           description: '$1 Trial order form NEW - Marissa branded funnel',
-          affiliateLink: `https://yoursite.com/checkout/marissa-trial/ref/kemp-17`,
           type: 'checkout',
           clicks: 4,
           conversions: 4,
@@ -154,7 +179,6 @@ export default function AffiliatePage() {
           id: '9',
           name: 'OE Annual Special',
           description: 'Special OE Bundle Annual Link - Just $799/Year',
-          affiliateLink: `https://yoursite.com/checkout/annual-special/ref/kemp-17`,
           type: 'checkout',
           clicks: 14,
           conversions: 1,
@@ -167,7 +191,6 @@ export default function AffiliatePage() {
           id: '10',
           name: '7 Days Free Trial Form',
           description: 'Free trial order form with a card sign up for 7 days, then $99 per month',
-          affiliateLink: `https://yoursite.com/free-trial/7-day/ref/kemp-17`,
           type: 'free-trial',
           clicks: 22,
           conversions: 14,
@@ -178,7 +201,6 @@ export default function AffiliatePage() {
           id: '11',
           name: 'Free Registration (No Card)',
           description: 'Free trial order form WITHOUT a card sign up for 7 days (Recommended for special promos)',
-          affiliateLink: `https://yoursite.com/free-trial/no-card/ref/kemp-17`,
           type: 'free-trial',
           clicks: 168,
           conversions: 117,
@@ -187,7 +209,13 @@ export default function AffiliatePage() {
         }
       ];
 
-      setAllFunnels(funnels);
+      // Generate dynamic affiliate links for each funnel
+      const funnelsWithLinks = baseFunnels.map((funnel, index) => ({
+        ...funnel,
+        affiliateLink: generateAffiliateLink(currentUsername, (10 + index).toString(), funnel.type)
+      }));
+
+      setAllFunnels(funnelsWithLinks);
     }, 800);
   }, [permissions.canAccessAffiliate, router]);
 
@@ -306,7 +334,11 @@ export default function AffiliatePage() {
       </Head>
 
       <AppLayout
-        user={mockUser}
+        user={{
+          id: 1,
+          name: roleDetails.name,
+          avatarUrl: '/api/placeholder/40/40'
+        }}
         title="Affiliate Portal"
       >
         <div className="p-4 lg:p-6 bg-gray-50 min-h-screen">

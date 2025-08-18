@@ -204,7 +204,7 @@ export const ROLE_DETAILS: Record<UserRole, RoleDetails> = {
   },
 
   downsell: {
-    name: 'Affiliate Access',
+    name: 'Lite Access',
     price: 37,
     billing: 'one-time',
     description: 'Limited access with affiliate opportunities',
