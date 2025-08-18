@@ -146,18 +146,25 @@ const ProfilePage = () => {
     <div className="space-y-8">
       {/* Profile Header */}
       <div className="flex items-start gap-6">
-        <div className="relative">
+        <div className="relative group">
           <img
             src={profileImage}
             alt="Profile"
-            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg transition-all duration-200 group-hover:shadow-xl"
+            onError={(e) => {
+              // Fallback to default avatar if image fails to load
+              const target = e.target as HTMLImageElement;
+              target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.name)}&background=3B82F6&color=ffffff&size=120&bold=true`;
+            }}
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="absolute -bottom-2 -right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg"
-          >
-            <i className="fas fa-camera text-sm"></i>
-          </button>
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-200 flex items-center justify-center">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="opacity-0 group-hover:opacity-100 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-200 shadow-lg transform scale-90 group-hover:scale-100"
+            >
+              <i className="fas fa-camera text-sm"></i>
+            </button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
