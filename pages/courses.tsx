@@ -311,23 +311,29 @@ export default function AllCourses() {
                       )}
                       <div className="relative h-40 bg-gray-100 overflow-hidden">
                         <img 
-                          src={`https://images.unsplash.com/photo-${course.id === 'business-blueprint' ? '1542744173-a8b0effd0ae5' : course.id === 'discovery-process' ? '1551288049-2d49e87156bd' : '1519389950473-47ba1d7aa83c'}?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75`}
+                          src={`https://via.placeholder.com/400x240/${
+                            course.id === 'business-blueprint' ? '8B5CF6/FFFFFF' : 
+                            course.id === 'discovery-process' ? 'EC4899/FFFFFF' : 
+                            '06B6D4/FFFFFF'
+                          }?text=${encodeURIComponent(course.title.split(' ')[0])}`}
                           alt={course.title}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = `data:image/svg+xml;base64,${btoa(`
-                              <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                  <linearGradient id="grad${course.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:${course.id === 'business-blueprint' ? '#8B5CF6' : course.id === 'discovery-process' ? '#EC4899' : '#06B6D4'};stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:${course.id === 'business-blueprint' ? '#7C3AED' : course.id === 'discovery-process' ? '#DB2777' : '#0891B2'};stop-opacity:1" />
-                                  </linearGradient>
-                                </defs>
-                                <rect width="400" height="240" fill="url(#grad${course.id})" />
-                                <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">${getIcon().includes('building') ? '🏢' : getIcon().includes('search') ? '🔍' : '📈'}</text>
-                              </svg>
-                            `)}`;
+                            // Use a simple gradient background with emoji as fallback
+                            const gradientClass = course.id === 'business-blueprint' ? 'from-purple-500 to-purple-600' : 
+                                                 course.id === 'discovery-process' ? 'from-pink-500 to-pink-600' : 
+                                                 'from-cyan-500 to-cyan-600';
+                            const emoji = getIcon().includes('building') ? '🏢' : getIcon().includes('search') ? '🔍' : '📈';
+                            
+                            target.style.display = 'none';
+                            if (target.parentElement) {
+                              target.parentElement.innerHTML = `
+                                <div class="w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                  <div class="text-4xl">${emoji}</div>
+                                </div>
+                              `;
+                            }
                           }}
                         />
                         {shouldHighlight && (
@@ -535,39 +541,35 @@ export default function AllCourses() {
                     <div key={course.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300">
                       <div className="relative h-40 bg-gray-100 overflow-hidden">
                         <img 
-                          src={`https://images.unsplash.com/photo-${
-                            course.id === 'tiktok-mastery' ? '1611605698323-b1e54d4fb6ed' : 
-                            course.id === 'facebook-advertising' ? '1432888622747-4eb5a91485ee' : 
-                            course.id === 'instagram-marketing' ? '1551817958-d9d86fb29431' : 
-                            course.id === 'sales-funnel-mastery' ? '1460925895917-afdab827c52f' : 
-                            '1542744173-a8b0effd0ae5'
-                          }?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75`}
+                          src={`https://via.placeholder.com/400x240/${
+                            course.id === 'tiktok-mastery' ? '10B981/FFFFFF' : 
+                            course.id === 'facebook-advertising' ? 'F59E0B/FFFFFF' : 
+                            course.id === 'instagram-marketing' ? '6B7280/FFFFFF' : 
+                            course.id === 'sales-funnel-mastery' ? 'F97316/FFFFFF' : 
+                            '8B5CF6/FFFFFF'
+                          }?text=${encodeURIComponent(course.title.split(' ')[0])}`}
                           alt={course.title}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            const iconEmoji = course.id === 'tiktok-mastery' ? '🎵' : 
-                                             course.id === 'facebook-advertising' ? '📱' : 
-                                             course.id === 'instagram-marketing' ? '📸' : 
-                                             course.id === 'sales-funnel-mastery' ? '🧠' : '👥';
-                            const gradientColors = course.id === 'tiktok-mastery' ? '#10B981,#059669' : 
-                                                   course.id === 'facebook-advertising' ? '#F59E0B,#D97706' : 
-                                                   course.id === 'instagram-marketing' ? '#6B7280,#4B5563' : 
-                                                   course.id === 'sales-funnel-mastery' ? '#F97316,#EA580C' : '#8B5CF6,#7C3AED';
-                            const [color1, color2] = gradientColors.split(',');
+                            // Use simple gradient background with emoji as fallback
+                            const gradientClass = course.id === 'tiktok-mastery' ? 'from-green-500 to-green-600' : 
+                                                 course.id === 'facebook-advertising' ? 'from-orange-500 to-orange-600' : 
+                                                 course.id === 'instagram-marketing' ? 'from-gray-500 to-gray-600' : 
+                                                 course.id === 'sales-funnel-mastery' ? 'from-orange-500 to-yellow-500' : 'from-purple-500 to-purple-600';
+                            const emoji = course.id === 'tiktok-mastery' ? '🎵' : 
+                                         course.id === 'facebook-advertising' ? '📱' : 
+                                         course.id === 'instagram-marketing' ? '📸' : 
+                                         course.id === 'sales-funnel-mastery' ? '🧠' : '👥';
                             
-                            target.src = `data:image/svg+xml;base64,${btoa(`
-                              <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                  <linearGradient id="grad${course.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:${color1};stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:${color2};stop-opacity:1" />
-                                  </linearGradient>
-                                </defs>
-                                <rect width="400" height="240" fill="url(#grad${course.id})" />
-                                <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">${iconEmoji}</text>
-                              </svg>
-                            `)}`;
+                            target.style.display = 'none';
+                            if (target.parentElement) {
+                              target.parentElement.innerHTML = `
+                                <div class="w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                                  <div class="text-4xl">${emoji}</div>
+                                </div>
+                              `;
+                            }
                           }}
                         />
                         <div className="absolute top-2 left-2">
@@ -607,23 +609,20 @@ export default function AllCourses() {
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative h-40 bg-gray-100 overflow-hidden">
                     <img 
-                      src="https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=400&h=240&fit=crop&crop=face,entropy&auto=format&q=75"
+                      src="https://via.placeholder.com/400x240/EC4899/FFFFFF?text=Email+Marketing"
                       alt="Email Marketing Secrets"
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `data:image/svg+xml;base64,${btoa(`
-                          <svg width="400" height="240" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                              <linearGradient id="gradEmail" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#DB2777;stop-opacity:1" />
-                              </linearGradient>
-                            </defs>
-                            <rect width="400" height="240" fill="url(#gradEmail)" />
-                            <text x="200" y="120" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="48">📧</text>
-                          </svg>
-                        `)}`;
+                        // Use simple gradient background as fallback
+                        target.style.display = 'none';
+                        if (target.parentElement) {
+                          target.parentElement.innerHTML = `
+                            <div class="w-full h-full bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center">
+                              <div class="text-4xl">📧</div>
+                            </div>
+                          `;
+                        }
                       }}
                     />
                     <div className="absolute top-2 left-2">
