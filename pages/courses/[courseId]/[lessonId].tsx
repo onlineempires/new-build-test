@@ -54,7 +54,12 @@ export default function LessonPage() {
   };
 
   const hasAccess = () => {
-    if (!course) return false;
+    if (!course || !currentLesson) return false;
+    
+    // Check if lesson is locked due to progression
+    if (currentLesson.isLocked) {
+      return false;
+    }
     
     // Check if course requires purchase or upgrade
     if (course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery') {
@@ -204,9 +209,14 @@ export default function LessonPage() {
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-lock text-yellow-600 text-2xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Access Required</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {currentLesson?.isLocked ? 'Lesson Locked' : 'Lesson Access Required'}
+            </h3>
             <p className="text-gray-600 mb-6">
-              You need to purchase this course or upgrade your plan to access this lesson.
+              {currentLesson?.isLocked 
+                ? 'Complete the previous lesson to unlock this lesson.' 
+                : 'You need to purchase this course or upgrade your plan to access this lesson.'
+              }
             </p>
             <div className="flex gap-4 justify-center">
               <button

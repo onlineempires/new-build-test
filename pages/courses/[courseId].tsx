@@ -314,40 +314,46 @@ export default function CoursePage() {
                         )}
                         
                         <div className="space-y-0 divide-y divide-gray-100">
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <button
-                              key={lesson.id}
-                              onClick={() => {
-                                if (!isLocked) {
-                                  router.push(`/courses/${courseId}/${lesson.id}`);
-                                }
-                              }}
-                              disabled={isLocked}
-                              className={`w-full flex items-center p-3 transition-colors text-left first:rounded-t-lg last:rounded-b-lg ${
-                                isLocked 
-                                  ? 'cursor-not-allowed opacity-50' 
-                                  : 'hover:bg-gray-50 cursor-pointer'
-                              }`}
-                            >
-                              <span className="w-6 h-6 mr-3">
-                                {lesson.isCompleted ? (
-                                  <i className="fas fa-check-circle text-green-500"></i>
-                                ) : (
-                                  <i className="fas fa-play-circle text-gray-400"></i>
-                                )}
-                              </span>
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">
-                                  {lessonIndex + 1}. {lesson.title}
+                          {module.lessons.map((lesson, lessonIndex) => {
+                            const isLessonLocked = lesson.isLocked || (isLocked && lessonIndex > 0);
+                            return (
+                              <button
+                                key={lesson.id}
+                                onClick={() => {
+                                  if (!isLessonLocked) {
+                                    router.push(`/courses/${courseId}/${lesson.id}`);
+                                  }
+                                }}
+                                disabled={isLessonLocked}
+                                className={`w-full flex items-center p-3 transition-colors text-left first:rounded-t-lg last:rounded-b-lg ${
+                                  isLessonLocked 
+                                    ? 'cursor-not-allowed opacity-50' 
+                                    : 'hover:bg-gray-50 cursor-pointer'
+                                }`}
+                              >
+                                <span className="w-6 h-6 mr-3">
+                                  {isLessonLocked ? (
+                                    <i className="fas fa-lock text-gray-400"></i>
+                                  ) : lesson.isCompleted ? (
+                                    <i className="fas fa-check-circle text-green-500"></i>
+                                  ) : (
+                                    <i className="fas fa-play-circle text-gray-400"></i>
+                                  )}
+                                </span>
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    {lessonIndex + 1}. {lesson.title}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {lesson.description}
+                                  </div>
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {lesson.description}
+                                <div className="text-sm text-gray-500 ml-4">
+                                  {formatDuration(lesson.duration)}
                                 </div>
-                              </div>
-                              <div className="text-sm text-gray-500 ml-4">
-                                {formatDuration(lesson.duration)}
-                              </div>
-                            </button>
+                              </button>
+                            );
+                          })}
                           ))}
                         </div>
                       </div>

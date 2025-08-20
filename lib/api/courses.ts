@@ -28,6 +28,7 @@ export interface Lesson {
   videoUrl: string;
   duration: number; // in seconds
   isCompleted: boolean;
+  isLocked?: boolean;
   transcripts?: string;
   hasEnagicButton?: boolean;
   hasSkillsButton?: boolean;
@@ -557,11 +558,16 @@ export const getAllCourses = async (): Promise<CourseData> => {
                 const hasButtons = course.id === 'business-blueprint' && 
                   (lesson.id === 'lesson-1-1' || lesson.id === 'lesson-1-2' || lesson.id === 'lesson-1-3' || lesson.id === 'lesson-2-1');
                 
+                // Check if lesson should be locked (sequential within module)
+                const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
+                const isLessonLocked = lessonIndex > 0 && !module.lessons[lessonIndex - 1].isCompleted;
+                
                 return {
                   ...lesson,
                   isCompleted,
-                  hasEnagicButton: hasButtons,
-                  hasSkillsButton: hasButtons && lesson.id !== 'lesson-2-1' // Module 2 lesson only has Enagic button
+                  isLocked: isLessonLocked,
+                  hasEnagicButton: hasButtons && !isLessonLocked,
+                  hasSkillsButton: hasButtons && lesson.id !== 'lesson-2-1' && !isLessonLocked // Module 2 lesson only has Enagic button
                 };
               })
             };
