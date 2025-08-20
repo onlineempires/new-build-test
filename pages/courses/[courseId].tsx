@@ -302,9 +302,12 @@ export default function CoursePage() {
                         {isLocked && (
                           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                             <div className="flex items-center space-x-2 text-yellow-700">
-                              <i className="fas fa-info-circle"></i>
+                              <i className="fas fa-lock"></i>
                               <span className="text-sm font-medium">
-                                Complete Module {moduleIndex} or click "Build Skills First" to unlock this module
+                                {course.id === 'business-blueprint' && moduleIndex === 1 
+                                  ? `Complete Module ${moduleIndex} or click "Build Skills First" to unlock this module`
+                                  : `Complete Module ${moduleIndex} to unlock this module`
+                                }
                               </span>
                             </div>
                           </div>

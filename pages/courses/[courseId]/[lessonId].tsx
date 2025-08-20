@@ -65,9 +65,10 @@ export default function LessonPage() {
     switch (currentRole) {
       case 'free':
       case 'trial':
-        return course.id === 'start-here' || course.id === 'digital-marketing-fundamentals';
+        // Allow access to Start Here courses including Business Launch Blueprint
+        return course.id === 'business-blueprint' || course.id === 'discovery-process' || course.id === 'next-steps' || course.id === 'start-here' || course.id === 'digital-marketing-fundamentals';
       case 'downsell':
-        return course.id === 'start-here' || course.id === 'digital-marketing-fundamentals' || course.id === 'daily-method';
+        return course.id === 'business-blueprint' || course.id === 'discovery-process' || course.id === 'next-steps' || course.id === 'start-here' || course.id === 'digital-marketing-fundamentals' || course.id === 'daily-method';
       case 'monthly':
       case 'annual':
       case 'admin':

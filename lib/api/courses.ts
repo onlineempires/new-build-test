@@ -902,23 +902,28 @@ export const getCurrentUserLevel = () => {
 
 // Check if module is unlocked
 export const isModuleUnlocked = (moduleId: string, course: Course): boolean => {
-  // Module 1 is always unlocked for Business Blueprint
-  if (moduleId === 'business-module-1') {
+  // Always unlock the first module of any course
+  const moduleIndex = course.modules.findIndex(m => m.id === moduleId);
+  if (moduleIndex === 0) {
     return true;
   }
   
-  // Check if explicitly unlocked by button click
+  // Check if explicitly unlocked by button click (for Business Blueprint flow)
   if (globalProgressState.unlockedModules.has(moduleId)) {
     return true;
   }
   
-  // Check if previous module is completed
-  const moduleIndex = course.modules.findIndex(m => m.id === moduleId);
-  if (moduleIndex > 0) {
-    const previousModule = course.modules[moduleIndex - 1];
-    return previousModule.isCompleted;
+  // For Start Here courses, enforce sequential completion
+  const startHereCourses = ['business-blueprint', 'discovery-process', 'next-steps'];
+  if (startHereCourses.includes(course.id)) {
+    // Check if previous module is completed
+    if (moduleIndex > 0) {
+      const previousModule = course.modules[moduleIndex - 1];
+      return previousModule.isCompleted;
+    }
   }
   
+  // For other courses, unlock all modules if user has appropriate access
   return false;
 };
 
