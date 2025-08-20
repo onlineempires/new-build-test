@@ -56,11 +56,6 @@ export default function LessonPage() {
   const hasAccess = () => {
     if (!course || !currentLesson) return false;
     
-    // Check if lesson is locked due to progression
-    if (currentLesson.isLocked) {
-      return false;
-    }
-    
     // Check if course requires purchase or upgrade
     if (course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery') {
       return isPurchased(course.id);
@@ -140,11 +135,10 @@ export default function LessonPage() {
     if (!currentLesson) return;
     
     try {
-      // Track button click and unlock Module 2 if needed
-      const moduleToUnlock = currentLesson.id.startsWith('lesson-1-') ? 'business-module-2' : undefined;
-      await handleButtonClick('enagic', currentLesson.id, moduleToUnlock);
+      // Track button click - Enagic button goes directly to calendar
+      await handleButtonClick('enagic', currentLesson.id);
       
-      // Redirect to calendar scheduler (placeholder for now)
+      // Redirect to calendar scheduler
       router.push('/enagic-scheduler');
     } catch (error) {
       console.error('Failed to handle Enagic flow:', error);
@@ -155,15 +149,11 @@ export default function LessonPage() {
     if (!currentLesson) return;
     
     try {
-      // Track button click and unlock Module 2
-      await handleButtonClick('skills', currentLesson.id, 'business-module-2');
+      // Track button click and unlock Discovery Process course
+      await handleButtonClick('skills', currentLesson.id, 'discovery-process');
       
-      // Redirect to Module 2 or Skills VSL depending on lesson
-      if (currentLesson.id === 'lesson-2-1') {
-        router.push('/skills-vsl');
-      } else {
-        router.push(`/courses/${courseId}/lesson-2-1`);
-      }
+      // Redirect to Discovery Process course
+      router.push('/courses/discovery-process');
     } catch (error) {
       console.error('Failed to handle Skills flow:', error);
     }
@@ -209,14 +199,9 @@ export default function LessonPage() {
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-lock text-yellow-600 text-2xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {currentLesson?.isLocked ? 'Lesson Locked' : 'Lesson Access Required'}
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Access Required</h3>
             <p className="text-gray-600 mb-6">
-              {currentLesson?.isLocked 
-                ? 'Complete the previous lesson to unlock this lesson.' 
-                : 'You need to purchase this course or upgrade your plan to access this lesson.'
-              }
+              You need to purchase this course or upgrade your plan to access this lesson.
             </p>
             <div className="flex gap-4 justify-center">
               <button

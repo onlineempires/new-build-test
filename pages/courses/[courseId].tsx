@@ -4,7 +4,7 @@ import Head from 'next/head';
 import AppLayout from '../../components/layout/AppLayout';
 import { useUpgrade } from '../../contexts/UpgradeContext';
 import { useCourseAccess } from '../../hooks/useCourseAccess';
-import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked } from '../../lib/api/courses';
+import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked, isCourseUnlocked } from '../../lib/api/courses';
 
 export default function CoursePage() {
   const router = useRouter();
@@ -79,6 +79,11 @@ export default function CoursePage() {
       return isPurchased(course.id);
     }
     
+    // Check if course is unlocked (progression-based)
+    if (!isCourseUnlocked(course.id)) {
+      return false;
+    }
+    
     // Use the updated isPurchased logic which handles role-based access
     return isPurchased(course.id);
   };
@@ -127,9 +132,14 @@ export default function CoursePage() {
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-lock text-yellow-600 text-2xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Course Access Required</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {!isCourseUnlocked(course.id) ? 'Course Locked' : 'Course Access Required'}
+            </h3>
             <p className="text-gray-600 mb-6">
-              You need to purchase this course or upgrade your plan to access this content.
+              {!isCourseUnlocked(course.id) 
+                ? 'Complete the Business Launch Blueprint course or click "Build Skills First" to unlock this course.' 
+                : 'You need to purchase this course or upgrade your plan to access this content.'
+              }
             </p>
             <div className="flex gap-4 justify-center">
               <button

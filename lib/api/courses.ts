@@ -544,8 +544,11 @@ export const getAllCourses = async (): Promise<CourseData> => {
           let totalCompleted = 0;
           let totalLessons = 0;
           
+          // Check if this course is unlocked
+          const courseUnlocked = isCourseUnlocked(course.id);
+          
           course.modules = course.modules.map(module => {
-            const isUnlocked = isModuleUnlocked(module.id, course);
+            const isUnlocked = courseUnlocked && isModuleUnlocked(module.id, course);
             return {
               ...module,
               isLocked: !isUnlocked,
@@ -554,20 +557,15 @@ export const getAllCourses = async (): Promise<CourseData> => {
                 const isCompleted = globalProgressState.completedLessons.has(lesson.id);
                 if (isCompleted) totalCompleted++;
                 
-                // Add special buttons for Business Launch Blueprint lessons
+                // Add special buttons for Business Launch Blueprint lessons only
                 const hasButtons = course.id === 'business-blueprint' && 
-                  (lesson.id === 'lesson-1-1' || lesson.id === 'lesson-1-2' || lesson.id === 'lesson-1-3' || lesson.id === 'lesson-2-1');
-                
-                // Check if lesson should be locked (sequential within module)
-                const lessonIndex = module.lessons.findIndex(l => l.id === lesson.id);
-                const isLessonLocked = lessonIndex > 0 && !module.lessons[lessonIndex - 1].isCompleted;
+                  (lesson.id === 'lesson-1-1' || lesson.id === 'lesson-1-2' || lesson.id === 'lesson-1-3');
                 
                 return {
                   ...lesson,
                   isCompleted,
-                  isLocked: isLessonLocked,
-                  hasEnagicButton: hasButtons && !isLessonLocked,
-                  hasSkillsButton: hasButtons && lesson.id !== 'lesson-2-1' && !isLessonLocked // Module 2 lesson only has Enagic button
+                  hasEnagicButton: hasButtons && courseUnlocked,
+                  hasSkillsButton: hasButtons && courseUnlocked
                 };
               })
             };
@@ -919,22 +917,87 @@ export const isModuleUnlocked = (moduleId: string, course: Course): boolean => {
     return true;
   }
   
-  // For Start Here courses, enforce sequential completion
-  const startHereCourses = ['business-blueprint', 'discovery-process', 'next-steps'];
-  if (startHereCourses.includes(course.id)) {
-    // Check if previous module is completed
-    if (moduleIndex > 0) {
-      const previousModule = course.modules[moduleIndex - 1];
-      return previousModule.isCompleted;
-    }
+  // For modules within the same course, check if previous module is completed
+  if (moduleIndex > 0) {
+    const previousModule = course.modules[moduleIndex - 1];
+    return previousModule.isCompleted;
   }
   
-  // For other courses, unlock all modules if user has appropriate access
   return false;
+};
+
+// Check if a course is unlocked
+export const isCourseUnlocked = (courseId: string): boolean => {
+  // Business Blueprint is always unlocked (first course)
+  if (courseId === 'business-blueprint') {
+    return true;
+  }
+  
+  // Check if explicitly unlocked by button click
+  if (globalProgressState.unlockedModules.has(`course-${courseId}`)) {
+    return true;
+  }
+  
+  // Discovery Process unlocks after Business Blueprint is completed OR button is clicked
+  if (courseId === 'discovery-process') {
+    // Check if Business Blueprint is completed
+    const businessBlueprintCompleted = globalProgressState.completedLessons.has('lesson-1-1') &&
+                                       globalProgressState.completedLessons.has('lesson-1-2') &&
+                                       globalProgressState.completedLessons.has('lesson-1-3');
+    return businessBlueprintCompleted;
+  }
+  
+  // Next Steps unlocks after Discovery Process is completed
+  if (courseId === 'next-steps') {
+    // Check if Discovery Process is completed
+    return globalProgressState.unlockedModules.has('course-next-steps') ||
+           globalProgressState.completedLessons.has('lesson-2-1'); // Discovery Process completion
+  }
+  
+  return true; // Default unlock for other courses
 };
 
 // Get button click status
 export const getButtonClickStatus = (buttonType: 'enagic' | 'skills', lessonId: string): boolean => {
   const buttonKey = `${buttonType}-${lessonId}`;
   return globalProgressState.buttonClicks.has(buttonKey);
+};
+
+// Handle button clicks for progression flow
+export const handleButtonClick = async (buttonType: 'enagic' | 'skills', lessonId: string, courseToUnlock?: string): Promise<void> => {
+  try {
+    const buttonKey = `${buttonType}-${lessonId}`;
+    globalProgressState.buttonClicks.add(buttonKey);
+    
+    // Unlock next course if specified (for Build Skills First button)
+    if (courseToUnlock && buttonType === 'skills') {
+      globalProgressState.unlockedModules.add(`course-${courseToUnlock}`);
+    }
+    
+    globalProgressState.lastUpdateTime = Date.now();
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('learningProgress', JSON.stringify({
+        completedLessons: Array.from(globalProgressState.completedLessons),
+        unlockedModules: Array.from(globalProgressState.unlockedModules),
+        buttonClicks: Array.from(globalProgressState.buttonClicks),
+        totalXP: globalProgressState.totalXP,
+        lastUpdateTime: globalProgressState.lastUpdateTime
+      }));
+      
+      // Clear cache to ensure fresh data
+      sessionStorage.setItem('progressCacheInvalidated', Date.now().toString());
+      sessionStorage.removeItem('fastStatsCache');
+    }
+    
+    console.log(`📱 Button clicked: ${buttonType} for lesson ${lessonId}`, {
+      unlockedCourse: courseToUnlock,
+      totalButtonClicks: globalProgressState.buttonClicks.size,
+      unlockedModules: Array.from(globalProgressState.unlockedModules)
+    });
+    
+  } catch (error) {
+    console.error('Failed to handle button click:', error);
+  }
 };
