@@ -23,6 +23,8 @@ export default function LessonPage() {
     }
   }, [courseId, lessonId]);
 
+
+
   const loadCourseAndLesson = async (cId: string, lId: string) => {
     try {
       setLoading(true);
@@ -328,26 +330,31 @@ export default function LessonPage() {
               </div>
             </div>
             
-            {/* Action Buttons Below Video Player */}
+            {/* Action Buttons Below Video Player - Only for Business Blueprint lessons */}
             {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
-              <div className="mt-8 space-y-4">
+              <div className="mt-8 space-y-4 bg-gray-100 p-6 rounded-lg">
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">Choose Your Path</h3>
+                  <p className="text-gray-600 mt-2">Ready to take action or want to build more skills first?</p>
+                </div>
+                
                 {currentLesson.hasEnagicButton && (
                   <button
                     onClick={() => handleEnagicFlow()}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3 shadow-lg"
                   >
                     <i className="fas fa-rocket"></i>
-                    <span>I'm ready! Start Enagic Fast Track</span>
+                    <span>I'm Ready! Start Enagic Fast Track</span>
                   </button>
                 )}
                 
                 {currentLesson.hasSkillsButton && (
                   <button
                     onClick={() => handleSkillsFlow()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3 shadow-lg"
                   >
                     <i className="fas fa-graduation-cap"></i>
-                    <span>Not ready/interested - Build Skills First</span>
+                    <span>Not Ready Yet - Build Skills First</span>
                   </button>
                 )}
               </div>

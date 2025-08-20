@@ -153,7 +153,9 @@ const mockData: CourseData = {
               description: "Discover our proven system and highest converting business opportunity",
               videoUrl: "https://example.com/video-business-module-1-1",
               duration: 900, // 15 minutes
-              isCompleted: false
+              isCompleted: false,
+              hasEnagicButton: true,
+              hasSkillsButton: true
             },
             {
               id: "lesson-1-2",
@@ -161,7 +163,9 @@ const mockData: CourseData = {
               description: "Real success stories from people who transformed their lives with our system",
               videoUrl: "https://example.com/video-business-module-1-2",
               duration: 720, // 12 minutes
-              isCompleted: false
+              isCompleted: false,
+              hasEnagicButton: true,
+              hasSkillsButton: true
             },
             {
               id: "lesson-1-3",
@@ -169,7 +173,9 @@ const mockData: CourseData = {
               description: "Essential resources and tools to accelerate your success",
               videoUrl: "https://example.com/video-business-module-1-3",
               duration: 480, // 8 minutes
-              isCompleted: false
+              isCompleted: false,
+              hasEnagicButton: true,
+              hasSkillsButton: true
             }
           ]
         },
@@ -557,15 +563,11 @@ export const getAllCourses = async (): Promise<CourseData> => {
                 const isCompleted = globalProgressState.completedLessons.has(lesson.id);
                 if (isCompleted) totalCompleted++;
                 
-                // Add special buttons for Business Launch Blueprint lessons only
-                const hasButtons = course.id === 'business-blueprint' && 
-                  (lesson.id === 'lesson-1-1' || lesson.id === 'lesson-1-2' || lesson.id === 'lesson-1-3');
-                
                 return {
                   ...lesson,
                   isCompleted,
-                  hasEnagicButton: hasButtons && courseUnlocked,
-                  hasSkillsButton: hasButtons && courseUnlocked
+                  hasEnagicButton: lesson.hasEnagicButton && courseUnlocked,
+                  hasSkillsButton: lesson.hasSkillsButton && courseUnlocked
                 };
               })
             };
@@ -678,7 +680,10 @@ export const getCourse = async (courseId: string): Promise<Course> => {
             if (isCompleted) totalCompleted++;
             return {
               ...lesson,
-              isCompleted
+              isCompleted,
+              // Preserve button properties from original lesson data
+              hasEnagicButton: lesson.hasEnagicButton,
+              hasSkillsButton: lesson.hasSkillsButton
             };
           })
         }));
