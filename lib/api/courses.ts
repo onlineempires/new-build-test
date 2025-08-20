@@ -899,3 +899,31 @@ export const getCurrentProgress = () => {
 export const getCurrentUserLevel = () => {
   return globalProgressState.currentLevel;
 };
+
+// Check if module is unlocked
+export const isModuleUnlocked = (moduleId: string, course: Course): boolean => {
+  // Module 1 is always unlocked for Business Blueprint
+  if (moduleId === 'business-module-1') {
+    return true;
+  }
+  
+  // Check if explicitly unlocked by button click
+  if (globalProgressState.unlockedModules.has(moduleId)) {
+    return true;
+  }
+  
+  // Check if previous module is completed
+  const moduleIndex = course.modules.findIndex(m => m.id === moduleId);
+  if (moduleIndex > 0) {
+    const previousModule = course.modules[moduleIndex - 1];
+    return previousModule.isCompleted;
+  }
+  
+  return false;
+};
+
+// Get button click status
+export const getButtonClickStatus = (buttonType: 'enagic' | 'skills', lessonId: string): boolean => {
+  const buttonKey = `${buttonType}-${lessonId}`;
+  return globalProgressState.buttonClicks.has(buttonKey);
+};
