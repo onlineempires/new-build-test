@@ -283,118 +283,86 @@ export default function LessonPage() {
             </nav>
           </div>
 
-          {/* Video Player Section */}
-          <div className="relative">
-            <div className="aspect-video bg-black flex items-center justify-center">
-              <div className="text-center text-white">
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  {isPlaying ? (
-                    <i className="fas fa-pause text-3xl"></i>
-                  ) : (
-                    <i className="fas fa-play text-3xl ml-1"></i>
-                  )}
-                </div>
-                <h2 className="text-xl font-semibold mb-2">{currentLesson.title}</h2>
-                <p className="text-gray-300 mb-4">{currentLesson.description}</p>
-                <button
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
-                >
-                  {isPlaying ? 'Pause' : 'Play'} Video
-                </button>
-                
-                <div className="mt-6 text-sm text-gray-400">
-                  <p>📺 Demo Mode: Video player would be integrated here</p>
-                  <p>Duration: {formatDuration(currentLesson.duration)} • {currentLesson.isCompleted ? '✅ Completed' : '⏸️ In Progress'}</p>
-                </div>
-                
-                {/* Action Buttons Below Video */}
-                {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
-                    {currentLesson.hasEnagicButton && (
-                      <button
-                        onClick={() => handleEnagicFlow()}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
-                      >
-                        <i className="fas fa-rocket"></i>
-                        <span>I'm ready! Start Enagic Fast Track</span>
-                      </button>
-                    )}
-                    
-                    {currentLesson.hasSkillsButton && (
-                      <button
-                        onClick={() => handleSkillsFlow()}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
-                      >
-                        <i className="fas fa-graduation-cap"></i>
-                        <span>Not ready/interested - Build Skills First</span>
-                      </button>
+          {/* Video Player Section - Smaller Design */}
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="aspect-video bg-black flex items-center justify-center relative">
+                <div className="text-center text-white">
+                  <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    {isPlaying ? (
+                      <i className="fas fa-pause text-2xl"></i>
+                    ) : (
+                      <i className="fas fa-play text-2xl ml-1"></i>
                     )}
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Video Controls Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
-              <div className="flex items-center justify-between text-white">
-                <div className="flex items-center space-x-4">
-                  {previousLesson && (
-                    <button
-                      onClick={() => router.push(`/courses/${courseId}/${previousLesson.id}`)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
-                    >
-                      <i className="fas fa-step-backward"></i>
-                      <span className="hidden sm:inline">Previous</span>
-                    </button>
-                  )}
-                  
+                  <h2 className="text-lg font-semibold mb-2">{currentLesson.title}</h2>
+                  <p className="text-gray-300 mb-4 text-sm">{currentLesson.description}</p>
                   <button
                     onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
                   >
-                    {isPlaying ? (
-                      <i className="fas fa-pause text-lg"></i>
-                    ) : (
-                      <i className="fas fa-play text-lg ml-0.5"></i>
-                    )}
+                    {isPlaying ? 'Pause' : 'Play'} Video
                   </button>
                   
-                  {!currentLesson.isCompleted && (
-                    <button
-                      onClick={markLessonComplete}
-                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-                    >
-                      <i className="fas fa-check"></i>
-                      <span className="hidden sm:inline">Mark Complete</span>
-                    </button>
-                  )}
+                  <div className="mt-4 text-xs text-gray-400">
+                    <p>📺 Demo Mode: Video player would be integrated here</p>
+                    <p>Duration: {formatDuration(currentLesson.duration)} • {currentLesson.isCompleted ? '✅ Completed' : '⏸️ In Progress'}</p>
+                  </div>
                 </div>
-                
+              </div>
+              
+              {/* Video Player Progress Bar */}
+              <div className="bg-gray-800 px-4 py-2 flex items-center justify-between text-white text-sm">
                 <div className="flex items-center space-x-4">
-                  {currentLesson.isCompleted && (
-                    <span className="flex items-center space-x-2 px-3 py-1 bg-green-600 rounded-full text-sm">
-                      <i className="fas fa-check"></i>
-                      <span>Completed</span>
-                    </span>
-                  )}
-                  
-                  {nextLesson && (
-                    <button
-                      onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors"
-                    >
-                      <span className="hidden sm:inline">Next</span>
-                      <i className="fas fa-step-forward"></i>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors"
+                  >
+                    {isPlaying ? (
+                      <i className="fas fa-pause text-xs"></i>
+                    ) : (
+                      <i className="fas fa-play text-xs ml-0.5"></i>
+                    )}
+                  </button>
+                  <span>3:44 / {formatDuration(currentLesson.duration)}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <i className="fas fa-volume-up"></i>
+                  <i className="fas fa-expand"></i>
                 </div>
               </div>
             </div>
+            
+            {/* Action Buttons Below Video Player */}
+            {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
+              <div className="mt-8 space-y-4">
+                {currentLesson.hasEnagicButton && (
+                  <button
+                    onClick={() => handleEnagicFlow()}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                  >
+                    <i className="fas fa-rocket"></i>
+                    <span>I'm ready! Start Enagic Fast Track</span>
+                  </button>
+                )}
+                
+                {currentLesson.hasSkillsButton && (
+                  <button
+                    onClick={() => handleSkillsFlow()}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                  >
+                    <i className="fas fa-graduation-cap"></i>
+                    <span>Not ready/interested - Build Skills First</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
+
+
           {/* Lesson Content */}
-          <div className="bg-white">
+          <div className="bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
@@ -483,6 +451,23 @@ export default function LessonPage() {
                             <i className="fas fa-chevron-left mr-2"></i>
                             Previous Lesson
                           </button>
+                        )}
+                        
+                        {!currentLesson.isCompleted && (
+                          <button
+                            onClick={markLessonComplete}
+                            className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            <i className="fas fa-check mr-2"></i>
+                            Mark Complete
+                          </button>
+                        )}
+                        
+                        {currentLesson.isCompleted && (
+                          <div className="w-full flex items-center justify-center px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+                            <i className="fas fa-check-circle mr-2"></i>
+                            Completed
+                          </div>
                         )}
                         
                         {nextLesson && (
