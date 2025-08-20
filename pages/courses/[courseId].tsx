@@ -4,7 +4,7 @@ import Head from 'next/head';
 import AppLayout from '../../components/layout/AppLayout';
 import { useUpgrade } from '../../contexts/UpgradeContext';
 import { useCourseAccess } from '../../hooks/useCourseAccess';
-import { getCourse, updateLessonProgress, Course, Lesson } from '../../lib/api/courses';
+import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked } from '../../lib/api/courses';
 
 export default function CoursePage() {
   const router = useRouter();
@@ -253,16 +253,34 @@ export default function CoursePage() {
                   {course.modules.map((module, moduleIndex) => {
                     const completedInModule = module.lessons.filter(l => l.isCompleted).length;
                     const moduleProgress = Math.round((completedInModule / module.lessons.length) * 100);
+                    const isUnlocked = isModuleUnlocked(module.id, course);
+                    const isLocked = module.isLocked || !isUnlocked;
                     
                     return (
-                      <div key={module.id} className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                      <div key={module.id} className={`bg-white rounded-lg shadow-sm p-4 sm:p-6 relative ${
+                        isLocked ? 'opacity-60' : ''
+                      }`}>
+                        {isLocked && (
+                          <div className="absolute top-4 right-4 w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
+                            <i className="fas fa-lock text-white text-sm"></i>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center">
-                            <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-bold flex items-center justify-center mr-3">
+                            <span className={`w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center mr-3 ${
+                              isLocked ? 'bg-gray-100 text-gray-400' : 'bg-blue-100 text-blue-600'
+                            }`}>
                               {moduleIndex + 1}
                             </span>
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-900">{module.title}</h3>
+                              <div className="flex items-center">
+                                <h3 className="text-lg font-semibold text-gray-900">{module.title}</h3>
+                                {isLocked && (
+                                  <span className="ml-2 px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+                                    Locked
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-sm text-gray-500">{module.lessons.length} lessons</p>
                             </div>
                           </div>
@@ -281,12 +299,32 @@ export default function CoursePage() {
 
                         <p className="text-gray-600 mb-4">{module.description}</p>
                         
+                        {isLocked && (
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <div className="flex items-center space-x-2 text-yellow-700">
+                              <i className="fas fa-info-circle"></i>
+                              <span className="text-sm font-medium">
+                                Complete Module {moduleIndex} or click "Build Skills First" to unlock this module
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
                         <div className="space-y-0 divide-y divide-gray-100">
                           {module.lessons.map((lesson, lessonIndex) => (
                             <button
                               key={lesson.id}
-                              onClick={() => router.push(`/courses/${courseId}/${lesson.id}`)}
-                              className="w-full flex items-center p-3 hover:bg-gray-50 transition-colors text-left first:rounded-t-lg last:rounded-b-lg"
+                              onClick={() => {
+                                if (!isLocked) {
+                                  router.push(`/courses/${courseId}/${lesson.id}`);
+                                }
+                              }}
+                              disabled={isLocked}
+                              className={`w-full flex items-center p-3 transition-colors text-left first:rounded-t-lg last:rounded-b-lg ${
+                                isLocked 
+                                  ? 'cursor-not-allowed opacity-50' 
+                                  : 'hover:bg-gray-50 cursor-pointer'
+                              }`}
                             >
                               <span className="w-6 h-6 mr-3">
                                 {lesson.isCompleted ? (

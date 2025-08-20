@@ -18,6 +18,7 @@ export interface Module {
   description: string;
   lessons: Lesson[];
   isCompleted: boolean;
+  isLocked?: boolean;
 }
 
 export interface Lesson {
@@ -28,6 +29,8 @@ export interface Lesson {
   duration: number; // in seconds
   isCompleted: boolean;
   transcripts?: string;
+  hasEnagicButton?: boolean;
+  hasSkillsButton?: boolean;
 }
 
 export interface CourseData {
@@ -129,69 +132,61 @@ const mockData: CourseData = {
   startHereCourses: [
     {
       id: "business-blueprint",
-      title: "The Business Blueprint",
-      description: "Master the fundamentals of building your online empire",
+      title: "Business Launch Blueprint",
+      description: "Your complete blueprint to launching a successful online business",
       thumbnailUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop",
-      moduleCount: 8,
-      lessonCount: 45,
-      progress: 100,
-      isCompleted: true,
+      moduleCount: 2,
+      lessonCount: 4,
+      progress: 0,
+      isCompleted: false,
       modules: [
         {
           id: "business-module-1",
-          title: "Foundation Principles",
-          description: "Build your business on solid fundamentals",
-          isCompleted: true,
-          lessons: generateLessons("business-module-1", 0, 6, 6)
+          title: "Business Launch Blueprint",
+          description: "Essential foundation to get started with your business journey",
+          isCompleted: false,
+          lessons: [
+            {
+              id: "lesson-1-1",
+              title: "Welcome & Our Highest Converting Offer",
+              description: "Discover our proven system and highest converting business opportunity",
+              videoUrl: "https://example.com/video-business-module-1-1",
+              duration: 900, // 15 minutes
+              isCompleted: false
+            },
+            {
+              id: "lesson-1-2",
+              title: "Our Life Changing Stories",
+              description: "Real success stories from people who transformed their lives with our system",
+              videoUrl: "https://example.com/video-business-module-1-2",
+              duration: 720, // 12 minutes
+              isCompleted: false
+            },
+            {
+              id: "lesson-1-3",
+              title: "Bonus Resources",
+              description: "Essential resources and tools to accelerate your success",
+              videoUrl: "https://example.com/video-business-module-1-3",
+              duration: 480, // 8 minutes
+              isCompleted: false
+            }
+          ]
         },
         {
           id: "business-module-2", 
-          title: "Market Research",
-          description: "Understand your target market deeply",
-          isCompleted: true,
-          lessons: generateLessons("business-module-2", 1, 5, 5)
-        },
-        {
-          id: "business-module-3",
-          title: "Business Planning",
-          description: "Create a comprehensive business plan",
-          isCompleted: true,
-          lessons: generateLessons("business-module-3", 2, 7, 7)
-        },
-        {
-          id: "business-module-4",
-          title: "Legal Structure",
-          description: "Set up your business legally and properly",
-          isCompleted: true,
-          lessons: generateLessons("business-module-4", 3, 4, 4)
-        },
-        {
-          id: "business-module-5",
-          title: "Financial Management",
-          description: "Master business finances and accounting",
-          isCompleted: true,
-          lessons: generateLessons("business-module-5", 4, 6, 6)
-        },
-        {
-          id: "business-module-6",
-          title: "Operations & Systems",
-          description: "Build efficient business operations",
-          isCompleted: true,
-          lessons: generateLessons("business-module-6", 5, 5, 5)
-        },
-        {
-          id: "business-module-7",
-          title: "Marketing Foundation",
-          description: "Essential marketing principles",
-          isCompleted: true,
-          lessons: generateLessons("business-module-7", 6, 7, 7)
-        },
-        {
-          id: "business-module-8",
-          title: "Growth & Scaling",
-          description: "Scale your business to new heights",
-          isCompleted: true,
-          lessons: generateLessons("business-module-8", 7, 5, 5)
+          title: "Discovery Process",
+          description: "Making your next step - choose your path forward",
+          isCompleted: false,
+          lessons: [
+            {
+              id: "lesson-2-1",
+              title: "Making Your Next Step",
+              description: "Decide between fast-track business opportunity or skill building",
+              videoUrl: "https://example.com/video-business-module-2-1",
+              duration: 600, // 10 minutes
+              isCompleted: false
+            }
+          ]
         }
       ]
     },
@@ -548,18 +543,29 @@ export const getAllCourses = async (): Promise<CourseData> => {
           let totalCompleted = 0;
           let totalLessons = 0;
           
-          course.modules = course.modules.map(module => ({
-            ...module,
-            lessons: module.lessons.map(lesson => {
-              totalLessons++;
-              const isCompleted = globalProgressState.completedLessons.has(lesson.id);
-              if (isCompleted) totalCompleted++;
-              return {
-                ...lesson,
-                isCompleted
-              };
-            })
-          }));
+          course.modules = course.modules.map(module => {
+            const isUnlocked = isModuleUnlocked(module.id, course);
+            return {
+              ...module,
+              isLocked: !isUnlocked,
+              lessons: module.lessons.map(lesson => {
+                totalLessons++;
+                const isCompleted = globalProgressState.completedLessons.has(lesson.id);
+                if (isCompleted) totalCompleted++;
+                
+                // Add special buttons for Business Launch Blueprint lessons
+                const hasButtons = course.id === 'business-blueprint' && 
+                  (lesson.id === 'lesson-1-1' || lesson.id === 'lesson-1-2' || lesson.id === 'lesson-1-3' || lesson.id === 'lesson-2-1');
+                
+                return {
+                  ...lesson,
+                  isCompleted,
+                  hasEnagicButton: hasButtons,
+                  hasSkillsButton: hasButtons && lesson.id !== 'lesson-2-1' // Module 2 lesson only has Enagic button
+                };
+              })
+            };
+          });
           
           // Update course progress
           course.progress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
@@ -712,6 +718,8 @@ export const calculateUserLevel = (completedCourses: number) => {
 let globalProgressState = {
   completedLessons: new Set<string>(),
   completedCourses: new Set<string>(),
+  unlockedModules: new Set<string>(),
+  buttonClicks: new Set<string>(), // Track which flow buttons have been clicked
   totalXP: 2450,
   coursesCompleted: 0, // Will be calculated dynamically
   lastUpdateTime: Date.now(),
@@ -801,6 +809,8 @@ export const updateLessonProgress = async (courseId: string, lessonId: string, c
     if (typeof window !== 'undefined') {
       localStorage.setItem('learningProgress', JSON.stringify({
         completedLessons: Array.from(globalProgressState.completedLessons),
+        unlockedModules: Array.from(globalProgressState.unlockedModules),
+        buttonClicks: Array.from(globalProgressState.buttonClicks),
         totalXP: globalProgressState.totalXP,
         lastUpdateTime: globalProgressState.lastUpdateTime
         // Note: Removed coursesCompleted and currentLevel - these are calculated dynamically

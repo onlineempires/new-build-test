@@ -4,7 +4,7 @@ import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
 import { useUpgrade } from '../../../contexts/UpgradeContext';
 import { useCourseAccess } from '../../../hooks/useCourseAccess';
-import { getCourse, updateLessonProgress, Course, Lesson } from '../../../lib/api/courses';
+import { getCourse, updateLessonProgress, Course, Lesson, handleButtonClick } from '../../../lib/api/courses';
 
 export default function LessonPage() {
   const router = useRouter();
@@ -128,6 +128,39 @@ export default function LessonPage() {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleEnagicFlow = async () => {
+    if (!currentLesson) return;
+    
+    try {
+      // Track button click and unlock Module 2 if needed
+      const moduleToUnlock = currentLesson.id.startsWith('lesson-1-') ? 'business-module-2' : undefined;
+      await handleButtonClick('enagic', currentLesson.id, moduleToUnlock);
+      
+      // Redirect to calendar scheduler (placeholder for now)
+      router.push('/enagic-scheduler');
+    } catch (error) {
+      console.error('Failed to handle Enagic flow:', error);
+    }
+  };
+
+  const handleSkillsFlow = async () => {
+    if (!currentLesson) return;
+    
+    try {
+      // Track button click and unlock Module 2
+      await handleButtonClick('skills', currentLesson.id, 'business-module-2');
+      
+      // Redirect to Module 2 or Skills VSL depending on lesson
+      if (currentLesson.id === 'lesson-2-1') {
+        router.push('/skills-vsl');
+      } else {
+        router.push(`/courses/${courseId}/lesson-2-1`);
+      }
+    } catch (error) {
+      console.error('Failed to handle Skills flow:', error);
+    }
   };
 
   if (loading) {
@@ -273,6 +306,31 @@ export default function LessonPage() {
                   <p>📺 Demo Mode: Video player would be integrated here</p>
                   <p>Duration: {formatDuration(currentLesson.duration)} • {currentLesson.isCompleted ? '✅ Completed' : '⏸️ In Progress'}</p>
                 </div>
+                
+                {/* Action Buttons Below Video */}
+                {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
+                  <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center max-w-2xl mx-auto">
+                    {currentLesson.hasEnagicButton && (
+                      <button
+                        onClick={() => handleEnagicFlow()}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                      >
+                        <i className="fas fa-rocket"></i>
+                        <span>I'm ready! Start Enagic Fast Track</span>
+                      </button>
+                    )}
+                    
+                    {currentLesson.hasSkillsButton && (
+                      <button
+                        onClick={() => handleSkillsFlow()}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center space-x-3"
+                      >
+                        <i className="fas fa-graduation-cap"></i>
+                        <span>Not ready/interested - Build Skills First</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
