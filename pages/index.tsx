@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import AppLayout from '../components/layout/AppLayout';
 
 import StatsCards from '../components/dashboard/StatsCards';
 import ContinueJourney from '../components/dashboard/ContinueJourney';
-import StartHereGrid from '../components/dashboard/StartHereGrid';
+import StartHereGridGated from '../components/dashboard/StartHereGridGated';
 import RecentAchievements from '../components/dashboard/RecentAchievements';
+
+
 import FeedbackModal from '../components/dashboard/FeedbackModal';
 import LevelBadge from '../components/ui/LevelBadge';
 import { StreakUpgradePrompt } from '../components/upgrades/UpgradePrompts';
 import { getDashboard, DashboardData } from '../lib/api/dashboard';
 import { useCourseAccess } from '../hooks/useCourseAccess';
+import { useNotificationHelpers } from '../hooks/useNotificationHelpers';
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -19,6 +23,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const { showSuccess, notifyAchievement } = useNotificationHelpers();
 
   useEffect(() => {
     loadDashboard();
@@ -45,18 +50,15 @@ export default function Dashboard() {
     }
   };
 
-  const handleClearNotifications = () => {
-    if (data) {
-      setData({
-        ...data,
-        notifications: []
-      });
-    }
-  };
+
 
   const handleFeedbackSuccess = () => {
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    showSuccess(
+      'Feedback Sent! 📝',
+      'Thank you for your feedback! We\'ll review it and get back to you soon.',
+      'View Status',
+      '/support'
+    );
   };
 
   if (loading) {
@@ -125,73 +127,112 @@ export default function Dashboard() {
       <AppLayout 
         user={data.user} 
         onFeedbackClick={() => setFeedbackModalOpen(true)}
-        notifications={data.notifications}
-        onClearNotifications={handleClearNotifications}
       >
         <div className="p-3 sm:p-4 lg:p-6">
 
-          {/* Welcome Banner - Mobile Optimized */}
-          <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-blue-600 text-white rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg">
-            <div className="flex items-center">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-bold mr-3 sm:mr-4 shadow-lg">
-                {data.user.name ? data.user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : 'AK'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 truncate">Hello, {data.user.name.split(' ')[0]}!</h1>
-                <div className="flex items-center gap-3 mb-1">
-                  <p className="text-purple-100 text-sm sm:text-base font-medium">Welcome back to The Digital Era!</p>
-                  <div className="hidden sm:block">
-                    <LevelBadge completedCourses={data.stats.coursesCompleted} size="sm" />
+          {/* Welcome Banner - Smaller and More Discreet */}
+          {data.stats.coursesCompleted > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 mb-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold mr-3">
+                    {data.user.name ? data.user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : 'AK'}
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-semibold text-gray-900">Hello, {data.user.name.split(' ')[0]}!</h1>
+                    <p className="text-gray-600 text-sm">Welcome back to The Digital Era</p>
                   </div>
                 </div>
-                {/* Mobile level badge */}
-                <div className="sm:hidden mt-2">
-                  <LevelBadge completedCourses={data.stats.coursesCompleted} size="sm" showProgress={true} />
+                <div className="flex items-center">
+                  <LevelBadge completedCourses={data.stats.coursesCompleted} size="sm" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Cards - Enhanced Visibility */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 mb-6">
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
+                  <i className="fas fa-graduation-cap text-white text-lg"></i>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{data.stats.coursesCompleted}</div>
+                  <div className="text-sm font-medium text-gray-600">Completed</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
+                  <i className="fas fa-fire text-white text-lg"></i>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{data.stats.learningStreakDays}</div>
+                  <div className="text-sm font-medium text-gray-600">Day Streak</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mr-3">
+                  <i className="fas fa-star text-white text-lg"></i>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{data.stats.xpPoints}</div>
+                  <div className="text-sm font-medium text-gray-600">XP Points</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center mr-3">
+                  <i className="fas fa-level-up-alt text-white text-lg"></i>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-gray-900">{data.stats.level}</div>
+                  <div className="text-sm font-medium text-gray-600">Level</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Clean Stats Cards - Simplified for new users */}
-          <div className="mb-8">
-            <StatsCards stats={data.stats} />
+          {/* Slim Green Tips Bar */}
+          <div className="bg-green-50 rounded-xl py-3 px-4 mt-4 mb-6 flex flex-wrap justify-center gap-3">
+            <div className="flex items-center text-green-700 text-sm">
+              <i className="fas fa-play mr-2"></i>
+              <span className="font-medium">15 min lessons</span>
+            </div>
+            <div className="flex items-center text-green-700 text-sm">
+              <i className="fas fa-star mr-2"></i>
+              <span className="font-medium">Earn XP rewards</span>
+            </div>
+            <div className="flex items-center text-green-700 text-sm">
+              <i className="fas fa-trophy mr-2"></i>
+              <span className="font-medium">Track progress</span>
+            </div>
           </div>
 
           {/* Main Content - Conditional based on user progress */}
           {data.stats.coursesCompleted === 0 ? (
             /* NEW USER EXPERIENCE - Clean and Action-Oriented */
             <>
-              {/* Welcome & Quick Start */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 mb-8">
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mr-4 flex-shrink-0">
-                    <i className="fas fa-rocket text-green-600 text-xl"></i>
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-green-900 mb-2">🎯 Let's Get You Started!</h2>
-                    <p className="text-green-800 text-base mb-4">
-                      Ready to build your online empire? Start with "The Business Blueprint" - it's just 15 minutes and will change how you think about online business.
-                    </p>
-                    <div className="flex flex-wrap gap-3 text-sm">
-                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
-                        <i className="fas fa-play mr-2"></i>
-                        <span className="font-medium">15 min lessons</span>
-                      </div>
-                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
-                        <i className="fas fa-star mr-2"></i>
-                        <span className="font-medium">Earn XP rewards</span>
-                      </div>
-                      <div className="flex items-center text-green-700 bg-white px-3 py-2 rounded-full border border-green-200">
-                        <i className="fas fa-trophy mr-2"></i>
-                        <span className="font-medium">Track progress</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Compact Start Here CTA */}
+              <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 text-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">Start Here</h2>
+                <p className="text-gray-600 text-base mb-6 max-w-md mx-auto">
+                  Kick off with The Business Blueprint – it's just 15 minutes and will change how you think about online business.
+                </p>
+                <Link href="/courses/business-blueprint">
+                  <a className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-14 px-6 rounded-2xl transition-colors w-full sm:w-auto inline-flex items-center justify-center">
+                    Start The Business Blueprint
+                  </a>
+                </Link>
               </div>
 
               {/* Start Here - Simplified */}
-              <StartHereGrid courses={data.startHere} />
+              <StartHereGridGated courses={data.startHere} />
             </>
           ) : (
             /* RETURNING USER EXPERIENCE - Show progress and continue */
@@ -200,7 +241,7 @@ export default function Dashboard() {
               <ContinueJourney course={data.continue} />
 
               {/* Start Here */}
-              <StartHereGrid courses={data.startHere} />
+              <StartHereGridGated courses={data.startHere} />
 
               {/* Recent Achievements - Only for users with progress */}
               {data.achievements && data.achievements.length > 0 && (
@@ -227,6 +268,8 @@ export default function Dashboard() {
             <span className="font-medium">Feedback sent successfully!</span>
           </div>
         )}
+
+        {/* Development Tools - GatingStatus now handled in AppLayout header */}
       </AppLayout>
     </>
   );

@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import RoleUpgradeModal from '../components/upgrades/RoleUpgradeModal';
+import UpgradeRouter, { UpgradeContext as UpgradeContextEnum } from '../components/upgrades/UpgradeRouter';
 import { UserRole } from './UserRoleContext';
 
 interface UpgradeContextType {
-  showUpgradeModal: (currentPlan?: UserRole) => void;
+  showUpgradeModal: (context?: UpgradeContextEnum, currentPlan?: UserRole) => void;
+  showPremiumUpgrade: (currentPlan?: UserRole) => void;
+  showSkillsUpgrade: (currentPlan?: UserRole) => void;
   hideUpgradeModal: () => void;
   isUpgradeModalOpen: boolean;
 }
@@ -17,10 +19,20 @@ interface UpgradeProviderProps {
 export function UpgradeProvider({ children }: UpgradeProviderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<UserRole>('free');
+  const [upgradeContext, setUpgradeContext] = useState<UpgradeContextEnum>('unknown');
 
-  const showUpgradeModal = (plan: UserRole = 'free') => {
+  const showUpgradeModal = (context: UpgradeContextEnum = 'unknown', plan: UserRole = 'free') => {
+    setUpgradeContext(context);
     setCurrentPlan(plan);
     setIsModalOpen(true);
+  };
+
+  const showPremiumUpgrade = (plan: UserRole = 'free') => {
+    showUpgradeModal('premium', plan);
+  };
+
+  const showSkillsUpgrade = (plan: UserRole = 'free') => {
+    showUpgradeModal('skills', plan);
   };
 
   const hideUpgradeModal = () => {
@@ -36,15 +48,18 @@ export function UpgradeProvider({ children }: UpgradeProviderProps) {
     <UpgradeContext.Provider
       value={{
         showUpgradeModal,
+        showPremiumUpgrade,
+        showSkillsUpgrade,
         hideUpgradeModal,
         isUpgradeModalOpen: isModalOpen,
       }}
     >
       {children}
-      <RoleUpgradeModal
+      <UpgradeRouter
         isOpen={isModalOpen}
         onClose={hideUpgradeModal}
-        currentPlan={currentPlan}
+        context={upgradeContext}
+        currentPlan={currentPlan === 'monthly' ? 'monthly' : currentPlan === 'annual' ? 'annual' : 'free'}
         onUpgradeSuccess={handleUpgradeSuccess}
       />
     </UpgradeContext.Provider>

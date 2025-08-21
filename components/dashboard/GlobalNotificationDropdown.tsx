@@ -1,24 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useNotifications } from '../../contexts/NotificationContext';
 
-interface Notification {
-  id: number;
-  title: string;
-  body: string;
-  ts: string;
-  actionLabel: string;
-  actionHref: string;
-}
-
-interface NotificationDropdownProps {
-  notifications: Notification[];
-  onClear: () => void;
-  onRemove?: (id: number) => void;
-}
-
-export default function NotificationDropdown({ notifications, onClear, onRemove }: NotificationDropdownProps) {
+export default function GlobalNotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { state, clearAll, removeNotification, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, isLoading } = state;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,7 +52,22 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
     }
   };
 
-  const getNotificationIcon = (title: string) => {
+  const getNotificationIcon = (title: string, type?: string) => {
+    // First check type if provided
+    if (type) {
+      switch (type) {
+        case 'success':
+          return 'fas fa-check-circle text-green-500';
+        case 'error':
+          return 'fas fa-exclamation-circle text-red-500';
+        case 'warning':
+          return 'fas fa-exclamation-triangle text-yellow-500';
+        case 'info':
+          return 'fas fa-info-circle text-blue-500';
+      }
+    }
+
+    // Fallback to title-based detection
     if (title.includes('Lead') || title.includes('signed up')) {
       return 'fas fa-user-plus text-green-500';
     } else if (title.includes('Commission') || title.includes('earned')) {
@@ -76,6 +79,24 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
     } else {
       return 'fas fa-bell text-gray-400';
     }
+  };
+
+  const handleClearAll = () => {
+    clearAll();
+    setIsOpen(false);
+  };
+
+  const handleRemove = (id: number) => {
+    removeNotification(id);
+  };
+
+  const handleNotificationClick = (id: number) => {
+    markAsRead(id);
+    setIsOpen(false);
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead();
   };
 
   return (
@@ -90,12 +111,17 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
         onClick={() => setIsOpen(!isOpen)}
       >
         <i className={`fas fa-bell transition-transform duration-200 ${
-          notifications.length > 0 ? 'animate-pulse' : ''
+          unreadCount > 0 ? 'animate-pulse' : ''
         }`}></i>
-        {notifications.length > 0 && (
+        {unreadCount > 0 && (
           <span className="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold shadow-sm animate-pulse">
-            {notifications.length > 9 ? '9+' : notifications.length}
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
+        )}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
         )}
       </button>
 
@@ -111,18 +137,31 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
                     {notifications.length}
                   </span>
                 )}
+                {unreadCount > 0 && (
+                  <span className="ml-1 bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                    {unreadCount} new
+                  </span>
+                )}
               </div>
-              {notifications.length > 0 && (
-                <button
-                  onClick={() => {
-                    onClear();
-                    setIsOpen(false);
-                  }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  Clear All
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllAsRead}
+                    className="text-green-600 hover:text-green-700 text-xs font-medium px-2 py-1 rounded-lg hover:bg-green-50 transition-colors"
+                    title="Mark all as read"
+                  >
+                    <i className="fas fa-check-double"></i>
+                  </button>
+                )}
+                {notifications.length > 0 && (
+                  <button
+                    onClick={handleClearAll}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           
@@ -137,28 +176,39 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
               </div>
             ) : (
               notifications.map((notification, index) => (
-                <div key={notification.id} className={`p-4 hover:bg-gray-50 transition-colors ${
-                  index !== notifications.length - 1 ? 'border-b border-gray-100' : ''
-                }`}>
+                <div 
+                  key={notification.id} 
+                  className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    index !== notifications.length - 1 ? 'border-b border-gray-100' : ''
+                  } ${!notification.isRead ? 'bg-blue-50/30' : ''}`}
+                  onClick={() => handleNotificationClick(notification.id)}
+                >
                   <div className="flex items-start">
                     <div className="flex-shrink-0 w-10 h-10 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-center mr-3">
-                      <i className={`${getNotificationIcon(notification.title)} text-sm`}></i>
+                      <i className={`${getNotificationIcon(notification.title, notification.type)} text-sm`}></i>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="font-medium text-gray-900 text-sm leading-tight flex-1 pr-2">{notification.title}</h4>
-                        {onRemove && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onRemove(notification.id);
-                            }}
-                            className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-                            aria-label="Remove notification"
-                          >
-                            <i className="fas fa-times text-xs"></i>
-                          </button>
-                        )}
+                        <div className="flex items-center flex-1 pr-2">
+                          <h4 className={`font-medium text-gray-900 text-sm leading-tight ${
+                            !notification.isRead ? 'font-semibold' : ''
+                          }`}>
+                            {notification.title}
+                          </h4>
+                          {!notification.isRead && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 flex-shrink-0"></div>
+                          )}
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemove(notification.id);
+                          }}
+                          className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label="Remove notification"
+                        >
+                          <i className="fas fa-times text-xs"></i>
+                        </button>
                       </div>
                       <p className="text-gray-600 text-sm mb-3 leading-relaxed">{notification.body}</p>
                       <div className="flex justify-between items-center">
@@ -169,7 +219,10 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
                         <Link href={notification.actionHref}>
                           <a 
                             className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                            onClick={() => setIsOpen(false)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(notification.id);
+                            }}
                           >
                             {notification.actionLabel}
                           </a>

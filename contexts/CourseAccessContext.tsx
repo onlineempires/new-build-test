@@ -145,8 +145,8 @@ export function CourseAccessProvider({ children }: CourseAccessProviderProps) {
     
     if (!config) {
       return {
-        title: 'Course Locked',
-        message: 'Upgrade your membership to access this course',
+        title: 'Course Access Required',
+        message: 'Upgrade your membership to unlock this course and continue your learning journey',
         upgradeRequired: true
       };
     }
@@ -182,8 +182,8 @@ export function CourseAccessProvider({ children }: CourseAccessProviderProps) {
       
       default:
         return {
-          title: 'Course Locked',
-          message: 'Upgrade your membership to access this course',
+          title: 'Course Access Required',
+          message: 'Upgrade your membership to unlock this course and continue your learning journey',
           upgradeRequired: true
         };
     }

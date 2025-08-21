@@ -1,5 +1,6 @@
 import { useUpgrade } from '../../contexts/UpgradeContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
+import { roleToUpgradeContext } from '../../utils/upgrade';
 
 interface TrialUpgradePromptProps {
   courseTitle?: string;
@@ -52,7 +53,7 @@ export default function TrialUpgradePrompt({
 
         {/* Upgrade Button */}
         <button
-          onClick={() => showUpgradeModal(currentRole)}
+          onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
           className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
         >
           <i className="fas fa-rocket mr-2"></i>

@@ -4,7 +4,11 @@ import Head from 'next/head';
 import AppLayout from '../../components/layout/AppLayout';
 import { useUpgrade } from '../../contexts/UpgradeContext';
 import { useCourseAccess } from '../../hooks/useCourseAccess';
-import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked, isCourseUnlocked } from '../../lib/api/courses';
+import { useCourseGating } from '../../hooks/useCourseGating';
+import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked, isCourseUnlocked, isLessonUnlocked, loadProgressFromStorage } from '../../lib/api/courses';
+import { roleToUpgradeContext } from '../../utils/upgrade';
+import { canStartCourse, isLessonUnlocked as isLessonUnlockedAccess, UserFlags, requiresUpgradeCTA, requiresPurchaseMasterclass } from '../../lib/access';
+import FeedbackModal from '../../components/dashboard/FeedbackModal';
 
 export default function CoursePage() {
   const router = useRouter();
@@ -12,8 +16,33 @@ export default function CoursePage() {
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const { showUpgradeModal } = useUpgrade();
   const { isPurchased, currentRole } = useCourseAccess();
+  const { isTrial, canAccessDiscovery } = useCourseGating();
+  
+  // Load progress data to determine flags for centralized access control (safe for SSR)
+  const userFlags: UserFlags = {
+    role: currentRole as any,
+    pressedNotReady: typeof window !== 'undefined' ? Boolean(localStorage.getItem('pressedNotReadyInBLB')) : false,
+    blueprintDone: typeof window !== 'undefined' ? Boolean(localStorage.getItem('business-blueprint-completed')) : false,
+    purchasedMasterclasses: []
+  };
+  
+  // Map course IDs to our section/course system
+  const getCourseInfo = (courseId: string) => {
+    switch (courseId) {
+      case 'business-blueprint':
+        return { sectionId: 's1' as const, courseIndex: 1 as const };
+      case 'discovery-process':
+        return { sectionId: 's1' as const, courseIndex: 2 as const };
+      case 'next-steps':
+        return { sectionId: 's1' as const, courseIndex: 3 as const };
+      default:
+        return { sectionId: 's3' as const, courseIndex: 1 as const };
+    }
+  };
 
   useEffect(() => {
     if (courseId) {
@@ -73,19 +102,20 @@ export default function CoursePage() {
   const hasAccess = () => {
     if (!course) return false;
     
-    // Special masterclasses require individual purchase
-    const paidMasterclasses = ['email-marketing-secrets', 'advanced-funnel-mastery'];
-    if (paidMasterclasses.includes(course.id)) {
-      return isPurchased(course.id);
-    }
+    const { sectionId, courseIndex } = getCourseInfo(course.id);
     
-    // Check if course is unlocked (progression-based)
-    if (!isCourseUnlocked(course.id)) {
+    // Check for masterclass purchase requirement
+    if (requiresPurchaseMasterclass(course.id, userFlags)) {
       return false;
     }
     
-    // Use the updated isPurchased logic which handles role-based access
-    return isPurchased(course.id);
+    // Check if course can be started (uses centralized logic)
+    return canStartCourse(sectionId, courseIndex, userFlags);
+  };
+
+  const handleFeedbackSuccess = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   if (loading) {
@@ -133,11 +163,11 @@ export default function CoursePage() {
               <i className="fas fa-lock text-yellow-600 text-2xl"></i>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {!isCourseUnlocked(course.id) ? 'Course Locked' : 'Course Access Required'}
+              {!isCourseUnlocked(course.id, currentRole) ? 'Course Locked' : 'Course Access Required'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {!isCourseUnlocked(course.id) 
-                ? 'Complete the Business Launch Blueprint course or click "Build Skills First" to unlock this course.' 
+              {!isCourseUnlocked(course.id, currentRole) 
+                ? 'Complete this course to unlock the next one.' 
                 : 'You need to purchase this course or upgrade your plan to access this content.'
               }
             </p>
@@ -157,7 +187,7 @@ export default function CoursePage() {
                 </button>
               ) : (
                 <button
-                  onClick={() => showUpgradeModal(currentRole)}
+                  onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
                   className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <i className="fas fa-crown mr-2"></i>Upgrade to Premium
@@ -185,6 +215,7 @@ export default function CoursePage() {
         user={{ id: 123, name: "Ashley Kemp", avatarUrl: "" }}
         notifications={[]}
         onClearNotifications={() => {}}
+        onFeedbackClick={() => setFeedbackModalOpen(true)}
       >
         <div className="min-h-screen bg-gray-50 pb-8">
           
@@ -263,7 +294,7 @@ export default function CoursePage() {
                   {course.modules.map((module, moduleIndex) => {
                     const completedInModule = module.lessons.filter(l => l.isCompleted).length;
                     const moduleProgress = Math.round((completedInModule / module.lessons.length) * 100);
-                    const isUnlocked = isModuleUnlocked(module.id, course);
+                    const isUnlocked = isModuleUnlocked(module.id, course, currentRole);
                     const isLocked = module.isLocked || !isUnlocked;
                     
                     return (
@@ -314,10 +345,7 @@ export default function CoursePage() {
                             <div className="flex items-center space-x-2 text-yellow-700">
                               <i className="fas fa-lock"></i>
                               <span className="text-sm font-medium">
-                                {course.id === 'business-blueprint' && moduleIndex === 1 
-                                  ? `Complete Module ${moduleIndex} or click "Build Skills First" to unlock this module`
-                                  : `Complete Module ${moduleIndex} to unlock this module`
-                                }
+                                Complete this course to unlock the next one.
                               </span>
                             </div>
                           </div>
@@ -325,7 +353,11 @@ export default function CoursePage() {
                         
                         <div className="space-y-0 divide-y divide-gray-100">
                           {module.lessons.map((lesson, lessonIndex) => {
-                            const isLessonLocked = lesson.isLocked || (isLocked && lessonIndex > 0);
+                            // Use centralized lesson-level gating logic
+                            const { sectionId, courseIndex } = getCourseInfo(course.id);
+                            const completedLessons = module.lessons.slice(0, lessonIndex).filter(l => l.isCompleted).length;
+                            const lessonUnlocked = isLessonUnlockedAccess(sectionId, courseIndex, lessonIndex + 1, userFlags, completedLessons);
+                            const isLessonLocked = !lessonUnlocked;
                             return (
                               <button
                                 key={lesson.id}
@@ -357,6 +389,11 @@ export default function CoursePage() {
                                   <div className="text-sm text-gray-500">
                                     {lesson.description}
                                   </div>
+                                  {isLessonLocked && (
+                                    <div className="text-xs text-orange-600 mt-1 font-medium">
+                                      Complete previous lessons to unlock
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="text-sm text-gray-500 ml-4">
                                   {formatDuration(lesson.duration)}
@@ -364,12 +401,23 @@ export default function CoursePage() {
                               </button>
                             );
                           })}
-                          ))}
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Inline Notice for Next Course - Only for Business Blueprint */}
+                {courseId === 'business-blueprint' && isTrial && !canAccessDiscovery && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+                    <div className="flex items-center text-yellow-800">
+                      <i className="fas fa-info-circle mr-2"></i>
+                      <span className="text-sm">
+                        Complete this course to unlock the next one.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Sidebar */}
@@ -456,7 +504,7 @@ export default function CoursePage() {
                       {/* Upgrade prompt for free users only */}
                       {currentRole === 'free' && !isPurchased(courseId as string) && (
                         <button
-                          onClick={() => showUpgradeModal('free')}
+                          onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
                           className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-colors mt-2"
                         >
                           <i className="fas fa-crown mr-2"></i>
@@ -470,6 +518,21 @@ export default function CoursePage() {
             </div>
           </div>
         </div>
+
+        {/* Feedback Modal */}
+        <FeedbackModal
+          isOpen={feedbackModalOpen}
+          onClose={() => setFeedbackModalOpen(false)}
+          onSuccess={handleFeedbackSuccess}
+        />
+
+        {/* Toast */}
+        {showToast && (
+          <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg z-50 flex items-center justify-center sm:justify-start">
+            <i className="fas fa-check-circle mr-2"></i>
+            <span className="font-medium">Feedback sent successfully!</span>
+          </div>
+        )}
       </AppLayout>
     </>
   );

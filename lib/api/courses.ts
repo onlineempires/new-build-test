@@ -136,8 +136,8 @@ const mockData: CourseData = {
       title: "Business Launch Blueprint",
       description: "Your complete blueprint to launching a successful online business",
       thumbnailUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop",
-      moduleCount: 2,
-      lessonCount: 4,
+      moduleCount: 1,
+      lessonCount: 3,
       progress: 0,
       isCompleted: false,
       modules: [
@@ -178,22 +178,6 @@ const mockData: CourseData = {
               hasSkillsButton: true
             }
           ]
-        },
-        {
-          id: "business-module-2", 
-          title: "Discovery Process",
-          description: "Making your next step - choose your path forward",
-          isCompleted: false,
-          lessons: [
-            {
-              id: "lesson-2-1",
-              title: "Making Your Next Step",
-              description: "Decide between fast-track business opportunity or skill building",
-              videoUrl: "https://example.com/video-business-module-2-1",
-              duration: 600, // 10 minutes
-              isCompleted: false
-            }
-          ]
         }
       ]
     },
@@ -202,31 +186,17 @@ const mockData: CourseData = {
       title: "The Discovery Process",
       description: "Find your niche and identify opportunities",
       thumbnailUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=225&fit=crop",
-      moduleCount: 3,
-      lessonCount: 15,
-      progress: 67,
-      isCompleted: false,
+      moduleCount: 1,
+      lessonCount: 5,
+      progress: 100,
+      isCompleted: true,
       modules: [
         {
           id: "discovery-module-1",
-          title: "Self Assessment",
-          description: "Discover your strengths and passions",
+          title: "Complete Discovery Process",
+          description: "Discover your strengths, analyze opportunities, and choose your niche",
           isCompleted: true,
           lessons: generateLessons("discovery-module-1", 0, 5, 5)
-        },
-        {
-          id: "discovery-module-2",
-          title: "Market Opportunity Analysis", 
-          description: "Identify profitable market opportunities",
-          isCompleted: true,
-          lessons: generateLessons("discovery-module-2", 1, 6, 5)
-        },
-        {
-          id: "discovery-module-3",
-          title: "Niche Selection",
-          description: "Choose your perfect business niche",
-          isCompleted: false,
-          lessons: generateLessons("discovery-module-3", 2, 4, 0)
         }
       ]
     },
@@ -550,24 +520,27 @@ export const getAllCourses = async (): Promise<CourseData> => {
           let totalCompleted = 0;
           let totalLessons = 0;
           
-          // Check if this course is unlocked
-          const courseUnlocked = isCourseUnlocked(course.id);
+          // Check if this course is unlocked (need to get user role from context)
+          const userRole = typeof window !== 'undefined' ? localStorage.getItem('userRole') || 'free' : 'free';
+          const courseUnlocked = isCourseUnlocked(course.id, userRole);
           
           course.modules = course.modules.map(module => {
-            const isUnlocked = courseUnlocked && isModuleUnlocked(module.id, course);
+            const isUnlocked = courseUnlocked && isModuleUnlocked(module.id, course, userRole);
             return {
               ...module,
               isLocked: !isUnlocked,
               lessons: module.lessons.map(lesson => {
                 totalLessons++;
                 const isCompleted = globalProgressState.completedLessons.has(lesson.id);
+                const isUnlocked = isLessonUnlocked(lesson.id, course.id, userRole);
                 if (isCompleted) totalCompleted++;
                 
                 return {
                   ...lesson,
                   isCompleted,
-                  hasEnagicButton: lesson.hasEnagicButton && courseUnlocked,
-                  hasSkillsButton: lesson.hasSkillsButton && courseUnlocked
+                  isLocked: !isUnlocked,
+                  hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
+                  hasSkillsButton: lesson.hasSkillsButton && isUnlocked
                 };
               })
             };
@@ -677,13 +650,16 @@ export const getCourse = async (courseId: string): Promise<Course> => {
           lessons: module.lessons.map((lesson: Lesson) => {
             totalLessons++;
             const isCompleted = globalProgressState.completedLessons.has(lesson.id);
+            const userRole = typeof window !== 'undefined' ? localStorage.getItem('userRole') || 'free' : 'free';
+            const isUnlocked = isLessonUnlocked(lesson.id, courseCopy.id, userRole);
             if (isCompleted) totalCompleted++;
             return {
               ...lesson,
               isCompleted,
-              // Preserve button properties from original lesson data
-              hasEnagicButton: lesson.hasEnagicButton,
-              hasSkillsButton: lesson.hasSkillsButton
+              isLocked: !isUnlocked,
+              // Preserve button properties from original lesson data but respect locking
+              hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
+              hasSkillsButton: lesson.hasSkillsButton && isUnlocked
             };
           })
         }));
@@ -740,6 +716,8 @@ export const resetGlobalProgressState = () => {
   globalProgressState = {
     completedLessons: new Set<string>(),
     completedCourses: new Set<string>(),
+    unlockedModules: new Set<string>(),
+    buttonClicks: new Set<string>(),
     totalXP: 2450,
     coursesCompleted: 0,
     lastUpdateTime: Date.now(),
@@ -876,6 +854,8 @@ export const loadProgressFromStorage = (): void => {
         };
         
         globalProgressState.completedLessons = new Set(parsed.completedLessons || []);
+        globalProgressState.unlockedModules = new Set(parsed.unlockedModules || []);
+        globalProgressState.buttonClicks = new Set(parsed.buttonClicks || []);
         globalProgressState.totalXP = parsed.totalXP || 2450;
         globalProgressState.lastUpdateTime = parsed.lastUpdateTime || Date.now();
         
@@ -909,8 +889,83 @@ export const getCurrentUserLevel = () => {
   return globalProgressState.currentLevel;
 };
 
-// Check if module is unlocked
-export const isModuleUnlocked = (moduleId: string, course: Course): boolean => {
+// Check if a specific lesson is unlocked (enhanced for Business Blueprint gating)
+export const isLessonUnlocked = (lessonId: string, courseId: string, userRole?: string): boolean => {
+  // Admin can access everything
+  if (userRole === 'admin') {
+    return true;
+  }
+  
+  // Monthly and Annual members can access ALL lessons
+  if (userRole === 'monthly' || userRole === 'annual') {
+    return true;
+  }
+  
+  // For Business Blueprint gating: Only Lesson 1 Video 1 is unlocked initially for trial/free users
+  if (courseId === 'business-blueprint' && (userRole === 'free' || userRole === 'trial')) {
+    // Check if user has pressed "Not Ready Yet" - this unlocks Discovery Process but keeps BLB locked
+    const hasSkippedBLB = globalProgressState.unlockedModules.has('course-discovery-process') &&
+                         !globalProgressState.completedLessons.has('lesson-1-1');
+    
+    if (hasSkippedBLB) {
+      // If they pressed "Not Ready Yet", all BLB lessons remain locked
+      return false;
+    }
+    
+    // Only Lesson 1 Video 1 is unlocked initially
+    if (lessonId === 'lesson-1-1') {
+      return true;
+    }
+    
+    // Other BLB lessons unlock sequentially after completing previous lesson
+    if (lessonId === 'lesson-1-2') {
+      return globalProgressState.completedLessons.has('lesson-1-1');
+    }
+    
+    if (lessonId === 'lesson-1-3') {
+      return globalProgressState.completedLessons.has('lesson-1-1') && 
+             globalProgressState.completedLessons.has('lesson-1-2');
+    }
+    
+    return false;
+  }
+  
+  // For other courses, check if course is unlocked first
+  if (!isCourseUnlocked(courseId, userRole)) {
+    return false;
+  }
+  
+  // If course is unlocked, all lessons within are accessible
+  return true;
+};
+
+// Check if module is unlocked (updated to support role-based access)
+export const isModuleUnlocked = (moduleId: string, course: Course, userRole?: string): boolean => {
+  // Admin can access everything
+  if (userRole === 'admin') {
+    return true;
+  }
+  
+  // Monthly and Annual members can access ALL modules
+  if (userRole === 'monthly' || userRole === 'annual') {
+    return true;
+  }
+  
+  // For Business Blueprint, use special gating logic
+  if (course.id === 'business-blueprint' && (userRole === 'free' || userRole === 'trial')) {
+    // Check if user has pressed "Not Ready Yet" - this keeps BLB modules locked
+    const hasSkippedBLB = globalProgressState.unlockedModules.has('course-discovery-process') &&
+                         !globalProgressState.completedLessons.has('lesson-1-1');
+    
+    if (hasSkippedBLB) {
+      return false; // All BLB modules locked after "Not Ready Yet"
+    }
+    
+    // First module is unlocked (but individual lessons have their own gating)
+    const moduleIndex = course.modules.findIndex(m => m.id === moduleId);
+    return moduleIndex === 0;
+  }
+  
   // Always unlock the first module of any course
   const moduleIndex = course.modules.findIndex(m => m.id === moduleId);
   if (moduleIndex === 0) {
@@ -931,8 +986,20 @@ export const isModuleUnlocked = (moduleId: string, course: Course): boolean => {
   return false;
 };
 
-// Check if a course is unlocked
-export const isCourseUnlocked = (courseId: string): boolean => {
+// Check if a course is unlocked (updated to support role-based access)
+export const isCourseUnlocked = (courseId: string, userRole?: string): boolean => {
+  // Admin can access everything
+  if (userRole === 'admin') {
+    return true;
+  }
+  
+  // Monthly and Annual members can access ALL courses (except paid masterclasses)
+  if (userRole === 'monthly' || userRole === 'annual') {
+    // Check if it's a paid masterclass that requires separate purchase
+    const paidMasterclasses = ['advanced-copywriting-masterclass', 'scaling-systems-masterclass', 'email-marketing-secrets'];
+    return !paidMasterclasses.includes(courseId);
+  }
+  
   // Business Blueprint is always unlocked (first course)
   if (courseId === 'business-blueprint') {
     return true;
@@ -945,21 +1012,23 @@ export const isCourseUnlocked = (courseId: string): boolean => {
   
   // Discovery Process unlocks after Business Blueprint is completed OR button is clicked
   if (courseId === 'discovery-process') {
-    // Check if Business Blueprint is completed
+    // Check if Business Blueprint is completed (all lessons in business-blueprint)
     const businessBlueprintCompleted = globalProgressState.completedLessons.has('lesson-1-1') &&
                                        globalProgressState.completedLessons.has('lesson-1-2') &&
                                        globalProgressState.completedLessons.has('lesson-1-3');
-    return businessBlueprintCompleted;
+    return businessBlueprintCompleted || globalProgressState.unlockedModules.has('course-discovery-process');
   }
   
-  // Next Steps unlocks after Discovery Process is completed
+  // Next Steps unlocks after Business Blueprint is completed
   if (courseId === 'next-steps') {
-    // Check if Discovery Process is completed
-    return globalProgressState.unlockedModules.has('course-next-steps') ||
-           globalProgressState.completedLessons.has('lesson-2-1'); // Discovery Process completion
+    // Check if Business Blueprint is completed (all lessons in business-blueprint)
+    const businessBlueprintCompleted = globalProgressState.completedLessons.has('lesson-1-1') &&
+                                       globalProgressState.completedLessons.has('lesson-1-2') &&
+                                       globalProgressState.completedLessons.has('lesson-1-3');
+    return businessBlueprintCompleted || globalProgressState.unlockedModules.has('course-next-steps');
   }
   
-  return true; // Default unlock for other courses
+  return false; // Default to locked for trial/free users
 };
 
 // Get button click status
@@ -968,13 +1037,53 @@ export const getButtonClickStatus = (buttonType: 'enagic' | 'skills', lessonId: 
   return globalProgressState.buttonClicks.has(buttonKey);
 };
 
+// Handle "Not Ready Yet" button click in Business Blueprint
+export const handleNotReadyYetClick = async (): Promise<void> => {
+  try {
+    // Set the pressedNotReadyInBLB flag
+    if (typeof window !== 'undefined') {
+      const userFlags = JSON.parse(localStorage.getItem('userFlags') || '{}');
+      userFlags.pressedNotReadyInBLB = true;
+      userFlags.pressedNotReadyTimestamp = Date.now();
+      localStorage.setItem('userFlags', JSON.stringify(userFlags));
+    }
+    
+    // Unlock Discovery Process course
+    globalProgressState.unlockedModules.add('course-discovery-process');
+    
+    // Mark this special action
+    globalProgressState.buttonClicks.add('not-ready-yet-blb');
+    globalProgressState.lastUpdateTime = Date.now();
+    
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('learningProgress', JSON.stringify({
+        completedLessons: Array.from(globalProgressState.completedLessons),
+        unlockedModules: Array.from(globalProgressState.unlockedModules),
+        buttonClicks: Array.from(globalProgressState.buttonClicks),
+        totalXP: globalProgressState.totalXP,
+        lastUpdateTime: globalProgressState.lastUpdateTime
+      }));
+      
+      // Clear cache to ensure fresh data
+      sessionStorage.setItem('progressCacheInvalidated', Date.now().toString());
+      sessionStorage.removeItem('fastStatsCache');
+    }
+    
+    console.log('🚀 "Not Ready Yet" clicked - Discovery Process unlocked, Business Blueprint locked');
+    
+  } catch (error) {
+    console.error('Failed to handle Not Ready Yet click:', error);
+  }
+};
+
 // Handle button clicks for progression flow
 export const handleButtonClick = async (buttonType: 'enagic' | 'skills', lessonId: string, courseToUnlock?: string): Promise<void> => {
   try {
     const buttonKey = `${buttonType}-${lessonId}`;
     globalProgressState.buttonClicks.add(buttonKey);
     
-    // Unlock next course if specified (for Build Skills First button)
+    // Unlock next course if specified (for Continue Learning button)
     if (courseToUnlock && buttonType === 'skills') {
       globalProgressState.unlockedModules.add(`course-${courseToUnlock}`);
     }

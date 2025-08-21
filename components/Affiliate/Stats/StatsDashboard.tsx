@@ -430,7 +430,59 @@ const StatsDashboard: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Mobile: Horizontal Scroll */}
+      <div className="sm:hidden mb-8">
+        <div className="flex gap-3 overflow-x-auto snap-x px-2 pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="min-w-[220px] snap-start">
+            <MetricCard
+              title="Total Revenue"
+              value={`$${statsData.summary.totalRevenue.toLocaleString()}`}
+              trend="up"
+              trendValue="12.5"
+              icon={DollarSign}
+              color="green"
+            />
+          </div>
+          <div className="min-w-[220px] snap-start">
+            <MetricCard
+              title="Total Visits"
+              value={statsData.summary.totalVisits.toLocaleString()}
+              trend="up"
+              trendValue="8.3"
+              icon={Eye}
+              color="blue"
+            />
+          </div>
+          <div className="min-w-[220px] snap-start">
+            <MetricCard
+              title="Total Signups"
+              value={statsData.summary.totalSignups.toLocaleString()}
+              trend="up"
+              trendValue="15.2"
+              icon={Users}
+              color="purple"
+            />
+          </div>
+          <div className="min-w-[220px] snap-start">
+            <MetricCard
+              title="Avg Conversion Rate"
+              value={`${statsData.summary.avgConversionRate.toFixed(1)}%`}
+              trend="down"
+              trendValue="2.1"
+              icon={TrendingUp}
+              color="orange"
+            />
+          </div>
+        </div>
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+      </div>
+
+      {/* Desktop: Grid Layout */}
+      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           title="Total Revenue"
           value={`$${statsData.summary.totalRevenue.toLocaleString()}`}

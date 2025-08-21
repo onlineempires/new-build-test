@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface IndividualCourseModalProps {
   isOpen: boolean;
@@ -32,6 +32,18 @@ export default function IndividualCourseModal({
     billingZip: ''
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -133,7 +145,7 @@ export default function IndividualCourseModal({
 
   if (showSuccess) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
         <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <i className="fas fa-check text-green-600 text-2xl"></i>
@@ -146,16 +158,6 @@ export default function IndividualCourseModal({
                 🎉 Start learning immediately - all {course.lessonCount} lessons are now available!
               </p>
             </div>
-            {(() => {
-              const referrerId = localStorage.getItem('referrerId');
-              return referrerId && referrerId !== 'direct' ? (
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <p className="text-sm text-blue-800 font-medium">
-                    💰 Your referrer will receive a ${(course.price * 0.25).toFixed(0)} commission for this purchase
-                  </p>
-                </div>
-              ) : null;
-            })()}
           </div>
         </div>
       </div>
@@ -163,8 +165,8 @@ export default function IndividualCourseModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full relative overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
+      <div className="bg-white rounded-3xl max-w-[720px] w-[92vw] p-6 md:p-8 relative">
         
         {/* Close Button */}
         <button
@@ -174,211 +176,210 @@ export default function IndividualCourseModal({
           <i className="fas fa-times text-xl"></i>
         </button>
 
-        {/* Course Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
-          <div className="flex items-center mb-4">
-            {course.thumbnail ? (
-              <img 
-                src={course.thumbnail} 
-                alt={course.title}
-                className="w-16 h-16 rounded-xl mr-4 object-cover"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mr-4">
-                <i className="fas fa-play text-2xl"></i>
-              </div>
-            )}
-            <div>
-              <h2 className="text-xl font-bold mb-1">{course.title}</h2>
-              <p className="text-blue-100 text-sm">{course.lessonCount} lessons</p>
-            </div>
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h2>
+          <div className="text-3xl font-bold text-gray-900 mb-1">
+            ${course.price}
           </div>
-          <p className="text-blue-100">{course.description}</p>
+          <div className="text-gray-500 text-sm">One-time payment • Lifetime access</div>
         </div>
 
-        {/* Pricing Section */}
-        <div className="p-6">
-          <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              ${course.price}
+        {/* Value Points */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="flex items-center">
+              <i className="fas fa-check-circle text-green-500 mr-2"></i>
+              <span>{course.lessonCount} premium lessons</span>
             </div>
-            <div className="text-gray-500 text-sm">One-time payment • Lifetime access</div>
-          </div>
-
-          {/* What You Get */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <h3 className="font-semibold mb-3 text-gray-900">🚀 What You Get:</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center">
-                <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                <span>Immediate access to all {course.lessonCount} lessons</span>
-              </div>
-              <div className="flex items-center">
-                <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                <span>Downloadable worksheets and resources</span>
-              </div>
-              <div className="flex items-center">
-                <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                <span>Progress tracking and certificates</span>
-              </div>
-              <div className="flex items-center">
-                <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                <span>Lifetime access - learn at your own pace</span>
-              </div>
-              <div className="flex items-center">
-                <i className="fas fa-check-circle text-green-500 mr-2"></i>
-                <span>Mobile-friendly platform</span>
-              </div>
+            <div className="flex items-center">
+              <i className="fas fa-check-circle text-green-500 mr-2"></i>
+              <span>Downloadable resources</span>
+            </div>
+            <div className="flex items-center">
+              <i className="fas fa-check-circle text-green-500 mr-2"></i>
+              <span>Progress tracking</span>
+            </div>
+            <div className="flex items-center">
+              <i className="fas fa-check-circle text-green-500 mr-2"></i>
+              <span>Lifetime access</span>
             </div>
           </div>
+        </div>
 
-          {/* Payment Form or Purchase Button */}
-          {showPaymentForm ? (
-            <div className="space-y-4 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Payment Information</h3>
+        {/* Payment Methods */}
+        {!showPaymentForm ? (
+          <div className="space-y-4">
+            {/* Quick Payment Buttons */}
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  // In real app, integrate with Apple Pay
+                  handlePurchase();
+                }}
+                className="w-full bg-black text-white py-4 rounded-xl font-medium text-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
+              >
+                <i className="fab fa-apple mr-2"></i>
+                Pay with Apple Pay
+              </button>
               
+              <button
+                onClick={() => {
+                  // In real app, integrate with Google Pay
+                  handlePurchase();
+                }}
+                className="w-full bg-blue-600 text-white py-4 rounded-xl font-medium text-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <i className="fab fa-google mr-2"></i>
+                Pay with Google Pay
+              </button>
+            </div>
+            
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500">Or pay with card</span>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowPaymentForm(true)}
+              className="w-full bg-gray-100 text-gray-900 py-4 rounded-xl font-medium text-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+            >
+              <i className="fas fa-credit-card mr-2"></i>
+              Pay with Card
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 text-center mb-4">Payment Information</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <div className="md:col-span-2">
                 <input
                   type="email"
                   value={paymentData.email}
                   onChange={(e) => setPaymentData(prev => ({ ...prev, email: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     formErrors.email ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="your@email.com"
+                  placeholder="Email address"
                 />
                 {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
               </div>
 
               {/* Card Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+              <div className="md:col-span-2">
                 <input
                   type="text"
                   value={paymentData.cardNumber}
                   onChange={(e) => setPaymentData(prev => ({ ...prev, cardNumber: formatCardNumber(e.target.value) }))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     formErrors.cardNumber ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="1234 5678 9012 3456"
+                  placeholder="Card number"
                   maxLength={19}
                 />
                 {formErrors.cardNumber && <p className="text-red-500 text-xs mt-1">{formErrors.cardNumber}</p>}
               </div>
 
               {/* Expiry and CVV */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                  <input
-                    type="text"
-                    value={paymentData.expiryDate}
-                    onChange={(e) => setPaymentData(prev => ({ ...prev, expiryDate: formatExpiryDate(e.target.value) }))}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      formErrors.expiryDate ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                  />
-                  {formErrors.expiryDate && <p className="text-red-500 text-xs mt-1">{formErrors.expiryDate}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
-                  <input
-                    type="text"
-                    value={paymentData.cvv}
-                    onChange={(e) => setPaymentData(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      formErrors.cvv ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="123"
-                    maxLength={4}
-                  />
-                  {formErrors.cvv && <p className="text-red-500 text-xs mt-1">{formErrors.cvv}</p>}
-                </div>
+              <div>
+                <input
+                  type="text"
+                  value={paymentData.expiryDate}
+                  onChange={(e) => setPaymentData(prev => ({ ...prev, expiryDate: formatExpiryDate(e.target.value) }))}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    formErrors.expiryDate ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="MM/YY"
+                  maxLength={5}
+                />
+                {formErrors.expiryDate && <p className="text-red-500 text-xs mt-1">{formErrors.expiryDate}</p>}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={paymentData.cvv}
+                  onChange={(e) => setPaymentData(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    formErrors.cvv ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="CVV"
+                  maxLength={4}
+                />
+                {formErrors.cvv && <p className="text-red-500 text-xs mt-1">{formErrors.cvv}</p>}
               </div>
 
               {/* Name on Card */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
                 <input
                   type="text"
                   value={paymentData.cardName}
                   onChange={(e) => setPaymentData(prev => ({ ...prev, cardName: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     formErrors.cardName ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="John Smith"
+                  placeholder="Name on card"
                 />
                 {formErrors.cardName && <p className="text-red-500 text-xs mt-1">{formErrors.cardName}</p>}
               </div>
 
               {/* Billing ZIP */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Billing ZIP Code</label>
                 <input
                   type="text"
                   value={paymentData.billingZip}
                   onChange={(e) => setPaymentData(prev => ({ ...prev, billingZip: e.target.value }))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     formErrors.billingZip ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="12345"
+                  placeholder="ZIP code"
                 />
                 {formErrors.billingZip && <p className="text-red-500 text-xs mt-1">{formErrors.billingZip}</p>}
               </div>
-
-              {/* Payment Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => setShowPaymentForm(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handlePurchase}
-                  disabled={isProcessing}
-                  className="flex-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-bold hover:from-blue-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isProcessing ? (
-                    <span className="flex items-center justify-center">
-                      <i className="fas fa-spinner fa-spin mr-2"></i>
-                      Processing...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      <i className="fas fa-credit-card mr-2"></i>
-                      Pay ${course.price}
-                    </span>
-                  )}
-                </button>
-              </div>
             </div>
-          ) : (
-            <button
-              onClick={() => setShowPaymentForm(true)}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-colors mb-4"
-            >
-              <span className="flex items-center justify-center">
-                <i className="fas fa-shopping-cart mr-2"></i>
-                Purchase Course for ${course.price}
-              </span>
-            </button>
-          )}
 
-          {/* Terms */}
-          <div className="text-xs text-gray-500 text-center">
-            <p className="mb-1">
-              <i className="fas fa-shield-alt mr-1"></i>
-              Secure payment • 30-day money-back guarantee
-            </p>
-            <p>
-              Instant access • All sales are final after course completion
-            </p>
+            {/* Payment Buttons */}
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setShowPaymentForm(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              >
+                Back
+              </button>
+              <button
+                onClick={handlePurchase}
+                disabled={isProcessing}
+                className="flex-2 bg-blue-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? (
+                  <span className="flex items-center justify-center">
+                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center">
+                    Pay ${course.price}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
+        )}
+
+        {/* Terms */}
+        <div className="text-xs text-gray-500 text-center mt-4">
+          <p className="mb-1">
+            <i className="fas fa-shield-alt mr-1"></i>
+            Secure payment • 30-day money-back guarantee
+          </p>
+          <p>
+            Instant access • All sales are final after course completion
+          </p>
         </div>
       </div>
     </div>

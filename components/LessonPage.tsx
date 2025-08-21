@@ -307,7 +307,7 @@ const LessonPage: React.FC<LessonPageProps> = ({
         <div className="mt-12 bg-gray-100 rounded-2xl p-8">
           <div className="text-center mb-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Path</h3>
-            <p className="text-gray-600">Ready to take action or want to build more skills first?</p>
+            <p className="text-gray-600">Ready to take action or want to explore more lessons first?</p>
           </div>
           
           <div className="max-w-2xl mx-auto space-y-4">
@@ -324,7 +324,7 @@ const LessonPage: React.FC<LessonPageProps> = ({
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
             >
               <GraduationCap className="w-5 h-5" />
-              <span>Not Ready Yet - Build Skills First</span>
+              <span>Continue Learning - Explore More</span>
             </button>
           </div>
         </div>
