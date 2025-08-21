@@ -4,7 +4,10 @@ import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
 import { useUpgrade } from '../../../contexts/UpgradeContext';
 import { useCourseAccess } from '../../../hooks/useCourseAccess';
-import { getCourse, updateLessonProgress, Course, Lesson, handleButtonClick } from '../../../lib/api/courses';
+import { useCourseGating } from '../../../hooks/useCourseGating';
+import { getCourse, updateLessonProgress, Course, Lesson, handleButtonClick, isLessonUnlocked, handleNotReadyYetClick } from '../../../lib/api/courses';
+import { roleToUpgradeContext } from '../../../utils/upgrade';
+import FeedbackModal from '../../../components/dashboard/FeedbackModal';
 import { 
   Play, 
   Check, 
@@ -15,7 +18,8 @@ import {
   FileText,
   File,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 
 export default function LessonPage() {
@@ -26,8 +30,11 @@ export default function LessonPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const { showUpgradeModal } = useUpgrade();
   const { isPurchased, currentRole } = useCourseAccess();
+  const { setNotReadyFlag } = useCourseGating();
 
   useEffect(() => {
     if (courseId && lessonId) {
@@ -75,21 +82,8 @@ export default function LessonPage() {
       return isPurchased(course.id);
     }
     
-    // Check role-based access
-    switch (currentRole) {
-      case 'free':
-      case 'trial':
-        // Allow access to Start Here courses including Business Launch Blueprint
-        return course.id === 'business-blueprint' || course.id === 'discovery-process' || course.id === 'next-steps' || course.id === 'start-here' || course.id === 'digital-marketing-fundamentals';
-      case 'downsell':
-        return course.id === 'business-blueprint' || course.id === 'discovery-process' || course.id === 'next-steps' || course.id === 'start-here' || course.id === 'digital-marketing-fundamentals' || course.id === 'daily-method';
-      case 'monthly':
-      case 'annual':
-      case 'admin':
-        return true;
-      default:
-        return false;
-    }
+    // Use the enhanced lesson-level gating logic
+    return isLessonUnlocked(currentLesson.id, course.id, currentRole);
   };
 
   const markLessonComplete = async () => {
@@ -163,14 +157,34 @@ export default function LessonPage() {
     if (!currentLesson) return;
     
     try {
+      // Set the "Not Ready Yet" flag for dashboard gating
+      setNotReadyFlag();
+      
       // Track button click and unlock Discovery Process course
       await handleButtonClick('skills', currentLesson.id, 'discovery-process');
       
-      // Redirect to Discovery Process course
-      router.push('/courses/discovery-process');
+      // Redirect directly to the first lesson of Discovery Process course
+      router.push('/courses/discovery-process/lesson-1-1');
     } catch (error) {
       console.error('Failed to handle Skills flow:', error);
     }
+  };
+
+  const handleNotReadyYet = async () => {
+    try {
+      // Use the courses API function to handle "Not Ready Yet" click
+      await handleNotReadyYetClick();
+      
+      // Redirect to Discovery Process Lesson 1 Video 1
+      router.push('/courses/discovery-process/lesson-1-1');
+    } catch (error) {
+      console.error('Failed to handle Not Ready Yet:', error);
+    }
+  };
+
+  const handleFeedbackSuccess = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   if (loading) {
@@ -206,6 +220,46 @@ export default function LessonPage() {
 
   // Check access after lesson is loaded
   if (!hasAccess()) {
+    // Special handling for Business Blueprint lessons - show "Not Ready Yet" option
+    if (course.id === 'business-blueprint' && (currentRole === 'free' || currentRole === 'trial') && currentLesson.id !== 'lesson-1-1') {
+      return (
+        <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
+          <div className="p-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="text-blue-600 w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Locked</h3>
+              <p className="text-gray-600 mb-6">
+                Complete the previous lesson in your Business Blueprint journey, or skip ahead to the Discovery Process if you're ready to explore other options.
+              </p>
+              <div className="space-y-3">
+                <button
+                  onClick={() => router.push('/courses/business-blueprint/lesson-1-1')}
+                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Go to Lesson 1 Video 1
+                </button>
+                <button
+                  onClick={handleNotReadyYet}
+                  className="w-full px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                >
+                  Continue Learning - Skip to Discovery Process
+                </button>
+                <button
+                  onClick={() => router.push(`/courses/${courseId}`)}
+                  className="w-full px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Back to Course
+                </button>
+              </div>
+            </div>
+          </div>
+        </AppLayout>
+      );
+    }
+
+    // Default locked lesson UI for other courses
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
         <div className="p-6">
@@ -233,7 +287,7 @@ export default function LessonPage() {
                 </button>
               ) : (
                 <button
-                  onClick={() => showUpgradeModal(currentRole)}
+                  onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
                   className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <i className="fas fa-crown mr-2"></i>Upgrade to Premium
@@ -250,27 +304,27 @@ export default function LessonPage() {
   const previousLesson = getPreviousLesson();
 
   const CircularProgress = ({ percentage }: { percentage: number }) => {
-    const circumference = 2 * Math.PI * 45;
+    const circumference = 2 * Math.PI * 32;
     const strokeDasharray = circumference;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     return (
-      <div className="relative w-16 h-16">
-        <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
+      <div className="relative w-[72px] h-[72px] flex-shrink-0">
+        <svg className="w-[72px] h-[72px] transform -rotate-90" viewBox="0 0 72 72">
           <circle
-            cx="50"
-            cy="50"
-            r="45"
+            cx="36"
+            cy="36"
+            r="32"
             stroke="#e5e7eb"
-            strokeWidth="8"
+            strokeWidth="5"
             fill="none"
           />
           <circle
-            cx="50"
-            cy="50"
-            r="45"
+            cx="36"
+            cy="36"
+            r="32"
             stroke="#3b82f6"
-            strokeWidth="8"
+            strokeWidth="5"
             fill="none"
             strokeDasharray={strokeDasharray}
             strokeDashoffset={strokeDashoffset}
@@ -279,7 +333,7 @@ export default function LessonPage() {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-bold text-gray-900">{Math.round(course.progress)}%</span>
+          <span className="text-base font-bold text-gray-900">{Math.round(percentage)}%</span>
         </div>
       </div>
     );
@@ -297,10 +351,11 @@ export default function LessonPage() {
         user={{ id: 123, name: "Ashley Kemp", avatarUrl: "" }}
         notifications={[]}
         onClearNotifications={() => {}}
+        onFeedbackClick={() => setFeedbackModalOpen(true)}
       >
         <div className="min-h-screen bg-white">
           {/* Breadcrumb Navigation */}
-          <div className="border-b border-black/5 px-6 py-4">
+          <div className="border-b border-black/5 px-6 py-4 bg-white">
             <nav className="text-sm text-gray-500">
               <button onClick={() => router.push('/')} className="hover:text-gray-700 transition-colors">
                 Dashboard
@@ -319,11 +374,11 @@ export default function LessonPage() {
           </div>
 
           {/* Main Content */}
-          <div className="max-w-7xl mx-auto px-6 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
               {/* Left Column - Video and Overview */}
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-6 z-0">
                 
                 {/* Video Player */}
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden">
@@ -375,6 +430,34 @@ export default function LessonPage() {
                   </div>
                 </div>
 
+                {/* Action Buttons Under Video - Only for Discovery Course */}
+                {courseId === 'discovery-process' && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Interested in Enagic Button */}
+                      <button
+                        onClick={() => handleEnagicFlow()}
+                        className="w-full h-14 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white font-medium flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Rocket className="w-4 h-4" />
+                        <span>Yes, I'm Interested in Enagic</span>
+                      </button>
+                      
+                      {/* Not Ready/Interested - Continue Learning Button */}
+                      <button
+                        onClick={() => {
+                          // Redirect to VSL page for All Access Courses Bundle
+                          router.push('/vsl-all-access');
+                        }}
+                        className="w-full h-14 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Play className="w-4 h-4" />
+                        <span>Not Ready/Interested - Continue Learning</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Lesson Overview */}
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">Lesson Overview</h2>
@@ -405,23 +488,61 @@ export default function LessonPage() {
                     <span className="text-sm">Estimated time: {formatDuration(currentLesson.duration)}</span>
                   </div>
                 </div>
+
+                {/* Choose Your Path Card - Only for Business Blueprint lessons */}
+                {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 md:p-7 mt-4">
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-semibold text-[#0F172A] mb-2">Choose Your Path</h3>
+                      <p className="text-[#64748B]">Ready to take action or want to explore more lessons first?</p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {currentLesson.hasEnagicButton && (
+                        <button
+                          onClick={() => handleEnagicFlow()}
+                          className="w-full h-14 rounded-2xl bg-[#16A34A] hover:bg-[#15803D] text-white font-semibold flex items-center justify-center gap-3 transition-colors"
+                        >
+                          <Rocket className="w-5 h-5" />
+                          <span>I'm Ready! Start Enagic Fast Track</span>
+                        </button>
+                      )}
+                      
+                      {currentLesson.hasSkillsButton && (
+                        <button
+                          onClick={() => handleSkillsFlow()}
+                          className="w-full h-14 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold flex items-center justify-center gap-3 transition-colors"
+                        >
+                          <GraduationCap className="w-5 h-5" />
+                          <span>Continue Learning - Explore More</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Column - Sidebar */}
-              <div className="lg:col-span-4 space-y-6">
+              <div className="lg:col-span-4 space-y-6 z-0">
                 
                 {/* Progress Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Progress</h3>
-                  <div className="flex items-center justify-between mb-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-4 md:p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Your Progress</h3>
+                  <div className="grid grid-cols-[72px_1fr] gap-3 items-center">
                     <CircularProgress percentage={course.progress} />
-                    <div className="text-right">
-                      <div className="text-sm text-gray-600 mb-1">Module Progress</div>
-                      <div className="font-medium text-gray-900">1 of {course.moduleCount} lessons</div>
-                      <div className="text-sm text-gray-600 mb-1 mt-2">Course Progress</div>
-                      <div className="font-medium text-gray-900">{course.modules.reduce((acc, module) => acc + module.lessons.filter(l => l.isCompleted).length, 0)} of {course.lessonCount} lessons</div>
-                      <div className="text-sm text-gray-600 mb-1 mt-2">XP Earned</div>
-                      <div className="font-medium text-green-600">+25 XP</div>
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-slate-500 text-sm">Module Progress</span>
+                        <span className="font-semibold text-slate-900 text-sm">1 of {course.moduleCount} lessons</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-slate-500 text-sm">Course Progress</span>
+                        <span className="font-semibold text-slate-900 text-sm">{course.modules.reduce((acc, module) => acc + module.lessons.filter(l => l.isCompleted).length, 0)} of {course.lessonCount} lessons</span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-slate-500 text-sm">XP Earned</span>
+                        <span className="font-semibold text-emerald-600 text-sm">+25 XP</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -461,53 +582,70 @@ export default function LessonPage() {
                   </div>
                 </div>
 
-                {/* Completion Card */}
+                {/* What's Next? Card */}
                 <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
-                  <label className="flex items-center mb-4 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={currentLesson.isCompleted}
-                      onChange={markLessonComplete}
-                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <span className="ml-3 text-gray-700">Mark lesson as complete</span>
-                  </label>
-                  {nextLesson && (
-                    <button
-                      onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-                    >
-                      Continue to Next Lesson
-                    </button>
-                  )}
-                </div>
-
-                {/* Navigation Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4">Navigation</h3>
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">What's Next?</h3>
+                    <p className="text-gray-600 text-sm">Choose how you want to continue</p>
+                  </div>
+                  
                   <div className="space-y-3">
-                    <button
-                      onClick={() => router.push(`/courses/${courseId}`)}
-                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <ChevronLeft className="w-4 h-4 mr-2" />
-                      Back to Course
-                    </button>
+                    {/* Primary blue button - Continue to Next Lesson */}
+                    {nextLesson && (
+                      <button
+                        onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
+                        className="w-full h-14 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <Play className="w-4 h-4" />
+                        <span>Continue to Next Lesson</span>
+                      </button>
+                    )}
                     
+                    {/* Previous Lesson Button */}
                     {previousLesson && (
                       <button
                         onClick={() => router.push(`/courses/${courseId}/${previousLesson.id}`)}
-                        className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="w-full h-10 rounded-xl bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] flex items-center justify-center gap-2 transition-colors text-sm"
                       >
-                        <ChevronLeft className="w-4 h-4 mr-2" />
-                        Previous Lesson
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Previous Lesson</span>
                       </button>
                     )}
+                    
+                    {/* Ghost white button - Back to Course Overview */}
+                    <button
+                      onClick={() => router.push(`/courses/${courseId}`)}
+                      className="w-full h-10 rounded-xl bg-white border border-[#E2E8F0] text-[#0F172A] hover:bg-[#F8FAFC] flex items-center justify-center gap-2 transition-colors text-sm"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Back to Course</span>
+                    </button>
+                    
+                    {/* Success mint button - Download Resources */}
+                    <button className="w-full h-10 rounded-xl bg-[#E7F6EF] text-[#166534] hover:bg-[#DDF0E8] flex items-center justify-center gap-2 transition-colors text-sm">
+                      <Download className="w-4 h-4" />
+                      <span>Download Resources</span>
+                    </button>
+                  </div>
+                  
+                  {/* Lesson Completion - moved to bottom of What's Next */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={currentLesson.isCompleted}
+                        onChange={markLessonComplete}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                      <span className="ml-3 text-gray-700 font-medium">Mark lesson as complete</span>
+                    </label>
                   </div>
                 </div>
 
-                {/* Upgrade Card */}
-                <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-sm p-6 text-white">
+
+
+                {/* Upgrade Card - Properly contained */}
+                <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-sm p-6 text-white relative">
                   <div className="inline-flex items-center px-3 py-1 rounded-full bg-yellow-400 text-yellow-900 text-xs font-semibold mb-4">
                     ⚡ LIMITED TIME
                   </div>
@@ -518,7 +656,7 @@ export default function LessonPage() {
                     <span className="text-purple-200">/year</span>
                   </div>
                   <button
-                    onClick={() => showUpgradeModal(currentRole)}
+                    onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
                     className="w-full bg-white text-purple-600 font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Upgrade Now
@@ -527,39 +665,24 @@ export default function LessonPage() {
               </div>
             </div>
 
-            {/* Bottom Action Panel - Only for Business Blueprint lessons */}
-            {(currentLesson.hasEnagicButton || currentLesson.hasSkillsButton) && (
-              <div className="mt-12 bg-gray-100 rounded-2xl p-8">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Path</h3>
-                  <p className="text-gray-600">Ready to take action or want to build more skills first?</p>
-                </div>
-                
-                <div className="max-w-2xl mx-auto space-y-4">
-                  {currentLesson.hasEnagicButton && (
-                    <button
-                      onClick={() => handleEnagicFlow()}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
-                    >
-                      <Rocket className="w-5 h-5" />
-                      <span>I'm Ready! Start Enagic Fast Track</span>
-                    </button>
-                  )}
-                  
-                  {currentLesson.hasSkillsButton && (
-                    <button
-                      onClick={() => handleSkillsFlow()}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
-                    >
-                      <GraduationCap className="w-5 h-5" />
-                      <span>Not Ready Yet - Build Skills First</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
+
+        {/* Feedback Modal */}
+        <FeedbackModal
+          isOpen={feedbackModalOpen}
+          onClose={() => setFeedbackModalOpen(false)}
+          onSuccess={handleFeedbackSuccess}
+        />
+
+        {/* Toast */}
+        {showToast && (
+          <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg z-50 flex items-center justify-center sm:justify-start">
+            <i className="fas fa-check-circle mr-2"></i>
+            <span className="font-medium">Feedback sent successfully!</span>
+          </div>
+        )}
       </AppLayout>
     </>
   );

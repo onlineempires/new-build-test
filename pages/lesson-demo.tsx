@@ -9,7 +9,7 @@ export default function LessonDemo() {
   };
 
   const handleSkillsClick = () => {
-    console.log('Build Skills First clicked');
+    console.log('Continue Learning clicked');
     // Navigate to Discovery Process course
   };
 

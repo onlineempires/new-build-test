@@ -1,14 +1,23 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 import StatsCards from '../components/dashboard/StatsCards';
 import UpgradeButton from '../components/upgrades/UpgradeButton';
 import IndividualCourseModal from '../components/courses/IndividualCourseModal';
 import TrialUpgradePrompt from '../components/courses/TrialUpgradePrompt';
+import FeedbackModal from '../components/dashboard/FeedbackModal';
 import { ProgressMilestoneUpgrade } from '../components/upgrades/UpgradePrompts';
 import { useCourseAccess } from '../hooks/useCourseAccess';
+import { useCourseGating } from '../hooks/useCourseGating';
+import { useNotificationHelpers } from '../hooks/useNotificationHelpers';
+import { useSectionGating } from '../hooks/useSectionGating';
+import { useUser } from '../contexts/UserContext';
+import PremiumModal from '../components/modals/PremiumModal';
+import MasterclassModal from '../components/modals/MasterclassModal';
+import { Lock } from 'lucide-react';
 import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
 import { getFastStats } from '../lib/services/progressService';
+import { canStartCourse, courseLockState, getLockMessage, UserFlags, requiresUpgradeCTA } from '../lib/access';
 
 export default function AllCourses() {
   const [data, setData] = useState<CourseData | null>(null);
@@ -17,11 +26,41 @@ export default function AllCourses() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [showIndividualPurchase, setShowIndividualPurchase] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showMasterclassModal, setShowMasterclassModal] = useState(false);
+  const [selectedMasterclass, setSelectedMasterclass] = useState<any>(null);
   const { isPurchased, purchaseCourse, refreshPurchases, currentRole, canAccessCourse, getCourseUpgradeMessage, purchasedCourses, permissions } = useCourseAccess();
+  const { isTrial } = useCourseGating();
+  const { notifyCourseCompleted, notifyUpgrade, showSuccess } = useNotificationHelpers();
+  const { getCourseGatingStatus, getSectionForCourse, getUpgradeButtonText, roleFlags } = useSectionGating();
+  const { user, setPressedNotReadyInBLB } = useUser();
 
   const handleIndividualPurchase = (course: any) => {
     setSelectedCourse(course);
     setShowIndividualPurchase(true);
+  };
+  
+  const handleMasterclassPurchase = (course: any) => {
+    setSelectedMasterclass({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      price: course.price || 97,
+      lessonCount: course.lessonCount || 20
+    });
+    setShowMasterclassModal(true);
+  };
+  
+  const handleNotReadyYetClick = () => {
+    setPressedNotReadyInBLB(true);
+    showSuccess(
+      'Course 2 Unlocked! 🎉',
+      'You can now access the Discovery Process. We\'ll guide you through building your skills step by step.',
+      'Start Course 2',
+      '/courses/discovery-process'
+    );
   };
 
   const handlePurchaseSuccess = (courseId: string) => {
@@ -30,16 +69,72 @@ export default function AllCourses() {
     setShowIndividualPurchase(false);
     setSelectedCourse(null);
     
+    // Show success notification
+    showSuccess(
+      'Course Purchased! 🎉',
+      `You now have access to "${selectedCourse?.title}". Start learning right away!`,
+      'Start Course',
+      `/courses/${courseId}`
+    );
+    
     // Force page refresh to ensure UI updates correctly
     setTimeout(() => {
       window.location.reload();
     }, 1000);
   };
 
-  // Helper function to render course button based on status
+  const handleFeedbackSuccess = () => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  // Load progress data to determine flags (safe for SSR)
+  const userFlags: UserFlags = {
+    role: currentRole as any,
+    pressedNotReady: typeof window !== 'undefined' ? Boolean(localStorage.getItem('pressedNotReadyInBLB')) : false,
+    blueprintDone: typeof window !== 'undefined' ? Boolean(localStorage.getItem('business-blueprint-completed')) : false,
+    purchasedMasterclasses: []
+  };
+  
+  // Map course IDs to our section/course system
+  const getCourseInfo = (courseId: string) => {
+    switch (courseId) {
+      case 'business-blueprint':
+        return { sectionId: 's1' as const, courseIndex: 1 as const };
+      case 'discovery-process':
+        return { sectionId: 's1' as const, courseIndex: 2 as const };
+      case 'next-steps':
+        return { sectionId: 's1' as const, courseIndex: 3 as const };
+      case 'tiktok-mastery':
+      case 'facebook-advertising':
+      case 'instagram-marketing':
+      case 'sales-funnel-mastery':
+        return { sectionId: 's2' as const, courseIndex: 1 as const };
+      default:
+        return { sectionId: 's3' as const, courseIndex: 1 as const };
+    }
+  };
+
+  // Use centralized access control for consistent gating
+  const isCourseLocked = (courseId: string): boolean => {
+    const { sectionId, courseIndex } = getCourseInfo(courseId);
+    return !canStartCourse(sectionId, courseIndex, userFlags);
+  };
+
+  // Get tooltip text for locked courses
+  const getLockedTooltipText = (courseId: string): string => {
+    const { sectionId, courseIndex } = getCourseInfo(courseId);
+    const lockState = courseLockState(sectionId, courseIndex, userFlags);
+    return getLockMessage(lockState, userFlags);
+  };
+
+  // Helper function to render course button using centralized access control
   const getCourseButton = (course: any) => {
-    // Check if user can access this course using the new system
-    if (canAccessCourse && canAccessCourse(course.id)) {
+    const { sectionId, courseIndex } = getCourseInfo(course.id);
+    const lockState = courseLockState(sectionId, courseIndex, userFlags);
+    
+    // If course is unlocked, show normal progression buttons
+    if (lockState === 'unlocked') {
       if (course.isCompleted) {
         return (
           <a 
@@ -73,47 +168,49 @@ export default function AllCourses() {
       );
     }
     
-    // Check if it's a masterclass that requires individual purchase
-    if (purchasedCourses.includes(course.id)) {
-      // User has purchased this masterclass individually
-      return (
-        <a 
-          href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:purple-700 transition-colors text-sm w-full"
-        >
-          <i className="fas fa-crown mr-2"></i>Access Masterclass
-        </a>
-      );
-    }
-
-    // Special masterclasses (require separate purchase)
-    const paidMasterclasses = ['advanced-copywriting-masterclass', 'scaling-systems-masterclass'];
-    if (paidMasterclasses.includes(course.id)) {
-      const coursePrice = 49;
+    // Handle locked courses based on lock state
+    if (lockState === 'locked-progress') {
       return (
         <button
-          onClick={() => handleIndividualPurchase({...course, price: coursePrice})}
-          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full"
+          disabled
+          className="inline-flex items-center justify-center bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-semibold cursor-not-allowed text-sm w-full"
         >
-          <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${coursePrice}
+          <i className="fas fa-lock mr-2"></i>Complete Previous Course
         </button>
       );
     }
-
-    // Users without access - show appropriate upgrade option with messaging
-    const upgradeMessage = getCourseUpgradeMessage ? getCourseUpgradeMessage(course.id) : 'Upgrade to Access';
     
+    if (lockState === 'locked-upgrade') {
+      return (
+        <button
+          onClick={() => setShowPremiumModal(true)}
+          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm w-full"
+        >
+          <i className="fas fa-crown mr-2"></i>Upgrade to Premium
+        </button>
+      );
+    }
+    
+    if (lockState === 'locked-purchase') {
+      return (
+        <button
+          onClick={() => handleMasterclassPurchase(course)}
+          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full"
+        >
+          <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${course.price || 97}
+        </button>
+      );
+    }
+    
+    // Default fallback
     return (
-      <UpgradeButton 
-        variant="secondary" 
-        className="text-sm py-2 px-4 w-full font-semibold rounded-lg"
-        currentPlan={currentRole}
+      <button
+        disabled
+        className="inline-flex items-center justify-center bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-semibold cursor-not-allowed text-sm w-full"
       >
-        <span className="flex items-center justify-center">
-          <i className="fas fa-crown mr-2"></i>
-          {currentRole === 'trial' ? 'Upgrade to Unlock' : 'Start Trial to Access'}
-        </span>
-      </UpgradeButton>
+        <Lock className="w-4 h-4 mr-2" />
+        Course Locked
+      </button>
     );
   };
 
@@ -184,33 +281,78 @@ export default function AllCourses() {
         <meta name="description" content="Browse all courses available in Online Empires" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
       <AppLayout 
-        user={data.user} 
-        notifications={data.notifications}
-        onClearNotifications={() => {}}
+        user={data?.user || { id: 0, name: 'User', avatarUrl: '' }}
+        onFeedbackClick={() => setFeedbackModalOpen(true)}
       >
-        <div className="min-h-screen bg-gray-50 pb-8">
+        <div className="min-h-screen bg-gray-50">
           
-          {/* Statistics Cards - Clean Layout */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-            <StatsCards stats={stats || {
-              coursesCompleted: 0,
-              coursesTotal: 0,
-              learningStreakDays: 0,
-              commissions: 0,
-              newLeads: 0,
-              xpPoints: 0,
-              level: 'Rookie'
-            }} />
+          {/* Statistics Cards Row - Fixed height and alignment */}
+          <div className="bg-white border-b border-gray-200 px-4 md:px-6 lg:px-8 py-5 mt-5">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Courses Completed Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]">
+                  <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 font-medium mb-1">Courses Completed</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.coursesCompleted || 0}/{stats?.coursesTotal || 3}</div>
+                  </div>
+                </div>
+                
+                {/* Learning Streak Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]">
+                  <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.75 2.25a.75.75 0 00-1.5 0v2.25a.75.75 0 001.5 0V2.25zm3.5 4.5a.75.75 0 00-1.061-1.061l-1.591 1.591a.75.75 0 001.061 1.061l1.591-1.591zm-7 0l1.591 1.591a.75.75 0 101.061-1.061L9.311 5.689A.75.75 0 008.25 6.75zm-.345 9.345l-1.591 1.591a.75.75 0 001.061 1.061l1.591-1.591a.75.75 0 00-1.061-1.061zm12.09 0a.75.75 0 10-1.061 1.061l1.591 1.591a.75.75 0 001.061-1.061l-1.591-1.591zM5.25 12a.75.75 0 01-.75.75H2.25a.75.75 0 010-1.5H4.5a.75.75 0 01.75.75zm16.5 0a.75.75 0 01-.75.75H19.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM12 17.25a5.25 5.25 0 100-10.5 5.25 5.25 0 000 10.5z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 font-medium mb-1">Learning Streak</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.learningStreakDays || 5} days</div>
+                  </div>
+                </div>
+                
+                {/* Experience Points Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]">
+                  <div className="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 font-medium mb-1">Experience Points</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.xpPoints?.toLocaleString() || '2,450'} XP</div>
+                  </div>
+                </div>
+                
+                {/* Current Level Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]">
+                  <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center">
+                    <svg className="w-7 h-7 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 00-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 00.75-.75 2.25 2.25 0 00-2.25-2.25H16.5v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.22 49.22 0 00-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 00-.657.744z"/>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-gray-500 font-medium mb-1">Current Level</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.level || 'Rookie'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Main Content */}
-          <div className="px-6 py-6">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8">
             
             {/* Your Learning Journey Header */}
             <div className="flex items-center justify-between mb-5">
-              <h1 className="text-2xl font-bold text-gray-900">Your Learning Journey</h1>
+              <h2 className="text-2xl font-bold text-gray-900">Your Learning Journey</h2>
               <div className="text-sm text-blue-600 font-semibold">18 courses available</div>
             </div>
 
@@ -296,12 +438,15 @@ export default function AllCourses() {
                   const isNewUser = stats && stats.coursesCompleted === 0;
                   const shouldHighlight = isFirstCourse && isNewUser;
 
+                  const locked = isCourseLocked(course.id);
+                  const tooltipText = getLockedTooltipText(course.id);
+
                   return (
-                    <div key={course.id} className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 ${
+                    <div key={course.id} className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative ${
                       shouldHighlight 
                         ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
                         : 'border border-gray-200'
-                    }`}>
+                    }`} data-gated={locked}>
                       {shouldHighlight && (
                         <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 text-xs font-bold text-center">
                           <i className="fas fa-star mr-1"></i>START HERE FIRST
@@ -366,8 +511,45 @@ export default function AllCourses() {
                             ></div>
                           </div>
                         </div>
-                        {getCourseButton(course)}
+                        {locked ? (
+                          <button
+                            disabled
+                            className="w-full inline-flex items-center justify-center bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-semibold cursor-not-allowed text-sm pointer-events-none"
+                          >
+                            <Lock className="w-4 h-4 mr-2" />
+                            Course Locked
+                          </button>
+                        ) : (
+                          <div className="space-y-2">
+                            {getCourseButton(course)}
+                            {/* Special "Not Ready Yet" button for Business Blueprint */}
+                            {course.id === 'business-blueprint' && roleFlags.roleTrial && !user.pressedNotReadyInBLB && (
+                              <button
+                                onClick={handleNotReadyYetClick}
+                                className="w-full inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-colors text-sm"
+                              >
+                                <i className="fas fa-fast-forward mr-2"></i>
+                                Not Ready Yet - Build Skills First
+                              </button>
+                            )}
+                          </div>
+                        )}
                       </div>
+
+                      {/* Locked Overlay - matching Dashboard style */}
+                      {locked && (
+                        <div className="absolute inset-0 rounded-xl bg-white/45 backdrop-blur-[2px] ring-1 ring-black/5 flex items-center justify-center p-4 z-10 pointer-events-none">
+                          <div className="rounded-xl bg-white shadow-lg border border-gray-200 px-4 py-3 font-medium text-gray-700 flex items-center gap-3 text-center max-w-full">
+                            <Lock className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900">Course Locked</div>
+                              <div className="text-xs text-gray-600 mt-1 max-w-48">
+                                {getLockedTooltipText(course.id)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -375,7 +557,7 @@ export default function AllCourses() {
             </div>
 
             {/* Enhanced Upgrade Section for Trial/Free Users */}
-            {(currentRole === 'free' || currentRole === 'trial') && (
+            {roleFlags.roleTrial && (
               <div className="mb-6">
                 <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 rounded-2xl overflow-hidden shadow-2xl">
                   {/* Header Section */}
@@ -441,40 +623,25 @@ export default function AllCourses() {
                         <div className="text-white text-2xl">=</div>
                         <div className="ml-4">
                           <div className="text-green-300 text-xl font-bold">$3,494 Total</div>
-                          <div className="text-purple-100 text-sm">Your Price: ${currentRole === 'trial' ? '99/mo' : '$1 trial'}</div>
+                          <div className="text-purple-100 text-sm">Your Price: $99/mo or $799/year</div>
                         </div>
                       </div>
                     </div>
 
-                    {/* CTA Section */}
+                    {/* CTA Section - Same for both free and $1 trial users */}
                     <div className="text-center">
-                      {currentRole === 'trial' ? (
-                        <div>
-                          <TrialUpgradePrompt 
-                            message="Your trial expires soon - upgrade now to keep access to all courses and unlock advanced training!"
-                          />
-                          <div className="mt-3 text-purple-200 text-sm">
-                            <i className="fas fa-clock mr-1"></i>
-                            Limited time: Complete Start Here courses and save 50% on annual plan
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto mb-3">
-                            <UpgradeButton 
-                              variant="secondary" 
-                              className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
-                              currentPlan={currentRole}
-                            >
-                              <i className="fas fa-rocket mr-2"></i>Start $1 Trial Now
-                            </UpgradeButton>
-                          </div>
-                          <div className="text-purple-200 text-sm">
-                            <i className="fas fa-shield-alt mr-1"></i>
-                            30-day money-back guarantee • Cancel anytime • No setup fees
-                          </div>
-                        </div>
-                      )}
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto mb-3">
+                        <button
+                          onClick={() => setShowPremiumModal(true)}
+                          className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
+                        >
+                          <i className="fas fa-crown mr-2"></i>Upgrade to Unlock
+                        </button>
+                      </div>
+                      <div className="text-purple-200 text-sm">
+                        <i className="fas fa-shield-alt mr-1"></i>
+                        30-day money-back guarantee • Cancel anytime • No setup fees
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -535,8 +702,11 @@ export default function AllCourses() {
                     return 'ADVANCED';
                   };
 
+                  const locked = isCourseLocked(course.id);
+                  const tooltipText = getLockedTooltipText(course.id);
+
                   return (
-                    <div key={course.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300">
+                    <div key={course.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300 relative" data-gated={locked}>
                       <div className="relative h-40 bg-gray-100 overflow-hidden">
                         <img 
                           src={`https://via.placeholder.com/400x240/${
@@ -597,8 +767,33 @@ export default function AllCourses() {
                             ></div>
                           </div>
                         </div>
-                        {getCourseButton(course)}
+                        {locked ? (
+                          <button
+                            disabled
+                            className="w-full inline-flex items-center justify-center bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-semibold cursor-not-allowed text-sm pointer-events-none"
+                          >
+                            <Lock className="w-4 h-4 mr-2" />
+                            Course Locked
+                          </button>
+                        ) : (
+                          getCourseButton(course)
+                        )}
                       </div>
+
+                      {/* Locked Overlay - matching Dashboard style */}
+                      {locked && (
+                        <div className="absolute inset-0 rounded-xl bg-white/45 backdrop-blur-[2px] ring-1 ring-black/5 flex items-center justify-center p-4 z-10 pointer-events-none">
+                          <div className="rounded-xl bg-white shadow-lg border border-gray-200 px-4 py-3 font-medium text-gray-700 flex items-center gap-3 text-center max-w-full">
+                            <Lock className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900">Course Locked</div>
+                              <div className="text-xs text-gray-600 mt-1 max-w-48">
+                                {getLockedTooltipText(course.id)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -844,6 +1039,41 @@ export default function AllCourses() {
               course={selectedCourse}
               onPurchaseSuccess={handlePurchaseSuccess}
             />
+          )}
+
+          {/* Premium Modal */}
+          <PremiumModal
+            isOpen={showPremiumModal}
+            onClose={() => setShowPremiumModal(false)}
+            onSuccess={() => window.location.reload()}
+          />
+
+          {/* Masterclass Modal */}
+          {selectedMasterclass && (
+            <MasterclassModal
+              isOpen={showMasterclassModal}
+              onClose={() => {
+                setShowMasterclassModal(false);
+                setSelectedMasterclass(null);
+              }}
+              masterclass={selectedMasterclass}
+              onSuccess={() => window.location.reload()}
+            />
+          )}
+
+          {/* Feedback Modal */}
+          <FeedbackModal
+            isOpen={feedbackModalOpen}
+            onClose={() => setFeedbackModalOpen(false)}
+            onSuccess={handleFeedbackSuccess}
+          />
+
+          {/* Toast */}
+          {showToast && (
+            <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg z-50 flex items-center justify-center sm:justify-start">
+              <i className="fas fa-check-circle mr-2"></i>
+              <span className="font-medium">Feedback sent successfully!</span>
+            </div>
           )}
         </div>
       </AppLayout>

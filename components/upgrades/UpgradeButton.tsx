@@ -1,15 +1,18 @@
 import { useUpgrade } from '../../contexts/UpgradeContext';
 import { UserRole } from '../../contexts/UserRoleContext';
+import { UpgradeContext } from './UpgradeRouter';
 
 interface UpgradeButtonProps {
   variant?: 'primary' | 'secondary' | 'compact';
+  context?: UpgradeContext;
   currentPlan?: UserRole;
   className?: string;
   children?: React.ReactNode;
 }
 
 export default function UpgradeButton({ 
-  variant = 'primary', 
+  variant = 'primary',
+  context = 'premium', 
   currentPlan = 'free',
   className = '',
   children 
@@ -56,7 +59,7 @@ export default function UpgradeButton({
 
   return (
     <button
-      onClick={() => showUpgradeModal(currentPlan)}
+      onClick={() => showUpgradeModal(context, currentPlan)}
       className={`${getButtonClasses()} ${className}`}
     >
       {getButtonContent()}

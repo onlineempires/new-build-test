@@ -257,6 +257,34 @@ export function UserRoleProvider({ children }: UserRoleProviderProps) {
     if (storedRole && ROLE_PERMISSIONS[storedRole]) {
       updateRole(storedRole);
     }
+
+    // Listen for localStorage changes (for when upgrades happen)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userRole' && e.newValue) {
+        const newRole = e.newValue as UserRole;
+        if (ROLE_PERMISSIONS[newRole]) {
+          updateRole(newRole);
+        }
+      }
+    };
+
+    // Listen for custom storage events (same-window localStorage changes)
+    const handleCustomStorageChange = (e: CustomEvent) => {
+      if (e.detail.key === 'userRole' && e.detail.newValue) {
+        const newRole = e.detail.newValue as UserRole;
+        if (ROLE_PERMISSIONS[newRole]) {
+          updateRole(newRole);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('localStorageChange', handleCustomStorageChange as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('localStorageChange', handleCustomStorageChange as EventListener);
+    };
   }, []);
 
   const updateRole = (role: UserRole) => {
@@ -264,6 +292,11 @@ export function UserRoleProvider({ children }: UserRoleProviderProps) {
     setPermissions(ROLE_PERMISSIONS[role]);
     setRoleDetails(ROLE_DETAILS[role]);
     localStorage.setItem('userRole', role);
+    
+    // Dispatch custom event for same-window localStorage changes
+    window.dispatchEvent(new CustomEvent('localStorageChange', {
+      detail: { key: 'userRole', newValue: role }
+    }));
   };
 
   const setUserRole = (role: UserRole) => {

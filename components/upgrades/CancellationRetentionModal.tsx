@@ -53,7 +53,7 @@ export default function CancellationRetentionModal({
 
   if (showSuccess) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
         <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <i className="fas fa-check text-green-600 text-2xl"></i>
@@ -73,7 +73,7 @@ export default function CancellationRetentionModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
       <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto text-white relative">
         
         {/* Close Button */}

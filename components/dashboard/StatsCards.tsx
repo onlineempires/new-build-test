@@ -61,37 +61,22 @@ function StatsCards({ stats }: StatsCardsProps) {
 
   return (
     <>
-      {/* Mobile Layout - Horizontal scroll */}
-      <div className="sm:hidden mb-6">
-        {/* Scroll indicator hint */}
-        <div className="flex items-center justify-between mb-2 px-1">
-          <div className="text-xs text-gray-500 font-medium">Swipe to see more stats</div>
-          <div className="flex gap-1">
-            {cards.map((_, index) => (
-              <div key={index} className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="flex gap-3 overflow-x-auto pb-2 px-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      {/* Mobile Layout - Horizontal snap scroll */}
+      <div className="sm:hidden mb-6">        
+        <div className="flex gap-3 overflow-x-auto snap-x px-2 pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {cards.map((card, index) => (
             <div 
               key={index} 
-              className={`bg-white rounded-xl p-3 shadow-sm border ${card.borderColor} flex-shrink-0 w-32 relative`}
+              className={`bg-white rounded-xl p-4 shadow-sm border ${card.borderColor} min-w-[220px] snap-start relative`}
             >
-              {/* Scroll indicator on first card */}
-              {index === 0 && (
-                <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-gray-400 animate-pulse">
-                  <i className="fas fa-chevron-right text-xs"></i>
+              <div className="flex items-center">
+                <div className={`w-10 h-10 ${card.bgColor} rounded-xl flex items-center justify-center mr-3 shadow-sm`}>
+                  <i className={`${card.iconClass} ${card.iconColor} text-base`}></i>
                 </div>
-              )}
-              
-              <div className={`w-8 h-8 ${card.bgColor} rounded-lg flex items-center justify-center mb-2 mx-auto`}>
-                <i className={`${card.iconClass} ${card.iconColor} text-sm`}></i>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-tight truncate">{card.value}</div>
-                <div className="text-xs text-gray-600 font-medium leading-tight">{card.label}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xl font-bold text-gray-900 truncate">{card.value}</div>
+                  <div className="text-sm text-gray-600 font-medium">{card.label}</div>
+                </div>
               </div>
             </div>
           ))}

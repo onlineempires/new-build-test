@@ -1,4 +1,5 @@
 import { useUpgrade } from '../../contexts/UpgradeContext';
+import { roleToUpgradeContext } from '../../utils/upgrade';
 
 // Subtle upgrade prompt for after course completion
 export function CourseCompletionUpgrade({ courseTitle }: { courseTitle: string }) {
@@ -17,7 +18,7 @@ export function CourseCompletionUpgrade({ courseTitle }: { courseTitle: string }
           </div>
         </div>
         <button
-          onClick={() => showUpgradeModal('free')}
+          onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
           className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors font-medium"
         >
           Upgrade
@@ -37,7 +38,7 @@ export function ProgressMilestoneUpgrade({ milestone }: { milestone: string }) {
         <i className="fas fa-star text-yellow-500 mr-2"></i>
         <span className="text-gray-700 flex-1">🎉 {milestone} - </span>
         <button
-          onClick={() => showUpgradeModal('free')}
+          onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
           className="text-purple-600 hover:text-purple-700 font-medium ml-2"
         >
           Unlock more with Premium
@@ -54,7 +55,7 @@ export function FloatingUpgradeWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-40 hidden lg:block">
       <button
-        onClick={() => showUpgradeModal('free')}
+        onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
         className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 group"
       >
         <div className="flex items-center">
@@ -79,7 +80,7 @@ export function SidebarUpgradeCard() {
         <h3 className="font-bold text-sm mb-1">Unlock Everything</h3>
         <p className="text-purple-100 text-xs mb-3">Get access to all 18+ courses</p>
         <button
-          onClick={() => showUpgradeModal('free')}
+          onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
           className="w-full bg-white text-purple-700 py-2 px-3 rounded-lg font-medium text-xs hover:bg-purple-50 transition-colors"
         >
           Upgrade to Premium
@@ -103,7 +104,7 @@ export function StreakUpgradePrompt({ days }: { days: number }) {
           <span className="text-gray-700">{days} day streak! Keep it going with Premium</span>
         </div>
         <button
-          onClick={() => showUpgradeModal('free')}
+          onClick={() => showUpgradeModal(roleToUpgradeContext('free'))}
           className="text-orange-600 hover:text-orange-700 font-medium"
         >
           Upgrade
