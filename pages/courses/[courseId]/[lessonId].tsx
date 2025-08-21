@@ -7,6 +7,9 @@ import { useCourseAccess } from '../../../hooks/useCourseAccess';
 import { useCourseGating } from '../../../hooks/useCourseGating';
 import { getCourse, updateLessonProgress, Course, Lesson, handleButtonClick, isLessonUnlocked, handleNotReadyYetClick } from '../../../lib/api/courses';
 import { roleToUpgradeContext } from '../../../utils/upgrade';
+import { getCourseMapping } from '../../../lib/sections';
+import { useUserFlags } from '../../../lib/userFlags';
+import { canStartCourse, isLessonUnlocked as isLessonUnlockedAccess, requiresUpgradeCTA } from '../../../lib/access';
 import FeedbackModal from '../../../components/dashboard/FeedbackModal';
 import { 
   Play, 
@@ -35,6 +38,9 @@ export default function LessonPage() {
   const { showUpgradeModal } = useUpgrade();
   const { isPurchased, currentRole } = useCourseAccess();
   const { setNotReadyFlag } = useCourseGating();
+  
+  // Use centralized user flags
+  const userFlags = useUserFlags();
 
   useEffect(() => {
     if (courseId && lessonId) {
@@ -77,13 +83,40 @@ export default function LessonPage() {
   const hasAccess = () => {
     if (!course || !currentLesson) return false;
     
-    // Check if course requires purchase or upgrade
-    if (course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery') {
-      return isPurchased(course.id);
+    // Get course mapping from centralized system
+    const courseMapping = getCourseMapping(course.id);
+    if (!courseMapping) return false;
+    
+    // First check if user can access the course at all
+    const canAccessCourse = canStartCourse(courseMapping.sectionId, courseMapping.courseIndex ?? 1, userFlags);
+    if (!canAccessCourse) return false;
+    
+    // Then check lesson-level access within the course
+    // Find lesson index within the course
+    let lessonIndex = 0;
+    let completedLessons = 0;
+    let foundLesson = false;
+    
+    for (const module of course.modules) {
+      for (const lesson of module.lessons) {
+        if (lesson.id === currentLesson.id) {
+          foundLesson = true;
+          break;
+        }
+        lessonIndex++;
+        if (lesson.isCompleted) completedLessons++;
+      }
+      if (foundLesson) break;
     }
     
-    // Use the enhanced lesson-level gating logic
-    return isLessonUnlocked(currentLesson.id, course.id, currentRole);
+    // Use centralized lesson access logic (lessonIndex is 1-based)
+    return isLessonUnlockedAccess(
+      courseMapping.sectionId, 
+      courseMapping.courseIndex ?? 1, 
+      lessonIndex + 1, 
+      userFlags, 
+      completedLessons
+    );
   };
 
   const markLessonComplete = async () => {
@@ -157,13 +190,17 @@ export default function LessonPage() {
     if (!currentLesson) return;
     
     try {
-      // Set the "Not Ready Yet" flag for dashboard gating
-      setNotReadyFlag();
-      
-      // Track button click and unlock Discovery Process course
+      // Track button click for analytics
       await handleButtonClick('skills', currentLesson.id, 'discovery-process');
       
-      // Redirect directly to the first lesson of Discovery Process course
+      // For free/trial users, redirect to Skills VSL (sales page) instead of discovery course
+      if (userFlags.role === 'free' || userFlags.role === 'trial') {
+        router.push('/skills-vsl');
+        return;
+      }
+      
+      // For premium users, set flag and continue to Discovery Process
+      setNotReadyFlag();
       router.push('/courses/discovery-process/lesson-1-1');
     } catch (error) {
       console.error('Failed to handle Skills flow:', error);
@@ -218,10 +255,34 @@ export default function LessonPage() {
     );
   }
 
-  // Check access after lesson is loaded
+  // Route guard: Check lesson access using centralized system
   if (!hasAccess()) {
+    // Get course mapping to determine the proper access panel
+    const courseMapping = getCourseMapping(course.id);
+    const canAccessCourse = courseMapping && canStartCourse(courseMapping.sectionId, courseMapping.courseIndex ?? 1, userFlags);
+    
+    if (!canAccessCourse) {
+      // If user can't access the course at all, redirect to course page which will show the proper access panel
+      return (
+        <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
+          <div className="p-6">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              Course access required. Redirecting to course page...
+              <button 
+                onClick={() => router.push(`/courses/${courseId}`)}
+                className="ml-4 underline hover:no-underline"
+              >
+                Go to Course
+              </button>
+            </div>
+          </div>
+        </AppLayout>
+      );
+    }
+    
+    // User has course access but not lesson access - show progress lock panel
     // Special handling for Business Blueprint lessons - show "Not Ready Yet" option
-    if (course.id === 'business-blueprint' && (currentRole === 'free' || currentRole === 'trial') && currentLesson.id !== 'lesson-1-1') {
+    if (course.id === 'business-blueprint' && (userFlags.role === 'free' || userFlags.role === 'trial') && currentLesson.id !== 'lesson-1-1') {
       return (
         <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
           <div className="p-6">
@@ -231,7 +292,7 @@ export default function LessonPage() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Locked</h3>
               <p className="text-gray-600 mb-6">
-                Complete the previous lesson in your Business Blueprint journey, or skip ahead to the Discovery Process if you're ready to explore other options.
+                Complete the previous lesson in your Business Blueprint journey to unlock this content.
               </p>
               <div className="space-y-3">
                 <button
@@ -239,12 +300,6 @@ export default function LessonPage() {
                   className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Go to Lesson 1 Video 1
-                </button>
-                <button
-                  onClick={handleNotReadyYet}
-                  className="w-full px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-                >
-                  Continue Learning - Skip to Discovery Process
                 </button>
                 <button
                   onClick={() => router.push(`/courses/${courseId}`)}
@@ -259,17 +314,17 @@ export default function LessonPage() {
       );
     }
 
-    // Default locked lesson UI for other courses
+    // Default progress lock panel for sequential lessons
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
         <div className="p-6">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-lock text-yellow-600 text-2xl"></i>
+              <Lock className="text-yellow-600 w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Access Required</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Locked</h3>
             <p className="text-gray-600 mb-6">
-              You need to purchase this course or upgrade your plan to access this lesson.
+              Complete the previous lessons to unlock this content.
             </p>
             <div className="flex gap-4 justify-center">
               <button
@@ -278,21 +333,6 @@ export default function LessonPage() {
               >
                 Back to Course
               </button>
-              {course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery' ? (
-                <button
-                  onClick={() => router.push('/courses')}
-                  className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                >
-                  Purchase Course - $49
-                </button>
-              ) : (
-                <button
-                  onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  <i className="fas fa-crown mr-2"></i>Upgrade to Premium
-                </button>
-              )}
             </div>
           </div>
         </div>

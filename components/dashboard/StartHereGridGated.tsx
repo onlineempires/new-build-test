@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Lock } from 'lucide-react';
 import { useCourseAccess } from '../../hooks/useCourseAccess';
-import { courseLockState, getLockMessage, UserFlags, canStartCourse } from '../../lib/access';
+import { courseLockState, getLockMessage, UserFlags, canStartCourse, requiresUpgradeCTA } from '../../lib/access';
+import { getCourseMapping } from '../../lib/sections';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { loadProgressFromStorage } from '../../lib/api/courses';
@@ -17,45 +18,31 @@ interface Course {
 
 interface StartHereGridGatedProps {
   courses: Course[];
+  user: UserFlags; // Accept user flags from parent
 }
 
-export default function StartHereGridGated({ courses }: StartHereGridGatedProps) {
-  const { currentRole } = useCourseAccess();
+export default function StartHereGridGated({ courses, user }: StartHereGridGatedProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  
-  // Load progress data to determine flags (safe for SSR)
-  const user: UserFlags = {
-    role: currentRole as any,
-    pressedNotReady: typeof window !== 'undefined' ? Boolean(localStorage.getItem('pressedNotReadyInBLB')) : false,
-    blueprintDone: typeof window !== 'undefined' ? Boolean(localStorage.getItem('business-blueprint-completed')) : false,
-    purchasedMasterclasses: []
-  };
-  
-  // Map course IDs to our section/course system
-  const getCourseInfo = (courseId: string) => {
-    switch (courseId) {
-      case 'business-blueprint':
-        return { sectionId: 's1' as const, courseIndex: 1 as const };
-      case 'discovery-process':
-        return { sectionId: 's1' as const, courseIndex: 2 as const };
-      case 'next-steps':
-        return { sectionId: 's1' as const, courseIndex: 3 as const };
-      default:
-        return { sectionId: 's1' as const, courseIndex: 1 as const };
-    }
-  };
 
   // Use centralized access control for consistent gating
   const isCourseLocked = (courseId: string): boolean => {
-    const { sectionId, courseIndex } = getCourseInfo(courseId);
-    return !canStartCourse(sectionId, courseIndex, user);
+    const mapping = getCourseMapping(courseId);
+    if (!mapping) return true; // Hide unknown courses
+    return !canStartCourse(mapping.sectionId, mapping.courseIndex ?? 1, user);
+  };
+
+  // Get lock state for styling
+  const getLockState = (courseId: string) => {
+    const mapping = getCourseMapping(courseId);
+    if (!mapping) return 'locked-upgrade';
+    return courseLockState(mapping.sectionId, mapping.courseIndex ?? 1, user);
   };
 
   // Get tooltip text for locked courses
   const getTooltipText = (courseId: string): string => {
-    const { sectionId, courseIndex } = getCourseInfo(courseId);
-    const lockState = courseLockState(sectionId, courseIndex, user);
-    return getLockMessage(lockState, user);
+    const mapping = getCourseMapping(courseId);
+    const lockState = getLockState(courseId);
+    return getLockMessage(lockState, user, mapping?.sectionId);
   };
 
 

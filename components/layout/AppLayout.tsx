@@ -6,9 +6,9 @@ import GlobalNotificationDropdown from '../dashboard/GlobalNotificationDropdown'
 import { useNotifications } from '../../contexts/NotificationContext';
 import ProfileDropdown from '../dashboard/ProfileDropdown';
 import UpgradeButton from '../upgrades/UpgradeButton';
-import RoleSwitcher from '../admin/RoleSwitcher';
+import { RoleSwitcher, MobileRoleSwitcher } from '../dev/RoleSwitcher';
+import { GatingStatus } from '../dev/GatingStatus';
 import EnvironmentIndicator from '../admin/EnvironmentIndicator';
-import GatingStatus from '../dashboard/GatingStatus';
 import { shouldShowRoleSwitcher } from '../../utils/environment';
 
 interface User {
@@ -128,11 +128,9 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                 />
               </div>
               
-              {/* Right: Role switcher and gating status */}
+              {/* Right: Dev tools */}
               <div className="flex items-center gap-2">
-                {shouldShowRoleSwitcher() && (
-                  <RoleSwitcher />
-                )}
+                <RoleSwitcher />
                 <GatingStatus />
               </div>
             </div>
@@ -160,9 +158,8 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                 
                 {/* Community, Upgrade, and Feedback */}
                 <div className="flex items-center gap-3">
-                  {/* Role Switcher only in development - completely hidden in production */}
-                  {shouldShowRoleSwitcher() && <RoleSwitcher />}
-                  {/* Gating Status Widget for Desktop */}
+                  {/* Dev Tools - completely hidden when disabled */}
+                  <RoleSwitcher />
                   <GatingStatus />
                   <UpgradeButton 
                     variant="compact"

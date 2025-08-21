@@ -8,6 +8,8 @@ import { useCourseGating } from '../../hooks/useCourseGating';
 import { getCourse, updateLessonProgress, Course, Lesson, isModuleUnlocked, isCourseUnlocked, isLessonUnlocked, loadProgressFromStorage } from '../../lib/api/courses';
 import { roleToUpgradeContext } from '../../utils/upgrade';
 import { canStartCourse, isLessonUnlocked as isLessonUnlockedAccess, UserFlags, requiresUpgradeCTA, requiresPurchaseMasterclass } from '../../lib/access';
+import { getCourseMapping } from '../../lib/sections';
+import { useUserFlags } from '../../lib/userFlags';
 import FeedbackModal from '../../components/dashboard/FeedbackModal';
 
 export default function CoursePage() {
@@ -22,27 +24,10 @@ export default function CoursePage() {
   const { isPurchased, currentRole } = useCourseAccess();
   const { isTrial, canAccessDiscovery } = useCourseGating();
   
-  // Load progress data to determine flags for centralized access control (safe for SSR)
-  const userFlags: UserFlags = {
-    role: currentRole as any,
-    pressedNotReady: typeof window !== 'undefined' ? Boolean(localStorage.getItem('pressedNotReadyInBLB')) : false,
-    blueprintDone: typeof window !== 'undefined' ? Boolean(localStorage.getItem('business-blueprint-completed')) : false,
-    purchasedMasterclasses: []
-  };
+  // Use centralized user flags
+  const userFlags = useUserFlags();
   
-  // Map course IDs to our section/course system
-  const getCourseInfo = (courseId: string) => {
-    switch (courseId) {
-      case 'business-blueprint':
-        return { sectionId: 's1' as const, courseIndex: 1 as const };
-      case 'discovery-process':
-        return { sectionId: 's1' as const, courseIndex: 2 as const };
-      case 'next-steps':
-        return { sectionId: 's1' as const, courseIndex: 3 as const };
-      default:
-        return { sectionId: 's3' as const, courseIndex: 1 as const };
-    }
-  };
+
 
   useEffect(() => {
     if (courseId) {
@@ -98,21 +83,6 @@ export default function CoursePage() {
     return null;
   };
 
-  // Access control check
-  const hasAccess = () => {
-    if (!course) return false;
-    
-    const { sectionId, courseIndex } = getCourseInfo(course.id);
-    
-    // Check for masterclass purchase requirement
-    if (requiresPurchaseMasterclass(course.id, userFlags)) {
-      return false;
-    }
-    
-    // Check if course can be started (uses centralized logic)
-    return canStartCourse(sectionId, courseIndex, userFlags);
-  };
-
   const handleFeedbackSuccess = () => {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
@@ -153,8 +123,33 @@ export default function CoursePage() {
     );
   }
 
-  // Check access after course is loaded
-  if (!hasAccess()) {
+  // Route guard: Check if course exists in COURSE_MAP and validate access
+  const courseMapping = getCourseMapping(course.id);
+  if (!courseMapping) {
+    return (
+      <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            Course not found
+            <button 
+              onClick={() => router.push('/courses')}
+              className="ml-4 underline hover:no-underline"
+            >
+              Back to Courses
+            </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const canStart = canStartCourse(courseMapping.sectionId, courseMapping.courseIndex ?? 1, userFlags);
+  
+  // If user cannot start the course, show appropriate access panel
+  if (!canStart) {
+    const requiresUpgrade = requiresUpgradeCTA(courseMapping.sectionId, courseMapping.courseIndex!, userFlags);
+    const isMasterclass = courseMapping.sectionId === 's3';
+    
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
         <div className="p-6">
@@ -163,12 +158,14 @@ export default function CoursePage() {
               <i className="fas fa-lock text-yellow-600 text-2xl"></i>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
-              {!isCourseUnlocked(course.id, currentRole) ? 'Course Locked' : 'Course Access Required'}
+              {isMasterclass ? 'Masterclass Purchase Required' : requiresUpgrade ? 'Upgrade Required' : 'Course Locked'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {!isCourseUnlocked(course.id, currentRole) 
-                ? 'Complete this course to unlock the next one.' 
-                : 'You need to purchase this course or upgrade your plan to access this content.'
+              {isMasterclass 
+                ? 'This masterclass requires a separate purchase to access.' 
+                : requiresUpgrade 
+                ? 'Upgrade to Premium to access this course and unlock your full potential.'
+                : 'Complete previous courses to unlock this content.'
               }
             </p>
             <div className="flex gap-4 justify-center">
@@ -178,27 +175,29 @@ export default function CoursePage() {
               >
                 Back to Courses
               </button>
-              {course.id === 'email-marketing-secrets' || course.id === 'advanced-funnel-mastery' ? (
+              {isMasterclass ? (
                 <button
                   onClick={() => router.push('/courses')}
                   className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                 >
-                  Purchase Course - $49
+                  Purchase Masterclass - $49
                 </button>
-              ) : (
+              ) : requiresUpgrade ? (
                 <button
                   onClick={() => showUpgradeModal(roleToUpgradeContext(currentRole))}
                   className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   <i className="fas fa-crown mr-2"></i>Upgrade to Premium
                 </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
       </AppLayout>
     );
   }
+
+
 
   const progress = calculateProgress();
   const nextLesson = getNextIncompleteLesson();
@@ -354,9 +353,8 @@ export default function CoursePage() {
                         <div className="space-y-0 divide-y divide-gray-100">
                           {module.lessons.map((lesson, lessonIndex) => {
                             // Use centralized lesson-level gating logic
-                            const { sectionId, courseIndex } = getCourseInfo(course.id);
                             const completedLessons = module.lessons.slice(0, lessonIndex).filter(l => l.isCompleted).length;
-                            const lessonUnlocked = isLessonUnlockedAccess(sectionId, courseIndex, lessonIndex + 1, userFlags, completedLessons);
+                            const lessonUnlocked = isLessonUnlockedAccess(courseMapping.sectionId, courseMapping.courseIndex ?? 1, lessonIndex + 1, userFlags, completedLessons);
                             const isLessonLocked = !lessonUnlocked;
                             return (
                               <button

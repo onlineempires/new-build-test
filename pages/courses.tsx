@@ -4,7 +4,7 @@ import AppLayout from '../components/layout/AppLayout';
 import StatsCards from '../components/dashboard/StatsCards';
 import UpgradeButton from '../components/upgrades/UpgradeButton';
 import IndividualCourseModal from '../components/courses/IndividualCourseModal';
-import TrialUpgradePrompt from '../components/courses/TrialUpgradePrompt';
+
 import FeedbackModal from '../components/dashboard/FeedbackModal';
 import { ProgressMilestoneUpgrade } from '../components/upgrades/UpgradePrompts';
 import { useCourseAccess } from '../hooks/useCourseAccess';
@@ -17,7 +17,9 @@ import MasterclassModal from '../components/modals/MasterclassModal';
 import { Lock } from 'lucide-react';
 import { getAllCourses, loadProgressFromStorage, CourseData } from '../lib/api/courses';
 import { getFastStats } from '../lib/services/progressService';
-import { canStartCourse, courseLockState, getLockMessage, UserFlags, requiresUpgradeCTA } from '../lib/access';
+import { canStartCourse, courseLockState, getLockMessage, UserFlags, requiresUpgradeCTA, isTrialLike, isPremium } from '../lib/access';
+import { getCourseMapping, SECTION_NAMES } from '../lib/sections';
+import { useUserFlags } from '../lib/userFlags';
 
 export default function AllCourses() {
   const [data, setData] = useState<CourseData | null>(null);
@@ -32,10 +34,15 @@ export default function AllCourses() {
   const [showMasterclassModal, setShowMasterclassModal] = useState(false);
   const [selectedMasterclass, setSelectedMasterclass] = useState<any>(null);
   const { isPurchased, purchaseCourse, refreshPurchases, currentRole, canAccessCourse, getCourseUpgradeMessage, purchasedCourses, permissions } = useCourseAccess();
-  const { isTrial } = useCourseGating();
   const { notifyCourseCompleted, notifyUpgrade, showSuccess } = useNotificationHelpers();
   const { getCourseGatingStatus, getSectionForCourse, getUpgradeButtonText, roleFlags } = useSectionGating();
   const { user, setPressedNotReadyInBLB } = useUser();
+
+  // Get user flags for gating (includes dev tools integration)
+  const userFlags = useUserFlags();
+  
+  // Check if user is trial-like using centralized logic
+  const isTrialUser = isTrialLike(userFlags.role);
 
   const handleIndividualPurchase = (course: any) => {
     setSelectedCourse(course);
@@ -88,15 +95,18 @@ export default function AllCourses() {
     setTimeout(() => setShowToast(false), 3000);
   };
 
-  // Load progress data to determine flags (safe for SSR)
-  const userFlags: UserFlags = {
-    role: currentRole as any,
-    pressedNotReady: typeof window !== 'undefined' ? Boolean(localStorage.getItem('pressedNotReadyInBLB')) : false,
-    blueprintDone: typeof window !== 'undefined' ? Boolean(localStorage.getItem('business-blueprint-completed')) : false,
-    purchasedMasterclasses: []
+  // Course locking logic using centralized access control
+  const getCourseAccess = (courseId: string) => {
+    const mapping = getCourseMapping(courseId);
+    if (!mapping) return { canAccess: false, lockState: 'locked-upgrade' as const };
+    
+    const canAccess = canStartCourse(mapping.sectionId, mapping.courseIndex ?? 1, userFlags);
+    const lockState = courseLockState(mapping.sectionId, mapping.courseIndex ?? 1, userFlags);
+    
+    return { canAccess, lockState, mapping };
   };
-  
-  // Map course IDs to our section/course system
+
+  // Map course IDs to our section/course system (legacy - keeping for compatibility)
   const getCourseInfo = (courseId: string) => {
     switch (courseId) {
       case 'business-blueprint':
@@ -117,21 +127,19 @@ export default function AllCourses() {
 
   // Use centralized access control for consistent gating
   const isCourseLocked = (courseId: string): boolean => {
-    const { sectionId, courseIndex } = getCourseInfo(courseId);
-    return !canStartCourse(sectionId, courseIndex, userFlags);
+    const { canAccess } = getCourseAccess(courseId);
+    return !canAccess;
   };
 
   // Get tooltip text for locked courses
   const getLockedTooltipText = (courseId: string): string => {
-    const { sectionId, courseIndex } = getCourseInfo(courseId);
-    const lockState = courseLockState(sectionId, courseIndex, userFlags);
-    return getLockMessage(lockState, userFlags);
+    const { lockState, mapping } = getCourseAccess(courseId);
+    return getLockMessage(lockState, userFlags, mapping?.sectionId);
   };
 
   // Helper function to render course button using centralized access control
   const getCourseButton = (course: any) => {
-    const { sectionId, courseIndex } = getCourseInfo(course.id);
-    const lockState = courseLockState(sectionId, courseIndex, userFlags);
+    const { canAccess, lockState, mapping } = getCourseAccess(course.id);
     
     // If course is unlocked, show normal progression buttons
     if (lockState === 'unlocked') {
@@ -175,7 +183,7 @@ export default function AllCourses() {
           disabled
           className="inline-flex items-center justify-center bg-gray-300 text-gray-500 py-2 px-4 rounded-lg font-semibold cursor-not-allowed text-sm w-full"
         >
-          <i className="fas fa-lock mr-2"></i>Complete Previous Course
+          <i className="fas fa-lock mr-2"></i>Unlocked after previous module
         </button>
       );
     }
@@ -275,7 +283,7 @@ export default function AllCourses() {
   }
 
   return (
-    <>
+    <React.Fragment>
       <Head>
         <title>All Courses - Online Empires</title>
         <meta name="description" content="Browse all courses available in Online Empires" />
@@ -522,16 +530,6 @@ export default function AllCourses() {
                         ) : (
                           <div className="space-y-2">
                             {getCourseButton(course)}
-                            {/* Special "Not Ready Yet" button for Business Blueprint */}
-                            {course.id === 'business-blueprint' && roleFlags.roleTrial && !user.pressedNotReadyInBLB && (
-                              <button
-                                onClick={handleNotReadyYetClick}
-                                className="w-full inline-flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-colors text-sm"
-                              >
-                                <i className="fas fa-fast-forward mr-2"></i>
-                                Not Ready Yet - Build Skills First
-                              </button>
-                            )}
                           </div>
                         )}
                       </div>
@@ -556,8 +554,8 @@ export default function AllCourses() {
               </div>
             </div>
 
-            {/* Enhanced Upgrade Section for Trial/Free Users */}
-            {roleFlags.roleTrial && (
+            {/* Enhanced Upgrade Section - Only show to free/trial users (hide for all paid members) */}
+            {(userFlags.role === 'free' || userFlags.role === 'trial') && (
               <div className="mb-6">
                 <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 rounded-2xl overflow-hidden shadow-2xl">
                   {/* Header Section */}
@@ -567,7 +565,7 @@ export default function AllCourses() {
                       <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4 shadow-lg">
                         <i className="fas fa-crown text-white text-3xl"></i>
                       </div>
-                      <h3 className="text-2xl font-bold mb-2">Unlock Advanced Training</h3>
+                      <h3 className="text-2xl font-bold mb-2">Unlock All Access To All Courses</h3>
                       <p className="text-purple-100 text-lg max-w-lg mx-auto">
                         Join <span className="text-yellow-300 font-bold">2,847+ entrepreneurs</span> scaling their businesses with our complete system
                       </p>
@@ -623,7 +621,7 @@ export default function AllCourses() {
                         <div className="text-white text-2xl">=</div>
                         <div className="ml-4">
                           <div className="text-green-300 text-xl font-bold">$3,494 Total</div>
-                          <div className="text-purple-100 text-sm">Your Price: $99/mo or $799/year</div>
+                          <div className="text-purple-100 text-sm">Your Price: $799/year OR $99/month (billed monthly)</div>
                         </div>
                       </div>
                     </div>
@@ -1008,24 +1006,7 @@ export default function AllCourses() {
               </div>
             </div>
 
-            {/* Level 13 Preview */}
-            <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg p-6 text-white text-center">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-trophy text-white text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Level 13 Preview</h3>
-              <p className="text-purple-100 mb-4">Complete 2 more courses to unlock advanced business scaling strategies!</p>
-              
-              <div className="max-w-md mx-auto">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>XP Progress</span>
-                  <span>{data ? `${3450 - data.stats.xpPoints} XP needed for next level` : '153 XP needed for next level'}</span>
-                </div>
-                <div className="w-full bg-purple-800 rounded-full h-3">
-                  <div className="bg-white h-3 rounded-full" style={{ width: data ? `${Math.min(100, (data.stats.xpPoints / 3450) * 100)}%` : '75%' }}></div>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* Individual Course Purchase Modal */}
@@ -1077,6 +1058,6 @@ export default function AllCourses() {
           )}
         </div>
       </AppLayout>
-    </>
+    </React.Fragment>
   );
 }

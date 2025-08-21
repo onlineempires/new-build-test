@@ -175,7 +175,7 @@ export function courseLockState(sectionId: SectionId, courseIndex: CourseIndex, 
 /**
  * Get appropriate lock message for UI display
  */
-export function getLockMessage(lockState: LockState, user: UserFlags): string {
+export function getLockMessage(lockState: LockState, user: UserFlags, sectionId?: SectionId): string {
   switch (lockState) {
     case 'locked-upgrade':
       if (isTrialLike(user.role)) {
@@ -184,7 +184,11 @@ export function getLockMessage(lockState: LockState, user: UserFlags): string {
       return "Premium membership required";
     
     case 'locked-progress':
-      return "Complete previous course or choose 'Not Ready Yet' to unlock";
+      // Special message for Section 1 (Foundation Training)
+      if (sectionId === 's1') {
+        return "Unlocked after previous module is completed";
+      }
+      return "Complete previous module to unlock";
     
     case 'locked-purchase':
       return "Individual purchase required";

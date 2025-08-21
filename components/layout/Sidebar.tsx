@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
 
 interface User {
   id: number;
@@ -110,6 +111,9 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
               <span className="font-medium">Send Feedback</span>
             </button>
           )}
+          
+          {/* Mobile Dev Tools */}
+          <MobileRoleSwitcher onSelect={closeMobileMenu} />
         </div>
 
         {/* User Profile */}
