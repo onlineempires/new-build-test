@@ -88,8 +88,14 @@ export default function AdminLogin() {
     if (shouldRedirect) {
       const redirectTo = router.query.redirect as string || '/admin';
       
-      // Use replace to prevent back button issues
-      router.replace(redirectTo);
+      console.log('Admin Login: Redirecting authenticated user to:', redirectTo);
+      
+      // Use both router.replace and window.location as fallback
+      router.replace(redirectTo).catch(() => {
+        // Fallback to hard navigation if router fails
+        console.log('Admin Login: Router redirect failed, using window.location');
+        window.location.href = redirectTo;
+      });
     }
   }, [isAuthenticated, authLoading, forceLogin, isClearing, router]);
 
@@ -136,6 +142,25 @@ export default function AdminLogin() {
   // If already authenticated and not forcing login, show redirecting message
   // This should rarely be seen due to the effect above
   if (isAuthenticated && !forceLogin && router.query.logout !== 'true') {
+    // Add immediate redirect as fallback
+    useEffect(() => {
+      const redirectTo = router.query.redirect as string || '/admin';
+      console.log('Admin Login: Fallback redirect triggered for authenticated user to:', redirectTo);
+      
+      // Set a timeout to ensure redirect happens
+      const timeoutId = setTimeout(() => {
+        console.log('Admin Login: Timeout redirect executing');
+        window.location.href = redirectTo;
+      }, 2000); // 2 second timeout
+      
+      // Also try immediate redirect
+      router.replace(redirectTo).catch(() => {
+        console.log('Admin Login: Immediate redirect failed, timeout will handle it');
+      });
+      
+      return () => clearTimeout(timeoutId);
+    }, []);
+    
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -145,6 +170,15 @@ export default function AdminLogin() {
             </svg>
           </div>
           <p className="text-gray-600 mb-4">Already authenticated. Redirecting...</p>
+          <button
+            onClick={() => {
+              const redirectTo = router.query.redirect as string || '/admin';
+              window.location.href = redirectTo;
+            }}
+            className="text-sm text-blue-600 hover:text-blue-500 underline mb-2 block"
+          >
+            Click here if redirect doesn't work
+          </button>
           <button
             onClick={() => {
               setForceLogin(true);
