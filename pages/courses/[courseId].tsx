@@ -352,10 +352,47 @@ export default function CoursePage() {
                         
                         <div className="space-y-0 divide-y divide-gray-100">
                           {module.lessons.map((lesson, lessonIndex) => {
-                            // Use centralized lesson-level gating logic
-                            const completedLessons = module.lessons.slice(0, lessonIndex).filter(l => l.isCompleted).length;
-                            const lessonUnlocked = isLessonUnlockedAccess(courseMapping.sectionId, courseMapping.courseIndex ?? 1, lessonIndex + 1, userFlags, completedLessons);
+                            // CRITICAL FIX: Calculate total completed lessons in the ENTIRE COURSE
+                            let globalLessonIndex = 0;
+                            let totalCompletedLessons = 0;
+                            
+                            // First, calculate the global lesson index for the current lesson
+                            for (let mi = 0; mi < course.modules.length; mi++) {
+                              for (let li = 0; li < course.modules[mi].lessons.length; li++) {
+                                if (mi === moduleIndex && li === lessonIndex) {
+                                  // Found our current lesson position, stop here
+                                  break;
+                                }
+                                globalLessonIndex++;
+                              }
+                              if (mi === moduleIndex) break; // Don't go beyond current module
+                            }
+                            
+                            // Now count ALL completed lessons in the entire course that come BEFORE this lesson
+                            for (let mi = 0; mi < course.modules.length; mi++) {
+                              for (let li = 0; li < course.modules[mi].lessons.length; li++) {
+                                // Stop counting when we reach the current lesson
+                                if (mi === moduleIndex && li === lessonIndex) {
+                                  break;
+                                }
+                                if (course.modules[mi].lessons[li].isCompleted) {
+                                  totalCompletedLessons++;
+                                }
+                              }
+                              if (mi === moduleIndex) break; // Don't go beyond current module
+                            }
+                            
+                            // Use centralized lesson-level gating logic with corrected parameters
+                            const lessonUnlocked = isLessonUnlockedAccess(
+                              courseMapping.sectionId, 
+                              courseMapping.courseIndex ?? 1, 
+                              globalLessonIndex + 1, // Convert to 1-based indexing
+                              userFlags, 
+                              totalCompletedLessons
+                            );
                             const isLessonLocked = !lessonUnlocked;
+                            
+
                             return (
                               <button
                                 key={lesson.id}
