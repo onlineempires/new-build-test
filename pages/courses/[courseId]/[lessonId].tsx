@@ -135,8 +135,10 @@ export default function LessonPage() {
   const markLessonComplete = async () => {
     if (currentLesson && course) {
       try {
-        await updateLessonProgress(course.id, currentLesson.id, true);
-        setCurrentLesson(prev => prev ? { ...prev, isCompleted: true } : null);
+        // Toggle the completion state
+        const newCompletionState = !currentLesson.isCompleted;
+        await updateLessonProgress(course.id, currentLesson.id, newCompletionState);
+        setCurrentLesson(prev => prev ? { ...prev, isCompleted: newCompletionState } : null);
         
         // Update course data
         const updatedCourse = await getCourse(course.id);
