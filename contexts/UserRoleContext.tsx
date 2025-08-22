@@ -123,10 +123,10 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessAllCourses: false,
     canAccessStartHereOnly: false,
     canAccessMasterclasses: false,
-    canAccessAffiliate: true, // Key feature for downsell
+    canAccessAffiliate: true,
     canAccessExpertDirectory: false,
-    canAccessDMO: true,
-    canAccessStats: false,
+    canAccessDMO: false,
+    canAccessStats: true,
     canAccessLeads: false,
     canUpgradeToMonthly: true,
     canUpgradeToAnnual: true,
@@ -135,7 +135,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageUsers: false,
     canManageCourses: false,
     canViewPayments: false,
-    canCreateFunnels: false,
+    canCreateFunnels: true,
     canManageCalendar: false,
   },
 
@@ -161,182 +161,210 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
   },
 };
 
-// Define role pricing and details
-export interface RoleDetails {
-  name: string;
-  price: number;
-  billing: 'one-time' | 'monthly' | 'yearly';
-  description: string;
-  features: string[];
-}
-
-export const ROLE_DETAILS: Record<UserRole, RoleDetails> = {
+// Define what each role can see in terms of subscription details
+export const ROLE_DETAILS: Record<UserRole, { title: string; badge: string; price?: number; features: string[] }> = {
   free: {
-    name: 'Free Account',
-    price: 0,
-    billing: 'one-time',
-    description: 'Basic access to intro content',
-    features: ['Start Here courses only', '7-day access period', 'Basic intro content']
+    title: 'Free Account',
+    badge: 'FREE',
+    features: ['Access to intro videos', 'Start Here courses only', 'Limited features'],
   },
-
   trial: {
-    name: '$1 Trial',
-    price: 1,
-    billing: 'one-time',
-    description: 'Try our platform for just $1',
-    features: ['Start Here courses only', '7-day trial period', 'Basic intro content']
+    title: '7-Day Trial',
+    badge: 'TRIAL',
+    features: ['Start Here courses only', 'Limited features', 'Expires in 7 days'],
   },
-
   monthly: {
-    name: 'Monthly Member',
-    price: 99,
-    billing: 'monthly',
-    description: 'Full access to all regular courses',
-    features: ['All courses', 'Affiliate portal', 'Statistics', 'Lead management', 'Expert Directory']
+    title: 'Monthly Subscription',
+    badge: 'MONTHLY',
+    price: 97,
+    features: ['All courses access', 'Expert directory', 'DMO system', 'Affiliate tools', 'Full analytics'],
   },
-
   annual: {
-    name: 'Annual Member',
-    price: 799,
-    billing: 'yearly',
-    description: 'Same as monthly but billed annually',
-    features: ['All courses', 'Affiliate portal', 'Statistics', 'Lead management', 'Expert Directory', 'Save $388/year']
+    title: 'Annual Subscription',
+    badge: 'ANNUAL',
+    price: 997,
+    features: ['All courses access', 'Expert directory', 'DMO system', 'Affiliate tools', 'Full analytics', 'Priority support'],
   },
-
   downsell: {
-    name: 'Lite Access',
-    price: 37,
-    billing: 'one-time',
-    description: 'Limited access with affiliate opportunities',
-    features: ['Intro courses', 'Affiliate portal', 'Commission tracking', 'Daily Method']
+    title: 'Affiliate Only',
+    badge: 'DOWNSELL',
+    price: 47,
+    features: ['Affiliate dashboard', 'Funnel creation', 'Basic analytics'],
   },
-
   admin: {
-    name: 'Administrator',
-    price: 0,
-    billing: 'one-time',
-    description: 'Full platform administration access',
-    features: ['All user features', 'User management', 'Course management', 'Payment tracking', 'Funnel creation']
-  }
+    title: 'Administrator',
+    badge: 'ADMIN',
+    features: ['Full system access', 'User management', 'Course management', 'Payment access', 'All features'],
+  },
 };
 
 interface UserRoleContextType {
   currentRole: UserRole;
+  setCurrentRole: (role: UserRole) => void;
   permissions: UserPermissions;
-  roleDetails: RoleDetails;
-  setUserRole: (role: UserRole) => void;
+  availableRoles: UserRole[];
   hasPermission: (permission: keyof UserPermissions) => boolean;
   canAccessFeature: (feature: string) => boolean;
-  getRoleHierarchyLevel: (role: UserRole) => number;
+  getRoleHierarchyLevel: (role?: UserRole) => number;
 }
+
+// Create default context value for SSR safety
+const defaultContextValue: UserRoleContextType = {
+  currentRole: 'guest',
+  setCurrentRole: () => {},
+  permissions: ROLE_PERMISSIONS.guest,
+  availableRoles: ['guest', 'free'],
+  hasPermission: () => false,
+  canAccessFeature: () => false,
+  getRoleHierarchyLevel: () => -1,
+};
 
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
 
-interface UserRoleProviderProps {
-  children: ReactNode;
-}
+export function UserRoleProvider({ children }: { children: ReactNode }) {
+  const [currentRole, setCurrentRole] = useState<UserRole>('guest');
+  const [availableRoles, setAvailableRoles] = useState<UserRole[]>(['guest', 'free']);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-// Role hierarchy for upgrade logic (higher number = higher tier)
-const ROLE_HIERARCHY: Record<UserRole, number> = {
-  free: 0,
-  trial: 1,
-  downsell: 2,
-  monthly: 3,
-  annual: 4,
-  admin: 5
-};
-
-export function UserRoleProvider({ children }: UserRoleProviderProps) {
-  const [currentRole, setCurrentRole] = useState<UserRole>('free'); // Default to free for proper testing
-  const [permissions, setPermissions] = useState<UserPermissions>(ROLE_PERMISSIONS.free);
-  const [roleDetails, setRoleDetails] = useState<RoleDetails>(ROLE_DETAILS.free);
-
+  // Initialize from localStorage only on client side
   useEffect(() => {
-    // Load role from localStorage or API
-    const storedRole = localStorage.getItem('userRole') as UserRole;
-    if (storedRole && ROLE_PERMISSIONS[storedRole]) {
-      updateRole(storedRole);
+    if (typeof window !== 'undefined') {
+      // First check dev.role (from DevContext/RoleSwitcher)
+      const devRole = localStorage.getItem('dev.role') as UserRole;
+      const storedRole = localStorage.getItem('userRole') as UserRole;
+      const storedAvailableRoles = localStorage.getItem('availableRoles');
+      
+      // Prefer dev.role if it exists (dev tools active)
+      const roleToUse = devRole || storedRole;
+      
+      if (roleToUse && ROLE_PERMISSIONS[roleToUse]) {
+        setCurrentRole(roleToUse);
+        console.log('UserRoleContext: Loaded role from storage:', roleToUse, devRole ? '(from dev tools)' : '(from userRole)');
+      } else {
+        // In development, default to monthly to test paid features
+        const defaultRole = process.env.NODE_ENV === 'development' ? 'monthly' : 'free';
+        setCurrentRole(defaultRole);
+        localStorage.setItem('userRole', defaultRole);
+        console.log('UserRoleContext: Setting default role:', defaultRole);
+      }
+      
+      if (storedAvailableRoles) {
+        try {
+          const roles = JSON.parse(storedAvailableRoles);
+          setAvailableRoles(roles);
+        } catch {
+          const defaultRoles: UserRole[] = ['free', 'trial', 'monthly', 'annual', 'downsell', 'admin'];
+          setAvailableRoles(defaultRoles);
+          localStorage.setItem('availableRoles', JSON.stringify(defaultRoles));
+        }
+      } else {
+        const defaultRoles: UserRole[] = ['free', 'trial', 'monthly', 'annual', 'downsell', 'admin'];
+        setAvailableRoles(defaultRoles);
+        localStorage.setItem('availableRoles', JSON.stringify(defaultRoles));
+      }
+      
+      setIsInitialized(true);
     }
+  }, []);
 
-    // Listen for localStorage changes (for when upgrades happen)
+  // Update localStorage when role changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isInitialized) {
+      localStorage.setItem('userRole', currentRole);
+      
+      // Dispatch custom event for other components to listen to
+      const event = new CustomEvent('roleChanged', { detail: { role: currentRole } });
+      window.dispatchEvent(event);
+    }
+  }, [currentRole, isInitialized]);
+  
+  // Listen for authentication and dev role changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'userRole' && e.newValue) {
-        const newRole = e.newValue as UserRole;
-        if (ROLE_PERMISSIONS[newRole]) {
-          updateRole(newRole);
-        }
+      // If auth token is removed, reset to free
+      if (e.key === 'auth_token' && !e.newValue) {
+        setCurrentRole('free');
+        localStorage.setItem('userRole', 'free');
+      }
+      // Listen for dev.role changes from RoleSwitcher
+      if (e.key === 'dev.role' && e.newValue && ROLE_PERMISSIONS[e.newValue as UserRole]) {
+        setCurrentRole(e.newValue as UserRole);
+        console.log('UserRoleContext: Updated role from dev tools:', e.newValue);
       }
     };
-
-    // Listen for custom storage events (same-window localStorage changes)
-    const handleCustomStorageChange = (e: CustomEvent) => {
-      if (e.detail.key === 'userRole' && e.detail.newValue) {
-        const newRole = e.detail.newValue as UserRole;
-        if (ROLE_PERMISSIONS[newRole]) {
-          updateRole(newRole);
-        }
+    
+    // Also listen for custom roleChanged events from RoleSwitcher
+    const handleRoleChanged = (e: CustomEvent) => {
+      if (e.detail?.role && ROLE_PERMISSIONS[e.detail.role]) {
+        setCurrentRole(e.detail.role);
+        console.log('UserRoleContext: Updated role from roleChanged event:', e.detail.role);
       }
     };
-
+    
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('localStorageChange', handleCustomStorageChange as EventListener);
-
+    window.addEventListener('roleChanged' as any, handleRoleChanged);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('localStorageChange', handleCustomStorageChange as EventListener);
+      window.removeEventListener('roleChanged' as any, handleRoleChanged);
     };
   }, []);
 
-  const updateRole = (role: UserRole) => {
-    setCurrentRole(role);
-    setPermissions(ROLE_PERMISSIONS[role]);
-    setRoleDetails(ROLE_DETAILS[role]);
-    localStorage.setItem('userRole', role);
-    
-    // Dispatch custom event for same-window localStorage changes
-    window.dispatchEvent(new CustomEvent('localStorageChange', {
-      detail: { key: 'userRole', newValue: role }
-    }));
-  };
+  const permissions = ROLE_PERMISSIONS[currentRole] || ROLE_PERMISSIONS.free;
 
-  const setUserRole = (role: UserRole) => {
-    updateRole(role);
-  };
-
-  // Note: upgradeToRole removed - upgrades now happen only after successful payment
-  // Use setUserRole after payment confirmation instead
+  // Debug logging
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('UserRoleContext - Current Role:', currentRole);
+      console.log('UserRoleContext - Permissions:', permissions);
+    }
+  }, [currentRole, permissions]);
 
   const hasPermission = (permission: keyof UserPermissions): boolean => {
-    return permissions[permission] as boolean;
+    const result = permissions[permission] || false;
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`hasPermission(${permission}):`, result);
+    }
+    return result;
   };
 
   const canAccessFeature = (feature: string): boolean => {
-    const featurePermissionMap: Record<string, keyof UserPermissions> = {
+    const featureMap: Record<string, keyof UserPermissions> = {
       'courses': 'canAccessAllCourses',
+      'start-here': 'canAccessStartHereOnly',
+      'masterclasses': 'canAccessMasterclasses',
       'affiliate': 'canAccessAffiliate',
       'experts': 'canAccessExpertDirectory',
       'dmo': 'canAccessDMO',
       'stats': 'canAccessStats',
       'leads': 'canAccessLeads',
-      'masterclasses': 'canAccessMasterclasses',
-      'admin': 'isAdmin'
+      'admin': 'isAdmin',
     };
 
-    const permissionKey = featurePermissionMap[feature];
+    const permissionKey = featureMap[feature.toLowerCase()];
     return permissionKey ? hasPermission(permissionKey) : false;
   };
 
-  const getRoleHierarchyLevel = (role: UserRole): number => {
-    return ROLE_HIERARCHY[role];
+  const getRoleHierarchyLevel = (role?: UserRole): number => {
+    const hierarchy: Record<UserRole, number> = {
+      free: 0,
+      trial: 1,
+      downsell: 2,
+      monthly: 3,
+      annual: 4,
+      admin: 5,
+    };
+    return hierarchy[role || currentRole] || 0;
   };
 
   return (
     <UserRoleContext.Provider
       value={{
         currentRole,
+        setCurrentRole,
         permissions,
-        roleDetails,
-        setUserRole,
+        availableRoles,
         hasPermission,
         canAccessFeature,
         getRoleHierarchyLevel,
@@ -349,8 +377,29 @@ export function UserRoleProvider({ children }: UserRoleProviderProps) {
 
 export function useUserRole() {
   const context = useContext(UserRoleContext);
-  if (context === undefined) {
-    throw new Error('useUserRole must be used within a UserRoleProvider');
+  
+  // Return default value during SSR or if context not available yet
+  if (typeof window === 'undefined') {
+    return {
+      ...defaultContextValue,
+      setUserRole: defaultContextValue.setCurrentRole,
+    };
   }
-  return context;
+  
+  if (context === undefined) {
+    // In development, throw error to help debugging
+    if (process.env.NODE_ENV === 'development') {
+      throw new Error('useUserRole must be used within a UserRoleProvider');
+    }
+    // In production, return default value to prevent crashes
+    return {
+      ...defaultContextValue,
+      setUserRole: defaultContextValue.setCurrentRole,
+    };
+  }
+  
+  return {
+    ...context,
+    setUserRole: context.setCurrentRole, // Add alias for backward compatibility
+  };
 }

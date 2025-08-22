@@ -79,7 +79,7 @@ export function CourseAccessProvider({ children }: CourseAccessProviderProps) {
     
     // If no config found, default to normal role-based access
     if (!config) {
-      return permissions.canAccessAllCourses || permissions.canAccessIntroVideos;
+      return permissions?.canAccessAllCourses || permissions?.canAccessIntroVideos || false;
     }
 
     // Check admin override first
@@ -88,7 +88,7 @@ export function CourseAccessProvider({ children }: CourseAccessProviderProps) {
     }
 
     // Admin can access everything
-    if (permissions.isAdmin) {
+    if (permissions?.isAdmin) {
       return true;
     }
 
@@ -99,15 +99,15 @@ export function CourseAccessProvider({ children }: CourseAccessProviderProps) {
       
       case 'start-here':
         // Free and trial members can access Start Here courses, plus all higher tiers
-        return permissions.canAccessStartHereOnly || permissions.canAccessAllCourses;
+        return permissions?.canAccessStartHereOnly || permissions?.canAccessAllCourses || false;
       
       case 'all-access':
         // Only monthly/annual members can access all-access courses
-        return permissions.canAccessAllCourses;
+        return permissions?.canAccessAllCourses || false;
       
       case 'masterclass':
         // Masterclasses require separate purchase or admin access
-        return permissions.canAccessMasterclasses;
+        return permissions?.canAccessMasterclasses || false;
       
       default:
         return false;

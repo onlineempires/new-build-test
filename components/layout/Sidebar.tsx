@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
@@ -11,6 +11,15 @@ interface User {
   avatarUrl: string;
 }
 
+interface MenuItem {
+  name: string;
+  href: string;
+  icon: string;
+  section: string;
+  requiredPermission: keyof import('../../contexts/UserRoleContext').UserPermissions | null;
+  roles?: import('../../contexts/UserRoleContext').UserRole[]; // Optional: specific roles that can see this
+}
+
 interface SidebarProps {
   user: User;
   onLogout: () => void;
@@ -19,16 +28,71 @@ interface SidebarProps {
   onFeedbackClick?: () => void;
 }
 
-const menuItems = [
-  { name: 'Dashboard', href: '/', icon: 'fas fa-home', section: 'dashboard', requiredPermission: null },
-  { name: 'All Courses', href: '/courses', icon: 'fas fa-book', section: 'courses', requiredPermission: null },
-  { name: 'Expert Directory', href: '/experts', icon: 'fas fa-users', section: 'experts', requiredPermission: 'canAccessExpertDirectory' },
-  { name: 'Daily Method (DMO)', href: '/dmo', icon: 'fas fa-tasks', section: 'dmo', requiredPermission: 'canAccessDMO' },
-  { name: 'Affiliate Portal', href: '/affiliate', icon: 'fas fa-link', section: 'affiliate', requiredPermission: 'canAccessAffiliate' },
-  { name: 'Statistics', href: '/stats', icon: 'fas fa-chart-bar', section: 'statistics', requiredPermission: 'canAccessStats' },
-  { name: 'Leads', href: '/leads', icon: 'fas fa-user-plus', section: 'leads', requiredPermission: 'canAccessLeads' },
-  { name: 'Admin', href: '/admin', icon: 'fas fa-cog', section: 'admin', requiredPermission: 'isAdmin' },
-  { name: 'Profile', href: '/profile', icon: 'fas fa-user', section: 'profile', requiredPermission: null },
+// Define menu items with their required permissions
+const menuItems: MenuItem[] = [
+  { 
+    name: 'Dashboard', 
+    href: '/', 
+    icon: 'fas fa-home', 
+    section: 'dashboard', 
+    requiredPermission: null // Always visible
+  },
+  { 
+    name: 'All Courses', 
+    href: '/courses', 
+    icon: 'fas fa-book', 
+    section: 'courses', 
+    requiredPermission: null // Always visible, but content filtered by role
+  },
+  { 
+    name: 'Expert Directory', 
+    href: '/experts', 
+    icon: 'fas fa-users', 
+    section: 'experts', 
+    requiredPermission: 'canAccessExpertDirectory' // Only for paid members
+  },
+  { 
+    name: 'Daily Method (DMO)', 
+    href: '/dmo', 
+    icon: 'fas fa-tasks', 
+    section: 'dmo', 
+    requiredPermission: 'canAccessDMO' // Only for paid members
+  },
+  { 
+    name: 'Affiliate Portal', 
+    href: '/affiliate', 
+    icon: 'fas fa-link', 
+    section: 'affiliate', 
+    requiredPermission: 'canAccessAffiliate' // Only for paid members and downsell
+  },
+  { 
+    name: 'Statistics', 
+    href: '/stats', 
+    icon: 'fas fa-chart-bar', 
+    section: 'statistics', 
+    requiredPermission: 'canAccessStats' // Only for paid members
+  },
+  { 
+    name: 'Leads', 
+    href: '/leads', 
+    icon: 'fas fa-user-plus', 
+    section: 'leads', 
+    requiredPermission: 'canAccessLeads' // Only for paid members
+  },
+  { 
+    name: 'Admin', 
+    href: '/admin', 
+    icon: 'fas fa-cog', 
+    section: 'admin', 
+    requiredPermission: 'isAdmin' // Only for admin role
+  },
+  { 
+    name: 'Profile', 
+    href: '/profile', 
+    icon: 'fas fa-user', 
+    section: 'profile', 
+    requiredPermission: null // Always visible
+  },
 ];
 
 export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
@@ -42,9 +106,49 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     }
   };
 
-  const visibleMenuItems = menuItems.filter(item => 
-    !item.requiredPermission || hasPermission(item.requiredPermission as any)
-  );
+  // Filter menu items based on role directly
+  const visibleMenuItems = menuItems.filter(item => {
+    // Admin sees everything
+    if (currentRole === 'admin') return true;
+    
+    // Check specific items by name for clarity
+    switch (item.name) {
+      case 'Dashboard':
+      case 'All Courses':  
+      case 'Profile':
+        return true; // Everyone sees these
+      
+      case 'Expert Directory':
+      case 'Daily Method (DMO)':
+      case 'Statistics':
+      case 'Leads':
+        // Only paid members (monthly/annual) can see these
+        return currentRole === 'monthly' || currentRole === 'annual';
+      
+      case 'Affiliate Portal':
+        // Paid members and downsell users can see this
+        return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
+      
+      case 'Admin':
+        // Only admin role
+        return currentRole === 'admin';
+      
+      default:
+        return false;
+    }
+  });
+  
+  // Debug logging - ALWAYS log to see what's happening
+  useEffect(() => {
+    console.log('=== SIDEBAR DEBUG ===');
+    console.log('Current role:', currentRole);
+    console.log('Permissions object:', permissions);
+    console.log('All menu items:', menuItems.map(i => i.name));
+    console.log('Filtered menu items:', visibleMenuItems.map(i => i.name));
+    console.log('Should see DMO?', currentRole === 'monthly' || currentRole === 'annual');
+    console.log('Should see Expert Directory?', currentRole === 'monthly' || currentRole === 'annual');
+    console.log('===================');
+  }, [currentRole, permissions, visibleMenuItems]);
 
   const isActive = (href: string) => {
     if (href === '/courses') {

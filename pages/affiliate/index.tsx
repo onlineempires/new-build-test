@@ -64,7 +64,7 @@ export default function AffiliatePage() {
 
   useEffect(() => {
     // Check affiliate access permission
-    if (!permissions.canAccessAffiliate) {
+    if (!permissions?.canAccessAffiliate) {
       router.push('/courses');
       return;
     }
@@ -301,7 +301,7 @@ export default function AffiliatePage() {
     );
   }
 
-  if (!permissions.canAccessAffiliate) {
+  if (!permissions || !permissions.canAccessAffiliate) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

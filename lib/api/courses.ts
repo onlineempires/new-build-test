@@ -539,8 +539,9 @@ export const getAllCourses = async (): Promise<CourseData> => {
                   ...lesson,
                   isCompleted,
                   isLocked: !isUnlocked,
-                  hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
-                  hasSkillsButton: lesson.hasSkillsButton && isUnlocked
+                  // Keep "Choose Your Path" buttons visible for Business Blueprint lessons regardless of lock status
+                  hasEnagicButton: lesson.hasEnagicButton && (course.id === 'business-blueprint' || isUnlocked),
+                  hasSkillsButton: lesson.hasSkillsButton && (course.id === 'business-blueprint' || isUnlocked)
                 };
               })
             };
@@ -657,9 +658,9 @@ export const getCourse = async (courseId: string): Promise<Course> => {
               ...lesson,
               isCompleted,
               isLocked: !isUnlocked,
-              // Preserve button properties from original lesson data but respect locking
-              hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
-              hasSkillsButton: lesson.hasSkillsButton && isUnlocked
+              // Keep "Choose Your Path" buttons visible for Business Blueprint lessons regardless of lock status
+              hasEnagicButton: lesson.hasEnagicButton && (course.id === 'business-blueprint' || isUnlocked),
+              hasSkillsButton: lesson.hasSkillsButton && (course.id === 'business-blueprint' || isUnlocked)
             };
           })
         }));

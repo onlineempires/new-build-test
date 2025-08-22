@@ -14,16 +14,6 @@ const ROLE_LABELS: Record<Role, string> = {
 };
 
 export function GatingStatus() {
-  // Compute flags at top level (no early returns before hooks)
-  const devEnabled = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    try { 
-      return process.env.NEXT_PUBLIC_DEV_TOOLS === 'true' || localStorage.getItem('devTools') === 'on'; 
-    } catch { 
-      return false; 
-    }
-  }, []);
-
   // Always declare hooks (unconditional)
   const {
     role,
@@ -36,6 +26,22 @@ export function GatingStatus() {
     getUserFlags,
     isDevToolsEnabled
   } = useDevState();
+  
+  // Compute flags at top level (after hooks)
+  const devEnabled = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    
+    // Check multiple conditions for dev tools
+    const envEnabled = process.env.NEXT_PUBLIC_DEV_TOOLS === 'true';
+    const nodeEnvDev = process.env.NODE_ENV === 'development';
+    let localStorageEnabled = false;
+    try {
+      localStorageEnabled = localStorage.getItem('devTools') === 'on';
+    } catch {}
+    
+    // Enable if any condition is met
+    return envEnabled || nodeEnvDev || localStorageEnabled || isDevToolsEnabled;
+  }, [isDevToolsEnabled]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -50,7 +56,7 @@ export function GatingStatus() {
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!devEnabled || !isDevToolsEnabled) return;
+      if (!devEnabled) return;
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -68,7 +74,7 @@ export function GatingStatus() {
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('resize', handleResize);
     };
-  }, [devEnabled, isDevToolsEnabled]);
+  }, [devEnabled]);
 
   // Get derived gating states
   const userFlags = getUserFlags();
@@ -183,10 +189,13 @@ export function GatingStatus() {
     </div>
   );
 
+  // Always render when in development mode or dev tools enabled
+  const shouldShow = devEnabled || process.env.NODE_ENV === 'development';
+  
   return (
     <>
       {/* Render nothing visible when disabled, but keep hooks stable */}
-      {!devEnabled || !isDevToolsEnabled ? null : (
+      {!shouldShow ? null : (
         <div className="relative" ref={popoverRef}>
           {/* Trigger Button */}
           <button

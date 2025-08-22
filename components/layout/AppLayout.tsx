@@ -9,7 +9,7 @@ import UpgradeButton from '../upgrades/UpgradeButton';
 import { RoleSwitcher, MobileRoleSwitcher } from '../dev/RoleSwitcher';
 import { GatingStatus } from '../dev/GatingStatus';
 import EnvironmentIndicator from '../admin/EnvironmentIndicator';
-import { shouldShowRoleSwitcher } from '../../utils/environment';
+// Removed unused import - shouldShowRoleSwitcher
 
 interface User {
   id: number;
@@ -128,7 +128,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                 />
               </div>
               
-              {/* Right: Dev tools */}
+              {/* Right: Dev tools - Always show in development */}
               <div className="flex items-center gap-2">
                 <RoleSwitcher />
                 <GatingStatus />
@@ -158,7 +158,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                 
                 {/* Community, Upgrade, and Feedback */}
                 <div className="flex items-center gap-3">
-                  {/* Dev Tools - completely hidden when disabled */}
+                  {/* Dev Tools - Always show in development */}
                   <RoleSwitcher />
                   <GatingStatus />
                   <UpgradeButton 

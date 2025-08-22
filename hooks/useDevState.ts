@@ -22,9 +22,13 @@ export function useDevState(): DevStateHook {
 
   useEffect(() => {
     const checkDevTools = () => {
+      // Always enable in development mode
+      const isDev = process.env.NODE_ENV === 'development';
       const envFlag = process.env.NEXT_PUBLIC_DEV_TOOLS === 'true';
       const localFlag = typeof window !== 'undefined' && localStorage.getItem('devTools') === 'on';
-      setIsDevToolsEnabled(envFlag || localFlag);
+      
+      // Enable if any condition is met
+      setIsDevToolsEnabled(isDev || envFlag || localFlag);
     };
 
     checkDevTools();
@@ -32,7 +36,12 @@ export function useDevState(): DevStateHook {
     // Listen for localStorage changes
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', checkDevTools);
-      return () => window.removeEventListener('storage', checkDevTools);
+      // Also check on focus to catch manual localStorage changes
+      window.addEventListener('focus', checkDevTools);
+      return () => {
+        window.removeEventListener('storage', checkDevTools);
+        window.removeEventListener('focus', checkDevTools);
+      };
     }
   }, []);
 

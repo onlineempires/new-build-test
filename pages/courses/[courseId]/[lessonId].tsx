@@ -190,17 +190,13 @@ export default function LessonPage() {
     if (!currentLesson) return;
     
     try {
-      // Track button click for analytics
+      // Track button click for analytics and unlock Discovery Process
       await handleButtonClick('skills', currentLesson.id, 'discovery-process');
       
-      // For free/trial users, redirect to Skills VSL (sales page) instead of discovery course
-      if (userFlags.role === 'free' || userFlags.role === 'trial') {
-        router.push('/skills-vsl');
-        return;
-      }
-      
-      // For premium users, set flag and continue to Discovery Process
+      // Set the not ready flag for all users to unlock video 1 of Discovery Process
       setNotReadyFlag();
+      
+      // Redirect all users to Discovery Process lesson 1-1 (video 1, course 2)
       router.push('/courses/discovery-process/lesson-1-1');
     } catch (error) {
       console.error('Failed to handle Skills flow:', error);

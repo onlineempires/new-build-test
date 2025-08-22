@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Role } from '../../lib/access';
 import { useDevState } from '../../hooks/useDevState';
+import { useUserRole } from '../../contexts/UserRoleContext';
 
 const ROLE_LABELS: Record<Role, string> = {
   free: 'Free User',
@@ -22,27 +23,34 @@ const ROLE_COLORS: Record<Role, string> = {
 };
 
 export function RoleSwitcher() {
-  // Compute flags at top level (no early returns before hooks)
-  const devEnabled = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    try { 
-      return process.env.NEXT_PUBLIC_DEV_TOOLS === 'true' || localStorage.getItem('devTools') === 'on'; 
-    } catch { 
-      return false; 
-    }
-  }, []);
-
   // Always declare hooks (unconditional)
   const { role, setRole, isDevToolsEnabled } = useDevState();
+  const { setCurrentRole } = useUserRole(); // Also update UserRoleContext
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Compute flags at top level (after hooks)
+  const devEnabled = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    
+    // Check multiple conditions for dev tools
+    const envEnabled = process.env.NEXT_PUBLIC_DEV_TOOLS === 'true';
+    const nodeEnvDev = process.env.NODE_ENV === 'development';
+    let localStorageEnabled = false;
+    try {
+      localStorageEnabled = localStorage.getItem('devTools') === 'on';
+    } catch {}
+    
+    // Enable if any condition is met
+    return envEnabled || nodeEnvDev || localStorageEnabled || isDevToolsEnabled;
+  }, [isDevToolsEnabled]);
 
   // Keyboard shortcut: effect always defined; internally guards when disabled/SSR
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!devEnabled || !isDevToolsEnabled) return;
+      if (!devEnabled) return;
       if (event.altKey && event.key.toLowerCase() === 'd') {
         event.preventDefault();
         setIsOpen(v => !v);
@@ -50,7 +58,7 @@ export function RoleSwitcher() {
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (!devEnabled || !isDevToolsEnabled) return;
+      if (!devEnabled) return;
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -63,19 +71,28 @@ export function RoleSwitcher() {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [devEnabled, isDevToolsEnabled]);
+  }, [devEnabled]);
 
   const handleRoleChange = (newRole: Role) => {
-    setRole(newRole);
+    setRole(newRole); // Update DevContext
+    setCurrentRole(newRole); // Also update UserRoleContext for sidebar
     setIsOpen(false);
+    
+    // Force a re-render of the sidebar by dispatching a custom event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('roleChanged', { detail: { role: newRole } }));
+    }
   };
 
   const roles: Role[] = ['free', 'trial', 'monthly', 'annual', 'downsell', 'admin'];
 
+  // Always render when in development mode or dev tools enabled
+  const shouldShow = devEnabled || process.env.NODE_ENV === 'development';
+  
   return (
     <>
       {/* Render nothing visible when disabled, but keep hooks stable */}
-      {!devEnabled || !isDevToolsEnabled ? null : (
+      {!shouldShow ? null : (
         <div className="relative" ref={dropdownRef}>
           {/* Trigger Button */}
           <button
@@ -121,30 +138,46 @@ export function RoleSwitcher() {
 
 // Mobile version for header overflow menu
 export function MobileRoleSwitcher({ onSelect }: { onSelect?: () => void }) {
-  // Compute flags at top level (no early returns before hooks)
-  const devEnabled = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    try { 
-      return process.env.NEXT_PUBLIC_DEV_TOOLS === 'true' || localStorage.getItem('devTools') === 'on'; 
-    } catch { 
-      return false; 
-    }
-  }, []);
-
   // Always declare hooks (unconditional)
   const { role, setRole, isDevToolsEnabled } = useDevState();
+  const { setCurrentRole } = useUserRole(); // Also update UserRoleContext
+  
+  // Compute flags at top level (after hooks)
+  const devEnabled = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    
+    // Check multiple conditions for dev tools
+    const envEnabled = process.env.NEXT_PUBLIC_DEV_TOOLS === 'true';
+    const nodeEnvDev = process.env.NODE_ENV === 'development';
+    let localStorageEnabled = false;
+    try {
+      localStorageEnabled = localStorage.getItem('devTools') === 'on';
+    } catch {}
+    
+    // Enable if any condition is met
+    return envEnabled || nodeEnvDev || localStorageEnabled || isDevToolsEnabled;
+  }, [isDevToolsEnabled]);
 
   const handleRoleChange = (newRole: Role) => {
-    setRole(newRole);
+    setRole(newRole); // Update DevContext
+    setCurrentRole(newRole); // Also update UserRoleContext for sidebar
     onSelect?.();
+    
+    // Force a re-render of the sidebar by dispatching a custom event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('roleChanged', { detail: { role: newRole } }));
+    }
   };
 
   const roles: Role[] = ['free', 'trial', 'monthly', 'annual', 'downsell', 'admin'];
+  
+  // Always render when in development mode or dev tools enabled
+  const shouldShow = devEnabled || process.env.NODE_ENV === 'development';
 
   return (
     <>
       {/* Render nothing visible when disabled, but keep hooks stable */}
-      {!devEnabled || !isDevToolsEnabled ? null : (
+      {!shouldShow ? null : (
         <div className="border-t border-gray-200 pt-2 mt-2">
           <div className="px-3 py-2">
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
