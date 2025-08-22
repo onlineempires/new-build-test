@@ -196,6 +196,17 @@ export default function LessonPage() {
       // Set the not ready flag for all users to unlock video 1 of Discovery Process
       setNotReadyFlag();
       
+      // CRITICAL: Also set the flag that the access control system expects
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('flags.pressedNotReady', 'true');
+        
+        // Also set in the main userFlags for consistency
+        const userFlags = JSON.parse(localStorage.getItem('userFlags') || '{}');
+        userFlags.pressedNotReady = true;
+        userFlags.pressedNotReadyTimestamp = Date.now();
+        localStorage.setItem('userFlags', JSON.stringify(userFlags));
+      }
+      
       // Redirect all users to Discovery Process lesson 1-1 (video 1, course 2)
       router.push('/courses/discovery-process/lesson-1-1');
     } catch (error) {

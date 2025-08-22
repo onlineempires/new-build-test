@@ -1041,10 +1041,15 @@ export const getButtonClickStatus = (buttonType: 'enagic' | 'skills', lessonId: 
 // Handle "Not Ready Yet" button click in Business Blueprint
 export const handleNotReadyYetClick = async (): Promise<void> => {
   try {
-    // Set the pressedNotReadyInBLB flag
+    // Set the pressedNotReadyInBLB flag and the access control flag
     if (typeof window !== 'undefined') {
+      // Set the flag that the access control system expects
+      localStorage.setItem('flags.pressedNotReady', 'true');
+      
+      // Also set in the main userFlags for consistency
       const userFlags = JSON.parse(localStorage.getItem('userFlags') || '{}');
       userFlags.pressedNotReadyInBLB = true;
+      userFlags.pressedNotReady = true;
       userFlags.pressedNotReadyTimestamp = Date.now();
       localStorage.setItem('userFlags', JSON.stringify(userFlags));
     }
