@@ -222,9 +222,20 @@ const defaultContextValue: UserRoleContextType = {
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
 
 export function UserRoleProvider({ children }: { children: ReactNode }) {
-  const [currentRole, setCurrentRole] = useState<UserRole>('guest');
+  const [currentRole, setCurrentRoleState] = useState<UserRole>('guest');
   const [availableRoles, setAvailableRoles] = useState<UserRole[]>(['guest', 'free']);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Custom setCurrentRole that syncs both localStorage keys
+  const setCurrentRole = (role: UserRole) => {
+    setCurrentRoleState(role);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('dev.role', role);
+      // Trigger dev context update
+      window.dispatchEvent(new CustomEvent('dev:role-changed', { detail: role }));
+    }
+  };
 
   // Initialize from localStorage only on client side
   useEffect(() => {
@@ -238,14 +249,18 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
       const roleToUse = devRole || storedRole;
       
       if (roleToUse && ROLE_PERMISSIONS[roleToUse]) {
-        setCurrentRole(roleToUse);
+        setCurrentRoleState(roleToUse);
         console.log('UserRoleContext: Loaded role from storage:', roleToUse, devRole ? '(from dev tools)' : '(from userRole)');
       } else {
         // In development, default to monthly to test paid features
         const defaultRole = process.env.NODE_ENV === 'development' ? 'monthly' : 'free';
-        setCurrentRole(defaultRole);
+        setCurrentRoleState(defaultRole);
         localStorage.setItem('userRole', defaultRole);
+        // CRITICAL: Also set dev.role for access control system consistency
+        localStorage.setItem('dev.role', defaultRole);
         console.log('UserRoleContext: Setting default role:', defaultRole);
+        // Trigger dev context update
+        window.dispatchEvent(new CustomEvent('dev:role-changed', { detail: defaultRole }));
       }
       
       if (storedAvailableRoles) {
@@ -298,7 +313,7 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
     // Also listen for custom roleChanged events from RoleSwitcher
     const handleRoleChanged = (e: CustomEvent) => {
       if (e.detail?.role && ROLE_PERMISSIONS[e.detail.role]) {
-        setCurrentRole(e.detail.role);
+        setCurrentRoleState(e.detail.role);
         console.log('UserRoleContext: Updated role from roleChanged event:', e.detail.role);
       }
     };

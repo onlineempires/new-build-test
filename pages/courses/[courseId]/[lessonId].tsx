@@ -35,12 +35,25 @@ export default function LessonPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [shouldRedirectToCourse, setShouldRedirectToCourse] = useState(false);
   const { showUpgradeModal } = useUpgrade();
   const { isPurchased, currentRole } = useCourseAccess();
   const { setNotReadyFlag } = useCourseGating();
   
   // Use centralized user flags
   const userFlags = useUserFlags();
+  
+
+
+  // Auto-redirect timer for access denied cases
+  useEffect(() => {
+    if (shouldRedirectToCourse) {
+      const timer = setTimeout(() => {
+        router.push(`/courses/${courseId}`);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldRedirectToCourse, courseId, router]);
 
   useEffect(() => {
     if (courseId && lessonId) {
@@ -205,8 +218,10 @@ export default function LessonPage() {
         userFlags.pressedNotReady = true;
         userFlags.pressedNotReadyTimestamp = Date.now();
         localStorage.setItem('userFlags', JSON.stringify(userFlags));
+        
+        // Force trigger event to update userFlags hook
+        window.dispatchEvent(new Event('dev:flags-changed'));
       }
-      
       // Redirect all users to Discovery Process lesson 1-1 (video 1, course 2)
       router.push('/courses/discovery-process/lesson-1-1');
     } catch (error) {
@@ -262,6 +277,8 @@ export default function LessonPage() {
     );
   }
 
+
+
   // Route guard: Check lesson access using centralized system
   if (!hasAccess()) {
     // Get course mapping to determine the proper access panel
@@ -270,16 +287,20 @@ export default function LessonPage() {
     
     if (!canAccessCourse) {
       // If user can't access the course at all, redirect to course page which will show the proper access panel
+      if (!shouldRedirectToCourse) {
+        setShouldRedirectToCourse(true);
+      }
+      
       return (
         <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
           <div className="p-6">
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              Course access required. Redirecting to course page...
+              Course access required. Redirecting to course page in 3 seconds...
               <button 
                 onClick={() => router.push(`/courses/${courseId}`)}
                 className="ml-4 underline hover:no-underline"
               >
-                Go to Course
+                Go Now
               </button>
             </div>
           </div>

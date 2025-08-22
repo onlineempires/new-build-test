@@ -1052,6 +1052,9 @@ export const handleNotReadyYetClick = async (): Promise<void> => {
       userFlags.pressedNotReady = true;
       userFlags.pressedNotReadyTimestamp = Date.now();
       localStorage.setItem('userFlags', JSON.stringify(userFlags));
+      
+      // Force trigger event to update userFlags hook
+      window.dispatchEvent(new Event('dev:flags-changed'));
     }
     
     // Unlock Discovery Process course
