@@ -35,6 +35,53 @@ export default function AdminLogin() {
     }
   }, [router.query]);
 
+  // Redirect to admin dashboard if already authenticated
+  // BUT skip if forceLogin is true or coming from logout
+  useEffect(() => {
+    const shouldRedirect = 
+      isAuthenticated && 
+      !authLoading && 
+      !forceLogin && 
+      !isClearing &&
+      router.query.logout !== 'true' &&
+      router.query.forceLogin !== 'true';
+    
+    if (shouldRedirect) {
+      const redirectTo = router.query.redirect as string || '/admin';
+      
+      console.log('Admin Login: Redirecting authenticated user to:', redirectTo);
+      
+      // Use both router.replace and window.location as fallback
+      router.replace(redirectTo).catch(() => {
+        // Fallback to hard navigation if router fails
+        console.log('Admin Login: Router redirect failed, using window.location');
+        window.location.href = redirectTo;
+      });
+    }
+  }, [isAuthenticated, authLoading, forceLogin, isClearing, router]);
+
+  // Add immediate redirect as fallback for authenticated users - MOVED TO TOP LEVEL
+  useEffect(() => {
+    // Fallback redirect logic for authenticated users who show the redirect message
+    if (isAuthenticated && !forceLogin && router.query.logout !== 'true') {
+      const redirectTo = router.query.redirect as string || '/admin';
+      console.log('Admin Login: Fallback redirect triggered for authenticated user to:', redirectTo);
+      
+      // Set a timeout to ensure redirect happens
+      const timeoutId = setTimeout(() => {
+        console.log('Admin Login: Timeout redirect executing');
+        window.location.href = redirectTo;
+      }, 2000); // 2 second timeout
+      
+      // Also try immediate redirect as backup
+      router.replace(redirectTo).catch(() => {
+        console.log('Admin Login: Immediate redirect failed, timeout will handle it');
+      });
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isAuthenticated, forceLogin, router.query.logout, router.query.redirect, router]);
+
   // Clear any residual session data
   const clearResidualSession = async () => {
     setIsClearing(true);
@@ -73,31 +120,6 @@ export default function AdminLogin() {
     await new Promise(resolve => setTimeout(resolve, 100));
     setIsClearing(false);
   };
-
-  // Redirect to admin dashboard if already authenticated
-  // BUT skip if forceLogin is true or coming from logout
-  useEffect(() => {
-    const shouldRedirect = 
-      isAuthenticated && 
-      !authLoading && 
-      !forceLogin && 
-      !isClearing &&
-      router.query.logout !== 'true' &&
-      router.query.forceLogin !== 'true';
-    
-    if (shouldRedirect) {
-      const redirectTo = router.query.redirect as string || '/admin';
-      
-      console.log('Admin Login: Redirecting authenticated user to:', redirectTo);
-      
-      // Use both router.replace and window.location as fallback
-      router.replace(redirectTo).catch(() => {
-        // Fallback to hard navigation if router fails
-        console.log('Admin Login: Router redirect failed, using window.location');
-        window.location.href = redirectTo;
-      });
-    }
-  }, [isAuthenticated, authLoading, forceLogin, isClearing, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,24 +164,6 @@ export default function AdminLogin() {
   // If already authenticated and not forcing login, show redirecting message
   // This should rarely be seen due to the effect above
   if (isAuthenticated && !forceLogin && router.query.logout !== 'true') {
-    // Add immediate redirect as fallback
-    useEffect(() => {
-      const redirectTo = router.query.redirect as string || '/admin';
-      console.log('Admin Login: Fallback redirect triggered for authenticated user to:', redirectTo);
-      
-      // Set a timeout to ensure redirect happens
-      const timeoutId = setTimeout(() => {
-        console.log('Admin Login: Timeout redirect executing');
-        window.location.href = redirectTo;
-      }, 2000); // 2 second timeout
-      
-      // Also try immediate redirect
-      router.replace(redirectTo).catch(() => {
-        console.log('Admin Login: Immediate redirect failed, timeout will handle it');
-      });
-      
-      return () => clearTimeout(timeoutId);
-    }, []);
     
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
