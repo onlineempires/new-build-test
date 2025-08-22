@@ -380,3 +380,118 @@ lib/
 - 🔒 Clean separation of payment and calendar booking
 
 These changes create a professional, secure booking experience that prevents calendar access gaming while providing clear value proposition and smooth user experience.
+
+## Dev Tools
+
+### Overview
+Comprehensive development tools for testing role-based access control and debugging gating logic. Tools are completely hidden in production and only appear when explicitly enabled.
+
+### Enabling Dev Tools
+
+**Method 1: Environment Variable**
+```bash
+# In .env.local
+NEXT_PUBLIC_DEV_TOOLS=true
+```
+
+**Method 2: localStorage**
+```javascript
+// In browser console
+localStorage.setItem('devTools', 'on')
+```
+
+### Features
+
+#### 🔄 Role Switcher
+- **Location**: Top header, next to account badge
+- **Keyboard Shortcut**: `Alt + D` (⌥ + D on Mac)
+- **Roles**: Free, $1 Trial, Monthly Member, Annual Member, Downsell, Admin
+- **Mobile**: Available in hamburger menu overflow
+- **Persistence**: Saves to localStorage and broadcasts real-time updates
+
+#### 🛡️ Gating Status Panel
+- **Location**: Top-right header, always visible when dev tools enabled
+- **Trigger**: Shield icon labeled "Dev"
+- **Contents**:
+  - Current role (with dropdown to change)
+  - Status flags (green/red chips):
+    - Trial User (computed from role)
+    - Pressed Not Ready (toggleable)
+    - Blueprint Done (toggleable)
+    - Can Access Discovery (computed)
+    - Can Access Next Steps (computed)
+  - Actions:
+    - Toggle individual flags
+    - **Reset All States** (clears all progress and reloads)
+
+#### 📱 Mobile Support
+- **Desktop**: Standard popovers and dropdowns
+- **Mobile**: Full-width bottom sheet with top handle
+- **Responsive**: Adapts to screen size automatically
+
+#### 🔗 URL Overrides for QA
+Test specific states via URL parameters:
+
+```bash
+# Set role to trial
+?role=trial
+
+# Enable "Pressed Not Ready" flag
+?pressedNotReady=1
+
+# Enable "Blueprint Done" flag  
+?blueprintDone=1
+
+# Combined example
+?role=trial&pressedNotReady=1&blueprintDone=0
+```
+
+### Usage Instructions
+
+#### Quick Start
+1. **Enable**: Set `NEXT_PUBLIC_DEV_TOOLS=true` or `localStorage.setItem('devTools','on')`
+2. **Toggle Role**: Press `Alt + D` or click role badge in header
+3. **Check Gating**: Click "Dev" shield icon to see current access state
+4. **Reset**: Use "Reset All States" button to clear all progress
+
+#### Testing Workflow
+1. **Switch Role**: Use Alt+D to cycle through user types
+2. **Test Access**: Navigate to Dashboard, All Courses, individual courses
+3. **Toggle Flags**: Use gating panel to test "Not Ready" and "Blueprint Done" states  
+4. **Verify Matrix**: Ensure access matches business rules:
+   - **Trial Users**: Section 1 only, progression locks
+   - **Premium Users**: Full access to Sections 1-2, no locks
+   - **All Users**: Section 3 requires individual purchase
+5. **URL Testing**: Share test URLs with specific states for QA
+
+#### Business Rules Matrix
+```
+┌─────────────┬─────────────────┬─────────────────┬─────────────────┐
+│    Role     │   Section 1     │   Section 2     │   Section 3     │
+├─────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Free/Trial  │ C1: Full Access │ Upgrade CTA     │ Purchase CTA    │
+│             │ C2: L1 if ready │                 │                 │
+│             │ C3: Locked      │                 │                 │
+├─────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ Monthly/    │ Full Access     │ Full Access     │ Purchase CTA    │
+│ Annual      │                 │                 │                 │
+└─────────────┴─────────────────┴─────────────────┴─────────────────┘
+```
+
+### Technical Integration
+
+#### State Management
+- **Context**: `DevContext` provides global dev state
+- **Hook**: `useDevState()` for components
+- **Events**: `dev:role-changed`, `dev:flags-changed`, `dev:reset`
+- **Persistence**: localStorage with SSR-safe access
+
+#### Access Integration  
+- **Adapter**: `getUserFlagsFromDev()` bridges dev state to access system
+- **Real-time**: Components auto-update when dev state changes
+- **Query Overrides**: URL parameters override localStorage on page load
+
+#### Production Safety
+- **Tree Shaking**: Components removed when feature flag disabled
+- **Zero Impact**: No dev code included in production builds
+- **Guard Checks**: Double-safety with env + localStorage checks

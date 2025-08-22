@@ -539,8 +539,9 @@ export const getAllCourses = async (): Promise<CourseData> => {
                   ...lesson,
                   isCompleted,
                   isLocked: !isUnlocked,
-                  hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
-                  hasSkillsButton: lesson.hasSkillsButton && isUnlocked
+                  // Keep "Choose Your Path" buttons visible for Business Blueprint lessons regardless of lock status
+                  hasEnagicButton: lesson.hasEnagicButton && (course.id === 'business-blueprint' || isUnlocked),
+                  hasSkillsButton: lesson.hasSkillsButton && (course.id === 'business-blueprint' || isUnlocked)
                 };
               })
             };
@@ -657,9 +658,9 @@ export const getCourse = async (courseId: string): Promise<Course> => {
               ...lesson,
               isCompleted,
               isLocked: !isUnlocked,
-              // Preserve button properties from original lesson data but respect locking
-              hasEnagicButton: lesson.hasEnagicButton && isUnlocked,
-              hasSkillsButton: lesson.hasSkillsButton && isUnlocked
+              // Keep "Choose Your Path" buttons visible for Business Blueprint lessons regardless of lock status
+              hasEnagicButton: lesson.hasEnagicButton && (course.id === 'business-blueprint' || isUnlocked),
+              hasSkillsButton: lesson.hasSkillsButton && (course.id === 'business-blueprint' || isUnlocked)
             };
           })
         }));
@@ -1040,12 +1041,20 @@ export const getButtonClickStatus = (buttonType: 'enagic' | 'skills', lessonId: 
 // Handle "Not Ready Yet" button click in Business Blueprint
 export const handleNotReadyYetClick = async (): Promise<void> => {
   try {
-    // Set the pressedNotReadyInBLB flag
+    // Set the pressedNotReadyInBLB flag and the access control flag
     if (typeof window !== 'undefined') {
+      // Set the flag that the access control system expects
+      localStorage.setItem('flags.pressedNotReady', 'true');
+      
+      // Also set in the main userFlags for consistency
       const userFlags = JSON.parse(localStorage.getItem('userFlags') || '{}');
       userFlags.pressedNotReadyInBLB = true;
+      userFlags.pressedNotReady = true;
       userFlags.pressedNotReadyTimestamp = Date.now();
       localStorage.setItem('userFlags', JSON.stringify(userFlags));
+      
+      // Force trigger event to update userFlags hook
+      window.dispatchEvent(new Event('dev:flags-changed'));
     }
     
     // Unlock Discovery Process course

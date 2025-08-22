@@ -15,6 +15,8 @@ import { StreakUpgradePrompt } from '../components/upgrades/UpgradePrompts';
 import { getDashboard, DashboardData } from '../lib/api/dashboard';
 import { useCourseAccess } from '../hooks/useCourseAccess';
 import { useNotificationHelpers } from '../hooks/useNotificationHelpers';
+import { UserFlags } from '../lib/access';
+import { useUserFlags } from '../lib/userFlags';
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -24,6 +26,9 @@ export default function Dashboard() {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const { showSuccess, notifyAchievement } = useNotificationHelpers();
+  
+  // Get user flags for gating (includes dev tools integration)
+  const userFlags = useUserFlags();
 
   useEffect(() => {
     loadDashboard();
@@ -232,7 +237,7 @@ export default function Dashboard() {
               </div>
 
               {/* Start Here - Simplified */}
-              <StartHereGridGated courses={data.startHere} />
+              <StartHereGridGated courses={data.startHere} user={userFlags} />
             </>
           ) : (
             /* RETURNING USER EXPERIENCE - Show progress and continue */
@@ -241,15 +246,17 @@ export default function Dashboard() {
               <ContinueJourney course={data.continue} />
 
               {/* Start Here */}
-              <StartHereGridGated courses={data.startHere} />
+              <StartHereGridGated courses={data.startHere} user={userFlags} />
 
               {/* Recent Achievements - Only for users with progress */}
               {data.achievements && data.achievements.length > 0 && (
                 <RecentAchievements achievements={data.achievements} />
               )}
 
-              {/* Streak upgrade prompt - only for free users with progress */}
-              {currentRole === 'free' && <StreakUpgradePrompt days={data.stats.learningStreakDays} />}
+              {/* Streak upgrade prompt - only for trial-like users with progress */}
+              {(userFlags.role === 'free' || userFlags.role === 'trial' || userFlags.role === 'downsell') && (
+                <StreakUpgradePrompt days={data.stats.learningStreakDays} />
+              )}
             </>
           )}
         </div>

@@ -85,11 +85,11 @@ export default function StatsPage() {
 
   // Check if user has access to stats features
   useEffect(() => {
-    if (!permissions.canAccessStats) {
+    if (!permissions?.canAccessStats) {
       router.push('/courses'); // Redirect to courses if no stats access
       return;
     }
-  }, [permissions.canAccessStats, router]);
+  }, [permissions?.canAccessStats, router]);
 
   const handleSectionChange = (section: StatsSection) => {
     setActiveSection(section);
@@ -107,11 +107,11 @@ export default function StatsPage() {
 
   // Filter sections based on permissions
   const availableSections = statsSections.filter(section => 
-    !section.requiresPermission || permissions[section.requiresPermission as keyof typeof permissions]
+    !section.requiresPermission || permissions?.[section.requiresPermission as keyof typeof permissions]
   );
 
   // Don't render if user doesn't have stats access
-  if (!permissions.canAccessStats) {
+  if (!permissions?.canAccessStats) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
