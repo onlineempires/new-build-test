@@ -11,6 +11,7 @@ import { UserProvider } from '../contexts/UserContext';
 import { DevProvider } from '../contexts/DevContext';
 import { DevInitializer } from '../components/dev/DevInitializer';
 import { DevToolsToggle } from '../components/dev/DevToolsToggle';
+import LoadingIndicator from '../components/ui/LoadingIndicator';
 import { queryClient } from '../lib/queryClient';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -81,6 +82,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 <CourseAccessProvider>
                   <AdminAuthProvider>
                     <UpgradeProvider>
+                      <LoadingIndicator />
                       <DevInitializer />
                       <Component {...pageProps} />
                     </UpgradeProvider>
