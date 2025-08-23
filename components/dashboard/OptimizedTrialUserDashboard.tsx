@@ -34,7 +34,7 @@ export default function OptimizedTrialUserDashboard({
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [showMarkComplete, setShowMarkComplete] = useState(false);
-  const [currentVideoTime, setCurrentVideoTime] = useState(0);
+  const [, setCurrentVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [lastWatchedTime, setLastWatchedTime] = useState(0);
 
