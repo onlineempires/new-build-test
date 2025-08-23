@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PlayCircle, CheckCircle, Calendar, ExternalLink, Clock, Play, Lock } from 'lucide-react';
+import { PlayCircle, CheckCircle, Calendar, ExternalLink, Clock, Play, Lock, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/router';
 
 interface StepData {
@@ -31,13 +31,14 @@ export default function OptimizedTrialUserDashboard({
 }: OptimizedTrialUserDashboardProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLIFrameElement>(null);
+  const choosePathRef = useRef<HTMLDivElement>(null);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [showMarkComplete, setShowMarkComplete] = useState(false);
   const [, setCurrentVideoTime] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [lastWatchedTime, setLastWatchedTime] = useState(0);
-  const [showCTAs, setShowCTAs] = useState(false);
+  const [showChoosePath, setShowChoosePath] = useState(false);
 
   // Developer mode detection
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -86,7 +87,7 @@ export default function OptimizedTrialUserDashboard({
       const savedSteps = localStorage.getItem(getStorageKey('steps'));
       const savedActiveIndex = localStorage.getItem(getStorageKey('activeStepIndex'));
       const savedLastWatched = localStorage.getItem(getStorageKey('lastWatchedTime'));
-      const savedShowCTAs = localStorage.getItem(getStorageKey('showCTAs'));
+      const savedShowChoosePath = localStorage.getItem(getStorageKey('showChoosePath'));
 
       if (savedSteps) {
         const parsedSteps = JSON.parse(savedSteps);
@@ -101,8 +102,8 @@ export default function OptimizedTrialUserDashboard({
         setLastWatchedTime(parseFloat(savedLastWatched));
       }
 
-      if (savedShowCTAs) {
-        setShowCTAs(JSON.parse(savedShowCTAs));
+      if (savedShowChoosePath) {
+        setShowChoosePath(JSON.parse(savedShowChoosePath));
       }
     } catch (error) {
       console.warn('Failed to load onboarding progress:', error);
@@ -110,12 +111,12 @@ export default function OptimizedTrialUserDashboard({
   }, [userId]);
 
   // Save state to localStorage
-  const saveState = (updatedSteps: StepData[], stepIndex: number, lastTime: number = 0, ctasVisible: boolean = false) => {
+  const saveState = (updatedSteps: StepData[], stepIndex: number, lastTime: number = 0, choosePathVisible: boolean = false) => {
     try {
       localStorage.setItem(getStorageKey('steps'), JSON.stringify(updatedSteps));
       localStorage.setItem(getStorageKey('activeStepIndex'), stepIndex.toString());
       localStorage.setItem(getStorageKey('lastWatchedTime'), lastTime.toString());
-      localStorage.setItem(getStorageKey('showCTAs'), JSON.stringify(ctasVisible));
+      localStorage.setItem(getStorageKey('showChoosePath'), JSON.stringify(choosePathVisible));
       localStorage.setItem(getStorageKey('timestamp'), new Date().toISOString());
     } catch (error) {
       console.warn('Failed to save onboarding progress:', error);
@@ -139,6 +140,18 @@ export default function OptimizedTrialUserDashboard({
     }
   };
 
+  // Auto-scroll to Choose Your Path section
+  const scrollToChoosePath = () => {
+    if (choosePathRef.current) {
+      setTimeout(() => {
+        choosePathRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }, 300); // Wait for animation to start
+    }
+  };
+
   // Video progress tracking simulation
   useEffect(() => {
     if (!isVideoLoaded) return;
@@ -159,7 +172,7 @@ export default function OptimizedTrialUserDashboard({
         
         if (newTime > lastWatchedTime) {
           setLastWatchedTime(newTime);
-          saveState(updatedSteps, activeStepIndex, newTime, showCTAs);
+          saveState(updatedSteps, activeStepIndex, newTime, showChoosePath);
         }
         
         return newTime;
@@ -167,7 +180,7 @@ export default function OptimizedTrialUserDashboard({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isVideoLoaded, videoDuration, activeStepIndex, showMarkComplete, lastWatchedTime, steps, showCTAs]);
+  }, [isVideoLoaded, videoDuration, activeStepIndex, showMarkComplete, lastWatchedTime, steps, showChoosePath]);
 
   // Handle video load
   const handleVideoLoad = () => {
@@ -204,13 +217,13 @@ export default function OptimizedTrialUserDashboard({
     setShowMarkComplete(false);
     setCurrentVideoTime(0);
     setLastWatchedTime(0);
-    setShowCTAs(false);
+    setShowChoosePath(false);
     
     try {
       localStorage.removeItem(getStorageKey('steps'));
       localStorage.removeItem(getStorageKey('activeStepIndex'));
       localStorage.removeItem(getStorageKey('lastWatchedTime'));
-      localStorage.removeItem(getStorageKey('showCTAs'));
+      localStorage.removeItem(getStorageKey('showChoosePath'));
       localStorage.removeItem(getStorageKey('timestamp'));
     } catch (error) {
       console.warn('Failed to clear onboarding progress:', error);
@@ -244,13 +257,14 @@ export default function OptimizedTrialUserDashboard({
           toStep: activeStepIndex + 2,
         });
       }
-    } else if (activeStepIndex === 1) {
-      // Step 2: Show CTAs and unlock Step 3
-      setShowCTAs(true);
-    } else if (activeStepIndex === 2) {
-      // Step 3: Show CTAs
-      setShowCTAs(true);
-      trackEvent('onboarding_all_completed');
+    } else if (activeStepIndex === 1 || activeStepIndex === 2) {
+      // Step 2 or Step 3: Show Choose Your Path section
+      setShowChoosePath(true);
+      scrollToChoosePath();
+      
+      if (activeStepIndex === 2) {
+        trackEvent('onboarding_all_completed');
+      }
     }
 
     setSteps(updatedSteps);
@@ -260,6 +274,30 @@ export default function OptimizedTrialUserDashboard({
     if (onVideoComplete) {
       onVideoComplete(currentStep.id);
     }
+  };
+
+  // Handle Continue to Video 3
+  const handleContinueToVideo3 = () => {
+    if (activeStepIndex !== 1 || !steps[1].completed) return;
+
+    const updatedSteps = [...steps];
+    updatedSteps[1].isActive = false;
+    updatedSteps[2].isActive = true;
+    
+    setActiveStepIndex(2);
+    setSteps(updatedSteps);
+    setIsVideoLoaded(false);
+    setShowMarkComplete(false);
+    setCurrentVideoTime(0);
+    setLastWatchedTime(0);
+    setShowChoosePath(false);
+    
+    saveState(updatedSteps, 2, 0, false);
+    
+    trackEvent('onboarding_continue_to_video_3', {
+      fromStep: 2,
+      toStep: 3,
+    });
   };
 
   // Handle CTA clicks with exact URLs
@@ -288,12 +326,13 @@ export default function OptimizedTrialUserDashboard({
       setSteps(updatedSteps);
       setIsVideoLoaded(false);
       setShowMarkComplete(false);
+      setShowChoosePath(false);
       
       const resumeTime = steps[stepIndex].watchProgress > 0 ? 
         (steps[stepIndex].watchProgress / 100) * videoDuration : 0;
       setCurrentVideoTime(resumeTime);
       
-      saveState(updatedSteps, stepIndex, 0, showCTAs);
+      saveState(updatedSteps, stepIndex, 0, false);
       trackEvent('onboarding_step_navigation', { 
         fromStep: activeStepIndex + 1, 
         toStep: stepIndex + 1 
@@ -448,59 +487,90 @@ export default function OptimizedTrialUserDashboard({
           )}
         </div>
 
-        {/* CTA Cards - Show after Step 2 or Step 3 completion */}
-        {((activeStepIndex === 1 && steps[1].completed) || (activeStepIndex === 2 && steps[2].completed)) && showCTAs && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in slide-in-from-bottom-4 duration-500">
-            
-            {/* Book Success Call CTA */}
-            <div className="group bg-white rounded-2xl border border-gray-100 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start gap-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-50 rounded-xl group-hover:bg-blue-100 transition-colors">
-                  <Calendar className="w-6 h-6 text-blue-600" />
+        {/* Choose Your Path Section - Animated Reveal */}
+        {((activeStepIndex === 1 && steps[1].completed) || (activeStepIndex === 2 && steps[2].completed)) && showChoosePath && (
+          <div 
+            ref={choosePathRef}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100/60 p-6 sm:p-8 mb-8 
+                     animate-in slide-in-from-top-4 fade-in duration-500"
+          >
+            {/* Choose Your Path Header */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">
+                Choose Your Path
+              </h2>
+              <p className="text-gray-600">
+                Pick one now or continue watching. You can do both.
+              </p>
+            </div>
+
+            {/* CTA Cards - Mobile First Design */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
+              
+              {/* Book Success Call CTA */}
+              <div className="group bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl border border-blue-200 p-6 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl text-white group-hover:bg-blue-700 transition-colors">
+                    <Calendar className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Book Your Success Call with Enagic
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                      Get personalized guidance from our success team and accelerate your journey.
+                    </p>
+                    <button
+                      onClick={handleSchedulerClick}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl
+                               hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      <span>Book Call</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Book Your Success Call with Enagic
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    Get personalized guidance from our success team and accelerate your journey
-                  </p>
-                  <button
-                    onClick={handleSchedulerClick}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
-                             hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  >
-                    <span>Book Call</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
+              </div>
+
+              {/* VSL Skills CTA */}
+              <div className="group bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl border border-purple-200 p-6 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-purple-600 rounded-xl text-white group-hover:bg-purple-700 transition-colors">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Learn VSL Skills
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                      Master video sales letters and conversion techniques that drive results.
+                    </p>
+                    <button
+                      onClick={handleVSLClick}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl
+                               hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    >
+                      <span>Start Learning</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* VSL Skills CTA */}
-            <div className="group bg-white rounded-2xl border border-gray-100 p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="flex items-start gap-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-purple-50 rounded-xl group-hover:bg-purple-100 transition-colors">
-                  <Clock className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Learn VSL Skills
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    Master video sales letters and conversion techniques that drive results
-                  </p>
-                  <button
-                    onClick={handleVSLClick}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg
-                             hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                  >
-                    <span>Start Learning</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                </div>
+            {/* Continue to Video 3 Button - Only show after Step 2 completion */}
+            {activeStepIndex === 1 && steps[1].completed && (
+              <div className="text-center">
+                <button
+                  onClick={handleContinueToVideo3}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl
+                           hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+                >
+                  <span>Continue to Video 3</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            )}
           </div>
         )}
 
