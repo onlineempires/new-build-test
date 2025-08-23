@@ -10,6 +10,7 @@ interface StepData {
   watchProgress: number; // 0-100
   completed: boolean;
   isActive: boolean;
+  devSimOverride?: boolean; // New flag to prevent timeupdate overrides
 }
 
 interface OnboardingEvent {
@@ -53,6 +54,7 @@ export default function OptimizedTrialUserDashboard({
       watchProgress: 0,
       completed: false,
       isActive: true,
+      devSimOverride: false,
     },
     {
       id: 'business-launch-blueprint',
@@ -62,6 +64,7 @@ export default function OptimizedTrialUserDashboard({
       watchProgress: 0,
       completed: false,
       isActive: false,
+      devSimOverride: false,
     },
     {
       id: 'your-next-steps',
@@ -71,12 +74,16 @@ export default function OptimizedTrialUserDashboard({
       watchProgress: 0,
       completed: false,
       isActive: false,
+      devSimOverride: false,
     },
   ]);
 
   const currentStep = steps[activeStepIndex];
   const completedStepsCount = steps.filter(step => step.completed).length;
   const allStepsCompleted = completedStepsCount === 3;
+
+  // Check if current step is eligible for completion (dev override OR 90% progress)
+  const isEligibleForCompletion = currentStep.devSimOverride || currentStep.watchProgress >= 90;
 
   // Persistence key based on userId
   const getStorageKey = (suffix: string) => `onboarding_${userId}_${suffix}`;
@@ -110,7 +117,7 @@ export default function OptimizedTrialUserDashboard({
     }
   }, [userId]);
 
-  // Save state to localStorage
+  // Save state to localStorage (enhanced with devSimOverride)
   const saveState = (updatedSteps: StepData[], stepIndex: number, lastTime: number = 0, choosePathVisible: boolean = false) => {
     try {
       localStorage.setItem(getStorageKey('steps'), JSON.stringify(updatedSteps));
@@ -140,21 +147,37 @@ export default function OptimizedTrialUserDashboard({
     }
   };
 
-  // Auto-scroll to Choose Your Path section (improved for mobile)
-  const scrollToChoosePath = () => {
-    if (choosePathRef.current) {
-      setTimeout(() => {
-        // On mobile, scroll to the top of the Choose Your Path section
-        const isMobile = window.innerWidth < 768;
-        choosePathRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: isMobile ? 'start' : 'center' 
-        });
-      }, 300); // Wait for animation to start
-    }
+  // Mobile auto-scroll to Choose Your Path section with iOS Safari handling
+  const scrollToChoosePathIfMobile = () => {
+    const isMobile = window.matchMedia('(max-width: 480px)').matches;
+    if (!isMobile) return;
+
+    const el = document.getElementById('choose-path');
+    if (!el) return;
+
+    const header = document.querySelector('[data-sticky-header]');
+    const offset = (header?.getBoundingClientRect().height ?? 0) + 12;
+
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const scrollBehavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+    // Wait for layout, then smooth scroll with header offset
+    requestAnimationFrame(() => {
+      const y = window.scrollY + el.getBoundingClientRect().top - offset;
+      window.scrollTo({ top: y, behavior: scrollBehavior });
+      
+      // iOS Safari fallback - only if smooth scrolling is enabled
+      if (!prefersReducedMotion) {
+        setTimeout(() => {
+          const y2 = window.scrollY + el.getBoundingClientRect().top - offset;
+          window.scrollTo({ top: y2, behavior: 'smooth' });
+        }, 120);
+      }
+    });
   };
 
-  // Video progress tracking simulation
+  // Video progress tracking simulation with devSimOverride protection
   useEffect(() => {
     if (!isVideoLoaded) return;
 
@@ -163,15 +186,24 @@ export default function OptimizedTrialUserDashboard({
         const newTime = prev + 1;
         const progress = videoDuration > 0 ? Math.min((newTime / videoDuration) * 100, 100) : 0;
         
+        // Update step progress only if not overridden by dev tools
         const updatedSteps = [...steps];
-        updatedSteps[activeStepIndex].watchProgress = progress;
-        setSteps(updatedSteps);
+        const currentStepData = updatedSteps[activeStepIndex];
         
-        if (progress >= 90 && !showMarkComplete) {
-          setShowMarkComplete(true);
-          trackEvent('onboarding_video_90pct_reached', { step: activeStepIndex + 1 });
+        // Do not downgrade simulated state - respect devSimOverride
+        if (!currentStepData.devSimOverride) {
+          updatedSteps[activeStepIndex].watchProgress = progress;
+          
+          // Check if 90% reached (only if not already triggered by dev override)
+          if (progress >= 90 && !showMarkComplete) {
+            setShowMarkComplete(true);
+            trackEvent('onboarding_video_90pct_reached', { step: activeStepIndex + 1 });
+          }
         }
         
+        setSteps(updatedSteps);
+        
+        // Update last watched time for seeking restriction
         if (newTime > lastWatchedTime) {
           setLastWatchedTime(newTime);
           saveState(updatedSteps, activeStepIndex, newTime, showChoosePath);
@@ -192,14 +224,20 @@ export default function OptimizedTrialUserDashboard({
     trackEvent('onboarding_video_started', { step: activeStepIndex + 1 });
   };
 
-  // Developer tools
+  // Enhanced developer tools with persistent override
   const handleSimulate90Percent = () => {
     if (!isDevelopment) return;
     
     const updatedSteps = [...steps];
-    updatedSteps[activeStepIndex].watchProgress = 90;
+    updatedSteps[activeStepIndex] = {
+      ...updatedSteps[activeStepIndex],
+      devSimOverride: true,
+      watchProgress: Math.max(updatedSteps[activeStepIndex].watchProgress, 90.5)
+    };
+    
     setSteps(updatedSteps);
     setShowMarkComplete(true);
+    saveState(updatedSteps, activeStepIndex, lastWatchedTime, showChoosePath);
     trackEvent('dev_simulate_90_percent', { step: activeStepIndex + 1 });
   };
 
@@ -210,7 +248,8 @@ export default function OptimizedTrialUserDashboard({
       ...step,
       watchProgress: 0,
       completed: false,
-      isActive: index === 0
+      isActive: index === 0,
+      devSimOverride: false, // Clear dev overrides
     }));
 
     setSteps(resetSteps);
@@ -234,9 +273,9 @@ export default function OptimizedTrialUserDashboard({
     trackEvent('dev_reset_to_new_user');
   };
 
-  // Handle Mark as Complete
+  // Handle Mark as Complete (using enhanced eligibility check)
   const handleMarkComplete = () => {
-    if (currentStep.watchProgress < 90) return;
+    if (!isEligibleForCompletion) return;
 
     const updatedSteps = [...steps];
     updatedSteps[activeStepIndex].completed = true;
@@ -262,7 +301,8 @@ export default function OptimizedTrialUserDashboard({
     } else if (activeStepIndex === 1 || activeStepIndex === 2) {
       // Step 2 or Step 3: Show Choose Your Path section
       setShowChoosePath(true);
-      scrollToChoosePath();
+      // Trigger mobile auto-scroll after state update
+      setTimeout(() => scrollToChoosePathIfMobile(), 50);
       
       if (activeStepIndex === 2) {
         trackEvent('onboarding_all_completed');
@@ -473,8 +513,8 @@ export default function OptimizedTrialUserDashboard({
             )}
           </div>
 
-          {/* Mark as Complete Button */}
-          {showMarkComplete && currentStep.watchProgress >= 90 && (
+          {/* Mark as Complete Button (using enhanced eligibility check) */}
+          {showMarkComplete && isEligibleForCompletion && (
             <div className="p-6 bg-white text-center border-t border-gray-100">
               <button
                 onClick={handleMarkComplete}
@@ -489,9 +529,10 @@ export default function OptimizedTrialUserDashboard({
           )}
         </div>
 
-        {/* Choose Your Path Section - Animated Reveal */}
+        {/* Choose Your Path Section - Animated Reveal with anchor ID */}
         {((activeStepIndex === 1 && steps[1].completed) || (activeStepIndex === 2 && steps[2].completed)) && showChoosePath && (
           <div 
+            id="choose-path"
             ref={choosePathRef}
             className="bg-white rounded-2xl shadow-xl border border-gray-100/60 p-6 sm:p-8 mb-8 
                      animate-in slide-in-from-top-4 fade-in duration-500"
@@ -576,9 +617,9 @@ export default function OptimizedTrialUserDashboard({
           </div>
         )}
 
-        {/* Developer Tools - Only visible in development */}
+        {/* Developer Tools - Enhanced with z-index and pointer-events */}
         {isDevelopment && (
-          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+          <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl relative z-50 pointer-events-auto">
             <h4 className="font-semibold text-yellow-800 mb-3">Developer Tools</h4>
             <div className="flex flex-col sm:flex-row gap-3">
               <button
