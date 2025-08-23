@@ -11,7 +11,9 @@ import dynamic from 'next/dynamic';
 
 // Lazy load heavy chart components if they exist
 const AnalyticsCharts = dynamic(
-  () => import('../../components/affiliate/AnalyticsCharts').then(mod => ({ default: mod.AnalyticsCharts })),
+  () => import('../../components/affiliate/AnalyticsCharts')
+    .then(mod => ({ default: mod.AnalyticsCharts }))
+    .catch(() => ({ default: () => null })), // Fallback component if doesn't exist
   { 
     loading: () => (
       <div className="bg-white rounded-lg p-6 border border-gray-200">
@@ -23,7 +25,7 @@ const AnalyticsCharts = dynamic(
     ),
     ssr: false
   }
-).catch(() => null); // Fallback if component doesn't exist
+);
 
 // Get username from localStorage (profile data)
 const getProfileUsername = () => {

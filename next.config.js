@@ -26,10 +26,8 @@ const nextConfig = {
     styledComponents: true, // Enable if using styled-components
   },
 
-  // Experimental features for better performance (simplified for compatibility)
-  experimental: {
-    optimizeCss: true,
-  },
+  // Experimental features removed to avoid compatibility issues
+  experimental: {},
 
   // Bundle analyzer in development
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
