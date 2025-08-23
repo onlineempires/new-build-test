@@ -262,13 +262,13 @@ export default function QuickViewModal({
           </section>
 
           {/* Row 3 - Pinned Footer with CTAs Always Visible */}
-          <footer className="border-t-2 border-blue-500/30 p-6 md:p-8 bg-slate-950/95 backdrop-blur flex-shrink-0">
+          <footer className="border-t border-white/20 p-6 md:p-8 bg-white/5 backdrop-blur-md flex-shrink-0">
             <div className="flex flex-col sm:flex-row gap-4 justify-end">
               {/* Primary CTA */}
               {item.isLocked ? (
                 <button
                   onClick={() => onUnlockAccess?.(item)}
-                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-400/50 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-500 hover:via-orange-600 hover:to-orange-700 shadow-2xl hover:shadow-orange-500/40 transform hover:scale-105"
+                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300/50 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-2xl hover:shadow-orange-400/30 transform hover:scale-105"
                 >
                   <span className="inline-flex items-center">
                     <i className="fas fa-unlock mr-3 text-xl"></i>
@@ -279,7 +279,7 @@ export default function QuickViewModal({
                 <Link 
                   href={primaryHref}
                   onClick={handlePrimaryClick}
-                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-400/50 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 shadow-2xl hover:shadow-blue-500/40 transform hover:scale-105"
+                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300/50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-2xl hover:shadow-blue-400/30 transform hover:scale-105"
                 >
                   <span className="inline-flex items-center">
                     <i className="fas fa-play mr-3 text-xl"></i>
@@ -291,7 +291,7 @@ export default function QuickViewModal({
               {/* Secondary Action */}
               <Link 
                 href={legacyHref}
-                className="flex items-center justify-center px-8 py-4 bg-slate-600 hover:bg-slate-500 text-white border-2 border-slate-400 hover:border-slate-300 rounded-xl font-bold text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-slate-400/50 shadow-xl transform hover:scale-105"
+                className="flex items-center justify-center px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400 hover:border-blue-300 rounded-xl font-bold text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300/50 shadow-xl transform hover:scale-105"
               >
                 <span className="inline-flex items-center">
                   <i className="fas fa-info-circle mr-3 text-xl"></i>

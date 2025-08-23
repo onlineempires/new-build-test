@@ -202,42 +202,49 @@ export default function LessonPage({ course }: LessonPageProps) {
     }
   };
 
-  // Load completion status when lesson changes or lessons load
+  // Load completion status for all lessons when they are first loaded
   useEffect(() => {
     if (typeof window !== 'undefined' && courseSlug && lessons.length > 0) {
-      // Load completion status for all lessons from localStorage
-      const updatedLessons = lessons.map(lesson => {
-        const completionKey = `lesson_complete_${courseSlug}_${lesson.id}`;
-        const isCompleted = localStorage.getItem(completionKey) === 'true';
-        return { ...lesson, isCompleted };
-      });
+      // Check if lessons already have completion status loaded
+      const hasCompletionData = lessons.some(lesson => lesson.hasOwnProperty('isCompleted'));
       
-      // Only update if there are changes to avoid infinite loop
-      const hasChanges = updatedLessons.some((lesson, index) => 
-        lesson.isCompleted !== lessons[index].isCompleted
-      );
-      
-      if (hasChanges) {
+      if (!hasCompletionData || lessons.some(lesson => lesson.isCompleted === undefined)) {
+        // Load completion status for all lessons from localStorage
+        const updatedLessons = lessons.map(lesson => {
+          const completionKey = `lesson_complete_${courseSlug}_${lesson.id}`;
+          const isCompleted = localStorage.getItem(completionKey) === 'true';
+          return { ...lesson, isCompleted };
+        });
         setLessons(updatedLessons);
-        
-        // Update current lesson if it exists
-        if (currentLesson) {
-          const updatedCurrentLesson = updatedLessons.find(l => l.id === currentLesson.id);
-          if (updatedCurrentLesson) {
-            setCurrentLesson(updatedCurrentLesson);
-            setIsLessonComplete(updatedCurrentLesson.isCompleted || false);
-          }
-        }
       }
     }
-  }, [courseSlug, lessons.length, currentLesson?.id]);
+  }, [courseSlug, lessons.length]);
 
   // Update checkbox state when current lesson changes
   useEffect(() => {
-    if (currentLesson) {
-      setIsLessonComplete(currentLesson.isCompleted || false);
+    if (currentLesson && typeof window !== 'undefined' && courseSlug) {
+      // Always check localStorage for the current lesson's completion status
+      const completionKey = `lesson_complete_${courseSlug}_${currentLesson.id}`;
+      const isCompleted = localStorage.getItem(completionKey) === 'true';
+      
+      // Update current lesson with completion status if needed
+      if (currentLesson.isCompleted !== isCompleted) {
+        const updatedCurrentLesson = { ...currentLesson, isCompleted };
+        setCurrentLesson(updatedCurrentLesson);
+        
+        // Also update in the lessons array
+        setLessons(prevLessons => 
+          prevLessons.map(lesson => 
+            lesson.id === currentLesson.id 
+              ? { ...lesson, isCompleted }
+              : lesson
+          )
+        );
+      }
+      
+      setIsLessonComplete(isCompleted);
     }
-  }, [currentLesson?.id, currentLesson?.isCompleted]);
+  }, [currentLesson?.id, courseSlug]);
 
   if (!currentLesson || !courseItem) {
     return (
