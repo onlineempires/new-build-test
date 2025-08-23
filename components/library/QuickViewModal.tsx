@@ -2,27 +2,22 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { LibraryItem } from '../../types/library';
-import { getCTAText, getCourseRoute, trackCourseAction, getFirstLessonHref, getNextLessonHref, hasUserStartedCourse } from '../../utils/courseRouting';
+import { getCTAText, trackCourseAction, getFirstLessonHref, getNextLessonHref, hasUserStartedCourse } from '../../utils/courseRouting';
 
 interface QuickViewModalProps {
   item: LibraryItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onStartCourse?: (item: LibraryItem) => void;
   onUnlockAccess?: (item: LibraryItem) => void;
-  onViewDetails?: (item: LibraryItem) => void;
 }
 
 export default function QuickViewModal({
   item,
   isOpen,
   onClose,
-  onStartCourse,
   onUnlockAccess,
-  onViewDetails,
 }: QuickViewModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   // Handle escape key, click outside, focus trap, and body scroll lock
   useEffect(() => {
@@ -75,7 +70,6 @@ export default function QuickViewModal({
 
   // Check screen size for responsive sizing
   const isSmallLaptop = typeof window !== 'undefined' && window.innerHeight < 820;
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   if (!isOpen || !item) return null;
 
