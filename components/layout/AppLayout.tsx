@@ -203,7 +203,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
       </div>
       
       {/* Main Content Area */}
-      <main className="flex-1 lg:ml-64 pt-16 lg:pt-20 overflow-auto pb-4">
+      <main id="content-portal-root" className="relative isolate flex-1 lg:ml-64 pt-16 lg:pt-20 overflow-auto pb-4">
         {children}
       </main>
     </div>

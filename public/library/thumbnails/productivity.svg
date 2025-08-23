@@ -1,0 +1,11 @@
+<svg width="400" height="225" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#00f2fe;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#00f2fe99;stop-opacity:0.8" />
+      </linearGradient>
+    </defs>
+    <rect width="400" height="225" fill="url(#grad)"/>
+    <rect width="400" height="225" fill="rgba(0,0,0,0.3)"/>
+    <text x="200" y="120" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="18" font-weight="bold">PRODUCTIVITY</text>
+  </svg>

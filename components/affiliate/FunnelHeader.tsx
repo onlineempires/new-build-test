@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import SafeLink from '../SafeLink';
 import { 
   ChevronLeft,
   Edit,
@@ -121,14 +122,14 @@ export const FunnelHeader: React.FC<FunnelHeaderProps> = ({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center space-x-2 mb-6">
-        <Link href="/affiliate" className="text-gray-500 hover:text-gray-700 transition-colors">
-          <span>Affiliate Dashboard</span>
-        </Link>
+        <SafeLink href="/affiliate" className="text-gray-500 hover:text-gray-700 transition-colors">
+          Affiliate Dashboard
+        </SafeLink>
         <span className="text-gray-400">/</span>
-        <Link href="/affiliate/funnels" className="text-gray-500 hover:text-gray-700 transition-colors">
+        <SafeLink href="/affiliate/funnels" className="text-gray-500 hover:text-gray-700 transition-colors">
           <ChevronLeft className="w-4 h-4 inline mr-1" />
           <span>Funnels</span>
-        </Link>
+        </SafeLink>
         <span className="text-gray-400">/</span>
         <span className="text-gray-900 font-medium truncate max-w-xs">
           {funnel.name}
