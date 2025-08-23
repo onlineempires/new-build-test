@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Change User Role - Digital Era Dev Tools</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .role-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .role-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .free { background: #f3f4f6; color: #374151; }
+        .trial { background: #fef3c7; color: #92400e; }
+        .monthly { background: #dbeafe; color: #1e40af; }
+        .current-role {
+            text-align: center;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .goto-dashboard {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .goto-dashboard:hover {
+            background: #2563eb;
+        }
+        .instructions {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Digital Era Dev Tools</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Change user role to test the OptimizedTrialUserDashboard
+        </p>
+        
+        <div class="current-role">
+            <h3>Current Role: <span id="currentRole">Loading...</span></h3>
+        </div>
+        
+        <div class="role-buttons">
+            <button class="role-btn free" onclick="changeRole('free')">
+                🆓 Free User
+            </button>
+            <button class="role-btn trial" onclick="changeRole('trial')">
+                💰 $1 Trial
+            </button>
+            <button class="role-btn trial" onclick="changeRole('downsell')">
+                📦 Downsell
+            </button>
+            <button class="role-btn monthly" onclick="changeRole('monthly')">
+                🔵 Monthly Member
+            </button>
+        </div>
+        
+        <a href="/" class="goto-dashboard">
+            ➡️ Go to Dashboard
+        </a>
+        
+        <div class="instructions">
+            <h4>Instructions:</h4>
+            <ol>
+                <li>Click on a role button above to change your test role</li>
+                <li>Click "Go to Dashboard" to see the changes</li>
+                <li>Free, Trial, and Downsell users will see the <strong>OptimizedTrialUserDashboard</strong></li>
+                <li>Monthly members will see the original dashboard</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Role labels mapping
+        const ROLE_LABELS = {
+            'free': '🆓 Free User',
+            'trial': '💰 $1 Trial',
+            'monthly': '🔵 Monthly Member',
+            'annual': '💎 Annual Member',
+            'downsell': '📦 Downsell',
+            'admin': '👑 Admin'
+        };
+
+        // Update current role display
+        function updateCurrentRole() {
+            const currentRole = localStorage.getItem('dev.role') || 'free';
+            document.getElementById('currentRole').textContent = ROLE_LABELS[currentRole] || currentRole;
+        }
+
+        // Change role function
+        function changeRole(newRole) {
+            console.log('Changing role from', localStorage.getItem('dev.role'), 'to', newRole);
+            
+            // Set the role in localStorage
+            localStorage.setItem('dev.role', newRole);
+            
+            // Dispatch events to notify the app
+            window.dispatchEvent(new CustomEvent('dev:role-changed', { detail: newRole }));
+            window.dispatchEvent(new CustomEvent('storage', { key: 'dev.role', newValue: newRole }));
+            
+            // Update display
+            updateCurrentRole();
+            
+            // Show success message
+            alert(`Role changed to: ${ROLE_LABELS[newRole]}\n\nClick "Go to Dashboard" to see the new interface!`);
+            
+            console.log('Role change complete. New role:', localStorage.getItem('dev.role'));
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentRole();
+            console.log('Role changer loaded. Current role:', localStorage.getItem('dev.role'));
+        });
+        
+        // Listen for storage changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'dev.role') {
+                updateCurrentRole();
+            }
+        });
+    </script>
+</body>
+</html>

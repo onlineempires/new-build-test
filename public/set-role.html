@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Set Role - Digital Era</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .dashboard-link {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Role Set Successfully</h1>
+    <div class="success">
+        <h3>Role changed to: <span id="roleName">Trial</span></h3>
+        <p>You can now see the OptimizedTrialUserDashboard!</p>
+    </div>
+    
+    <a href="/" class="dashboard-link">Go to Dashboard</a>
+    
+    <script>
+        // Get role from URL parameter or default to trial
+        const urlParams = new URLSearchParams(window.location.search);
+        const role = urlParams.get('role') || 'trial';
+        
+        const roleNames = {
+            'free': 'Free User',
+            'trial': '$1 Trial User',
+            'downsell': 'Downsell User',
+            'monthly': 'Monthly Member'
+        };
+        
+        // Set the role
+        localStorage.setItem('dev.role', role);
+        
+        // Dispatch events
+        window.dispatchEvent(new CustomEvent('dev:role-changed', { detail: role }));
+        window.dispatchEvent(new Event('storage'));
+        
+        // Update display
+        document.getElementById('roleName').textContent = roleNames[role] || role;
+        
+        console.log('Role set to:', role);
+        console.log('localStorage dev.role:', localStorage.getItem('dev.role'));
+        
+        // Auto-redirect after 2 seconds
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
+    </script>
+</body>
+</html>

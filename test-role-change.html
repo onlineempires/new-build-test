@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Role Change</title>
+</head>
+<body>
+    <h1>Test Role Change for OptimizedTrialUserDashboard</h1>
+    <button onclick="changeToTrial()">Change to Trial User</button>
+    <button onclick="changeToFree()">Change to Free User</button>
+    <button onclick="goToDashboard()">Go to Dashboard</button>
+    
+    <script>
+        function changeToTrial() {
+            // Set role to trial in localStorage
+            localStorage.setItem('dev.role', 'trial');
+            alert('Role changed to trial! Now go to the dashboard.');
+        }
+        
+        function changeToFree() {
+            // Set role to free in localStorage
+            localStorage.setItem('dev.role', 'free');
+            alert('Role changed to free! Now go to the dashboard.');
+        }
+        
+        function goToDashboard() {
+            // Open dashboard in new tab
+            window.open('/', '_blank');
+        }
+    </script>
+</body>
+</html>

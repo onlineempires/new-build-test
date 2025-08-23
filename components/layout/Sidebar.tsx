@@ -45,6 +45,13 @@ const menuItems: MenuItem[] = [
     requiredPermission: null // Always visible, but content filtered by role
   },
   { 
+    name: 'Library (Beta)', 
+    href: '/library', 
+    icon: 'fas fa-film', 
+    section: 'library', 
+    requiredPermission: null // Always visible when feature flag is enabled
+  },
+  { 
     name: 'Expert Directory', 
     href: '/experts', 
     icon: 'fas fa-users', 
@@ -117,6 +124,10 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
       case 'All Courses':  
       case 'Profile':
         return true; // Everyone sees these
+      
+      case 'Library (Beta)':
+        // Only show if feature flag is enabled
+        return process.env.NEXT_PUBLIC_LIBRARY_BETA === 'true';
       
       case 'Expert Directory':
       case 'Daily Method (DMO)':
