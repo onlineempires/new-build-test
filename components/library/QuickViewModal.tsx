@@ -57,6 +57,9 @@ export default function QuickViewModal({
 }: QuickViewModalProps) {
   const modalRef = useRef<HTMLElement>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Respect motion preferences
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Handle escape key, focus trap, and content area scroll lock
   useEffect(() => {
@@ -197,17 +200,18 @@ export default function QuickViewModal({
     }
   };
 
-  // Optimize modal and hero sizing for button visibility
+  // Compact modal sizing for sleek appearance  
   const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-  const isSmallScreen = viewportHeight < 820;
+  const isSmallLaptop = viewportHeight < 820;
   
-  // Much more aggressive height constraints to ensure buttons are visible
-  const heroClampClass = isSmallScreen 
-    ? 'h-[clamp(100px,15vh,160px)]'  // Even smaller on small screens
-    : 'h-[clamp(120px,18vh,200px)]';  // Reduced from 24vh to 18vh
+  // Compact hero sizing
+  const heroClampClass = isSmallLaptop 
+    ? 'h-[clamp(110px,18vh,180px)]'  // Small laptop safety
+    : 'h-[clamp(120px,20vh,200px)]'; // Compact standard
   
-  // Modal height should be much more conservative
-  const modalMaxHeight = isSmallScreen ? 'max-h-[75vh]' : 'max-h-[80vh]';
+  // Sleek modal dimensions
+  const modalMaxHeight = isSmallLaptop ? 'max-h-[72vh]' : 'max-h-[78vh]';
+  const modalMaxWidth = 'max-w-[860px]';
 
   return (
     <ModalPortal>
@@ -225,13 +229,13 @@ export default function QuickViewModal({
           aria-modal="true"
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
-          className="pointer-events-auto w-full max-w-[min(96vw,1080px)] max-h-[88vh] grid grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-2xl animate-in zoom-in-95 fade-in duration-180"
+          className={`pointer-events-auto w-full ${modalMaxWidth} ${modalMaxHeight} grid grid-rows-[auto_1fr_auto] overflow-hidden rounded-xl border border-white/10 bg-[#0b1220] shadow-xl ${!prefersReducedMotion ? 'transition-all duration-150 ease-out' : ''} ${isOpen && !prefersReducedMotion ? 'animate-in zoom-in-95 fade-in' : ''}`}
           tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Row 1 - Compact Hero */}
+          {/* Row 1 - Sleek Compact Hero */}
           <header className="relative">
-            <div className={`${heroClampClass} overflow-hidden bg-slate-800`}>
+            <div className={`${heroClampClass} overflow-hidden`}>
               <img
                 src={item.heroImage}
                 alt={item.title}
@@ -247,8 +251,8 @@ export default function QuickViewModal({
               {item.isLocked && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
-                      <i className="fas fa-lock text-white text-xl"></i>
+                    <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Lock className="h-5 w-5 text-white" />
                     </div>
                     <p className="text-white text-sm">Premium Content</p>
                   </div>
@@ -260,14 +264,14 @@ export default function QuickViewModal({
             <button
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-3 top-3 rounded-full bg-black/55 p-2 text-white hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 transition-colors"
+              className="absolute right-3 top-3 rounded-full bg-black/55 p-2 text-white hover:bg-black/65 focus-visible:ring-2 focus-visible:ring-white/30 transition-colors"
             >
-              <i className="fas fa-times text-sm"></i>
+              ×
             </button>
           </header>
 
-          {/* Row 2 - Content with Tight Spacing and Constrained Height */}
-          <section className="overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 min-h-0">
+          {/* Row 2 - Compact Body */}
+          <section className="overflow-y-auto p-5 md:p-6 space-y-4 min-h-0">
             {/* Badges Row */}
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-3 py-1 bg-blue-600/90 backdrop-blur-sm text-white text-sm font-bold rounded-lg">
@@ -285,12 +289,12 @@ export default function QuickViewModal({
             </div>
 
             {/* Title */}
-            <h1 id="modal-title" className="text-xl lg:text-2xl font-bold text-white leading-tight">
+            <h1 id="modal-title" className="text-2xl md:text-3xl font-semibold text-white leading-tight">
               {item.title}
             </h1>
 
             {/* Description */}
-            <p id="modal-description" className="text-slate-300 leading-relaxed text-sm md:text-base">
+            <p id="modal-description" className="max-w-[62ch] text-white/70 leading-relaxed">
               {item.shortDescription}
             </p>
 
@@ -345,38 +349,32 @@ export default function QuickViewModal({
             )}
           </section>
 
-          {/* Row 3 - Pinned Footer with Clear Dual CTAs */}
-          <footer className="border-t border-white/10 p-6 md:p-8 bg-[#0b1220]/95 backdrop-blur pb-[calc(env(safe-area-inset-bottom)+16px)] sm:pb-6">
-            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-end">
+          {/* Row 3 - Sleek Footer with Big CTAs */}
+          <footer className="border-t border-white/10 p-5 md:p-6 bg-[#0b1220]/95">
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
 
               {/* Primary */}
               {isLocked ? (
                 <Button 
                   size="lg" 
-                  className="min-w-[220px]"
+                  className="min-w-[200px]"
                   disabled={isNavigating}
                   onClick={handlePrimaryClick}
                 >
-                  <span className="inline-flex items-center">
-                    <Lock className="mr-2 h-4 w-4" />
-                    {primaryLabel}
-                    <ChevronRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                  </span>
+                  <Lock className="mr-2 h-4 w-4" />
+                  {primaryLabel}
                 </Button>
               ) : (
-                <Button asChild size="lg" className="min-w-[220px]">
+                <Button asChild size="lg" className="min-w-[200px]">
                   <Link href={primaryHref} onClick={handlePrimaryClick}>
-                    <span className="inline-flex items-center">
-                      <Play className="mr-2 h-4 w-4" />
-                      {primaryLabel}
-                      <ChevronRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                    </span>
+                    <Play className="mr-2 h-4 w-4" />
+                    {primaryLabel}
                   </Link>
                 </Button>
               )}
 
               {/* Secondary */}
-              <Button asChild variant="ghost" size="lg" className="min-w-[160px]">
+              <Button asChild variant="ghost" size="lg" className="min-w-[140px]">
                 <Link href={secondaryHref} onClick={handleSecondaryClick}>
                   View details
                 </Link>

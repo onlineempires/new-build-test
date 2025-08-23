@@ -6,6 +6,7 @@ import AppLayout from '../../../../components/layout/AppLayout';
 import { getCourseLessons, type Lesson } from '../../../../utils/courseRouting';
 import { getLibraryItemBySlug } from '../../../../lib/api/library';
 import { LibraryItem } from '../../../../types/library';
+import { useLessonProgress } from '../../../../hooks/useLessonProgress';
 
 // Mock user data - in production this would come from authentication
 const mockUser = {
@@ -30,7 +31,12 @@ export default function LessonPage({ course }: LessonPageProps) {
   const [courseItem, setCourseItem] = useState<LibraryItem | null>(null);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'transcript'>('resources');
-  const [isLessonComplete, setIsLessonComplete] = useState(false);
+  
+  // Use the new lesson progress hook
+  const { progress, loading: progressLoading, toggleCompleted, setWatchedPct } = useLessonProgress(
+    courseSlug as string || '',
+    lessonSlug as string || ''
+  );
 
   // Mock video URL - replace with actual video URL from lesson data
   const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
@@ -166,9 +172,10 @@ export default function LessonPage({ course }: LessonPageProps) {
   };
 
   const handleMarkComplete = (completed: boolean) => {
-    setIsLessonComplete(completed);
+    // Use the hook's toggleCompleted function for proper persistence
+    toggleCompleted(completed);
     
-    // Update the lesson data directly to reflect in sidebar
+    // Update the lessons array to reflect in sidebar immediately
     if (currentLesson) {
       const updatedLessons = lessons.map(lesson => 
         lesson.id === currentLesson.id 
@@ -180,71 +187,47 @@ export default function LessonPage({ course }: LessonPageProps) {
       // Also update current lesson
       setCurrentLesson({ ...currentLesson, isCompleted: completed });
     }
-    
-    // Persist completion status to localStorage
-    if (typeof window !== 'undefined' && courseSlug && currentLesson) {
-      const completionKey = `lesson_complete_${courseSlug}_${currentLesson.id}`;
-      if (completed) {
-        localStorage.setItem(completionKey, 'true');
-      } else {
-        localStorage.removeItem(completionKey);
-      }
-
-      // Emit lesson completion event
-      window.dispatchEvent(new CustomEvent('learn_lesson_completed', {
-        detail: {
-          courseSlug: courseSlug as string,
-          lessonSlug: currentLesson.id,
-          completed,
-          timestamp: new Date().toISOString()
-        }
-      }));
-    }
   };
 
-  // Load completion status for all lessons when they are first loaded
+  // Load completion status for all lessons from localStorage when they are first loaded
   useEffect(() => {
     if (typeof window !== 'undefined' && courseSlug && lessons.length > 0) {
       // Check if lessons already have completion status loaded
       const hasCompletionData = lessons.some(lesson => lesson.hasOwnProperty('isCompleted'));
       
       if (!hasCompletionData || lessons.some(lesson => lesson.isCompleted === undefined)) {
-        // Load completion status for all lessons from localStorage
+        // Load completion status for all lessons from localStorage with new key format
         const updatedLessons = lessons.map(lesson => {
-          const completionKey = `lesson_complete_${courseSlug}_${lesson.id}`;
-          const isCompleted = localStorage.getItem(completionKey) === 'true';
-          return { ...lesson, isCompleted };
+          const key = `prog:mock-user:${courseSlug}:${lesson.id}`;
+          try {
+            const cached = localStorage.getItem(key);
+            const isCompleted = cached ? JSON.parse(cached).completed || false : false;
+            return { ...lesson, isCompleted };
+          } catch (e) {
+            return { ...lesson, isCompleted: false };
+          }
         });
         setLessons(updatedLessons);
       }
     }
   }, [courseSlug, lessons.length]);
 
-  // Update checkbox state when current lesson changes
+  // Update current lesson completion status when progress changes
   useEffect(() => {
-    if (currentLesson && typeof window !== 'undefined' && courseSlug) {
-      // Always check localStorage for the current lesson's completion status
-      const completionKey = `lesson_complete_${courseSlug}_${currentLesson.id}`;
-      const isCompleted = localStorage.getItem(completionKey) === 'true';
+    if (currentLesson && progress.completed !== currentLesson.isCompleted) {
+      const updatedCurrentLesson = { ...currentLesson, isCompleted: progress.completed };
+      setCurrentLesson(updatedCurrentLesson);
       
-      // Update current lesson with completion status if needed
-      if (currentLesson.isCompleted !== isCompleted) {
-        const updatedCurrentLesson = { ...currentLesson, isCompleted };
-        setCurrentLesson(updatedCurrentLesson);
-        
-        // Also update in the lessons array
-        setLessons(prevLessons => 
-          prevLessons.map(lesson => 
-            lesson.id === currentLesson.id 
-              ? { ...lesson, isCompleted }
-              : lesson
-          )
-        );
-      }
-      
-      setIsLessonComplete(isCompleted);
+      // Also update in the lessons array
+      setLessons(prevLessons => 
+        prevLessons.map(lesson => 
+          lesson.id === currentLesson.id 
+            ? { ...lesson, isCompleted: progress.completed }
+            : lesson
+        )
+      );
     }
-  }, [currentLesson?.id, courseSlug]);
+  }, [progress.completed, currentLesson?.id]);
 
   if (!currentLesson || !courseItem) {
     return (
@@ -344,6 +327,16 @@ export default function LessonPage({ course }: LessonPageProps) {
                       }));
                     }
                   }}
+                  onTimeUpdate={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    if (video.duration && video.duration > 0) {
+                      const watchedPct = Math.round((video.currentTime / video.duration) * 100);
+                      // Only update if it's a meaningful change (every 5% or so)
+                      if (watchedPct % 5 === 0 && watchedPct !== progress.watchedPct) {
+                        setWatchedPct(watchedPct);
+                      }
+                    }
+                  }}
                 >
                   <source src={demoVideoUrl} type="video/mp4" />
                   Your browser does not support the video tag.
@@ -359,6 +352,9 @@ export default function LessonPage({ course }: LessonPageProps) {
                     <h2 className="text-2xl font-semibold text-white/95">{currentLesson.title}</h2>
                     <p className="mt-1 text-sm text-white/60">
                       {formatDuration(currentLesson.duration)} • Lesson {getCurrentLessonIndex() + 1} of {lessons.length}
+                      {progress.watchedPct > 0 && (
+                        <span className="ml-2 text-blue-400">• {progress.watchedPct}% watched</span>
+                      )}
                     </p>
                   </div>
                   
@@ -367,16 +363,22 @@ export default function LessonPage({ course }: LessonPageProps) {
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={isLessonComplete}
+                        checked={progress.completed}
                         onChange={(e) => handleMarkComplete(e.target.checked)}
-                        className="w-5 h-5 rounded border-2 border-slate-500 bg-slate-700 text-green-500 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors"
+                        disabled={progressLoading}
+                        className="w-5 h-5 rounded border-2 border-slate-500 bg-slate-700 text-green-500 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors disabled:opacity-50"
                       />
                       <span className={`text-sm font-medium transition-colors ${
-                        isLessonComplete 
+                        progress.completed 
                           ? 'text-green-400' 
                           : 'text-white/70 hover:text-white/90'
                       }`}>
-                        {isLessonComplete ? (
+                        {progressLoading ? (
+                          <span className="flex items-center gap-2">
+                            <i className="fas fa-spinner fa-spin text-white/60"></i>
+                            Loading...
+                          </span>
+                        ) : progress.completed ? (
                           <span className="flex items-center gap-2">
                             <i className="fas fa-check-circle text-green-400"></i>
                             Completed
@@ -467,10 +469,19 @@ export default function LessonPage({ course }: LessonPageProps) {
                           }));
                         }
                       }}
-                      className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors sm:ml-auto"
+                      disabled={!progress.completed && progress.watchedPct < 80}
+                      className={`flex items-center justify-center px-6 py-3 rounded-lg transition-colors sm:ml-auto ${
+                        progress.completed || progress.watchedPct >= 80
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                      }`}
+                      title={!progress.completed && progress.watchedPct < 80 ? 'Complete lesson or watch 80% to unlock' : ''}
                     >
                       Next Lesson
                       <i className="fas fa-chevron-right ml-2"></i>
+                      {!progress.completed && progress.watchedPct < 80 && (
+                        <i className="fas fa-lock ml-1 text-xs"></i>
+                      )}
                     </button>
                   )}
                 </div>
