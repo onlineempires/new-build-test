@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { Play, ChevronRight, Lock } from 'lucide-react';
 import { LibraryItem } from '../../types/library';
 import { getCTAText, trackCourseAction, getFirstLessonHref, getNextLessonHref, hasUserStartedCourse } from '../../utils/courseRouting';
 import { ModalPortal } from '../ui/ModalPortal';
@@ -11,6 +12,43 @@ interface QuickViewModalProps {
   onUnlockAccess?: (item: LibraryItem) => void;
 }
 
+// Button Component
+interface ButtonProps {
+  asChild?: boolean;
+  variant?: 'default' | 'ghost';
+  size?: 'default' | 'lg';
+  className?: string;
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+}
+
+function Button({ asChild, variant = 'default', size = 'default', className = '', children, disabled = false, onClick }: ButtonProps) {
+  const baseClasses = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900';
+  
+  const variantClasses = {
+    default: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-lg',
+    ghost: 'bg-transparent hover:bg-white/10 text-white border border-white/20 hover:border-white/30 focus:ring-white/30'
+  };
+  
+  const sizeClasses = {
+    default: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base'
+  };
+  
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+  
+  if (asChild) {
+    return <div className={classes}>{children}</div>;
+  }
+  
+  return (
+    <button className={classes} disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
 export default function QuickViewModal({
   item,
   isOpen,
@@ -18,6 +56,7 @@ export default function QuickViewModal({
   onUnlockAccess,
 }: QuickViewModalProps) {
   const modalRef = useRef<HTMLElement>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Handle escape key, focus trap, and body scroll lock
   useEffect(() => {
@@ -97,19 +136,56 @@ export default function QuickViewModal({
     }
   };
 
-  // Get the correct routing URLs
-  const isInProgress = hasUserStartedCourse(item.slug);
-  const primaryHref = item.isLocked 
-    ? (item.purchaseHref || '/upgrade')
-    : isInProgress 
-      ? getNextLessonHref(item.slug) 
-      : getFirstLessonHref(item.slug);
-  
-  const legacyHref = item.href || `/courses/${item.slug}`;
+  // Get the correct routing URLs using exact specification logic
+  const isLocked = item.isLocked;
+  const inProgress = (item.progressPct ?? 0) > 0 && !isLocked;
+
+  const primaryLabel = isLocked
+    ? "Unlock access"
+    : inProgress
+    ? "Continue course"
+    : "Start course";
+
+  const primaryHref = isLocked
+    ? item.purchaseHref ?? "/pricing"
+    : inProgress
+    ? getNextLessonHref(item.slug)
+    : getFirstLessonHref(item.slug);
+
+  const secondaryHref = item.href ?? `/courses/${item.slug}`;
 
   const handlePrimaryClick = () => {
-    if (!item.isLocked) {
-      trackCourseAction(isInProgress ? 'continue' : 'start', item, primaryHref);
+    if (!isNavigating) {
+      setIsNavigating(true);
+      
+      // Emit tracking events as specified
+      if (isLocked) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('library_unlock_clicked', {
+            detail: { slug: item.slug, href: primaryHref }
+          }));
+        }
+        onUnlockAccess?.(item);
+      } else {
+        if (typeof window !== 'undefined') {
+          const eventName = inProgress ? 'library_continue_clicked' : 'library_start_clicked';
+          window.dispatchEvent(new CustomEvent(eventName, {
+            detail: { slug: item.slug, href: primaryHref }
+          }));
+        }
+        trackCourseAction(inProgress ? 'continue' : 'start', item, primaryHref);
+      }
+      
+      // Re-enable after short delay to prevent double clicks
+      setTimeout(() => setIsNavigating(false), 1000);
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('library_view_details_clicked', {
+        detail: { slug: item.slug, href: secondaryHref }
+      }));
     }
   };
 
@@ -141,7 +217,7 @@ export default function QuickViewModal({
           aria-modal="true"
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
-          className={`pointer-events-auto w-full max-w-[min(96vw,1080px)] ${modalMaxHeight} grid grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-2xl animate-in zoom-in-95 fade-in duration-180`}
+          className="pointer-events-auto w-full max-w-[min(96vw,1080px)] max-h-[88vh] grid grid-rows-[auto_1fr_auto] overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220] shadow-2xl animate-in zoom-in-95 fade-in duration-180"
           tabIndex={-1}
           onClick={(e) => e.stopPropagation()}
         >
@@ -261,43 +337,42 @@ export default function QuickViewModal({
             )}
           </section>
 
-          {/* Row 3 - Pinned Footer with CTAs Always Visible */}
-          <footer className="border-t border-white/20 p-6 md:p-8 bg-white/5 backdrop-blur-md flex-shrink-0">
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
-              {/* Primary CTA */}
-              {item.isLocked ? (
-                <button
-                  onClick={() => onUnlockAccess?.(item)}
-                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-orange-300/50 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-2xl hover:shadow-orange-400/30 transform hover:scale-105"
-                >
-                  <span className="inline-flex items-center">
-                    <i className="fas fa-unlock mr-3 text-xl"></i>
-                    {getCTAText(item)}
-                  </span>
-                </button>
-              ) : (
-                <Link 
-                  href={primaryHref}
+          {/* Row 3 - Pinned Footer with Clear Dual CTAs */}
+          <footer className="border-t border-white/10 p-6 md:p-8 bg-[#0b1220]/95 backdrop-blur pb-[calc(env(safe-area-inset-bottom)+16px)] sm:pb-6">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-end">
+
+              {/* Primary */}
+              {isLocked ? (
+                <Button 
+                  size="lg" 
+                  className="min-w-[220px]"
+                  disabled={isNavigating}
                   onClick={handlePrimaryClick}
-                  className="flex items-center justify-center px-8 py-4 rounded-xl font-bold text-white text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300/50 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-2xl hover:shadow-blue-400/30 transform hover:scale-105"
                 >
                   <span className="inline-flex items-center">
-                    <i className="fas fa-play mr-3 text-xl"></i>
-                    {isInProgress ? 'Continue Course' : 'Start Course'}
+                    <Lock className="mr-2 h-4 w-4" />
+                    {primaryLabel}
+                    <ChevronRight className="ml-2 h-4 w-4" aria-hidden="true" />
                   </span>
-                </Link>
+                </Button>
+              ) : (
+                <Button asChild size="lg" className="min-w-[220px]">
+                  <Link href={primaryHref} onClick={handlePrimaryClick}>
+                    <span className="inline-flex items-center">
+                      <Play className="mr-2 h-4 w-4" />
+                      {primaryLabel}
+                      <ChevronRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </Link>
+                </Button>
               )}
 
-              {/* Secondary Action */}
-              <Link 
-                href={legacyHref}
-                className="flex items-center justify-center px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white border-2 border-blue-400 hover:border-blue-300 rounded-xl font-bold text-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300/50 shadow-xl transform hover:scale-105"
-              >
-                <span className="inline-flex items-center">
-                  <i className="fas fa-info-circle mr-3 text-xl"></i>
-                  View Details
-                </span>
-              </Link>
+              {/* Secondary */}
+              <Button asChild variant="ghost" size="lg" className="min-w-[160px]">
+                <Link href={secondaryHref} onClick={handleSecondaryClick}>
+                  View details
+                </Link>
+              </Button>
             </div>
           </footer>
         </article>
