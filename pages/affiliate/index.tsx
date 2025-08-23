@@ -1,5 +1,5 @@
 // pages/affiliate/index.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AppLayout from '../../components/layout/AppLayout';
@@ -7,6 +7,23 @@ import { useCourseAccess } from '../../hooks/useCourseAccess';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { generateAffiliateLink, updateAffiliateLinksForUser } from '../../utils/affiliateLinks';
 import { Copy, ExternalLink, Share2, TrendingUp, Users, DollarSign, Eye } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy chart components if they exist
+const AnalyticsCharts = dynamic(
+  () => import('../../components/affiliate/AnalyticsCharts').then(mod => ({ default: mod.AnalyticsCharts })),
+  { 
+    loading: () => (
+      <div className="bg-white rounded-lg p-6 border border-gray-200">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    ),
+    ssr: false
+  }
+).catch(() => null); // Fallback if component doesn't exist
 
 // Get username from localStorage (profile data)
 const getProfileUsername = () => {
@@ -219,20 +236,21 @@ export default function AffiliatePage() {
     }, 800);
   }, [permissions.canAccessAffiliate, router]);
 
-  // Get filtered funnels based on active tab
-  const getFilteredFunnels = () => {
+  // Memoize filtered funnels to prevent unnecessary re-calculations
+  const filteredFunnels = useMemo(() => {
     return allFunnels.filter(funnel => funnel.type === activeTab);
-  };
+  }, [allFunnels, activeTab]);
 
-  // Update funnel type counts
-  const getUpdatedFunnelTypes = () => {
+  // Memoize funnel type counts to prevent unnecessary re-calculations
+  const updatedFunnelTypes = useMemo(() => {
     return funnelTypes.map(type => ({
       ...type,
       count: allFunnels.filter(f => f.type === type.id).length
     }));
-  };
+  }, [allFunnels]);
 
-  const copyToClipboard = async (text: string, label: string) => {
+  // Memoize clipboard function to prevent re-renders
+  const memoizedCopyToClipboard = useCallback(async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopySuccess(label);
@@ -248,9 +266,11 @@ export default function AffiliatePage() {
       setCopySuccess(label);
       setTimeout(() => setCopySuccess(''), 2000);
     }
-  };
+  }, []);
 
-  const shareLink = async (url: string, title: string) => {
+
+
+  const shareLink = useCallback(async (url: string, title: string) => {
     if (navigator.share) {
       try {
         await navigator.share({
@@ -261,21 +281,22 @@ export default function AffiliatePage() {
         console.log('Share cancelled');
       }
     } else {
-      copyToClipboard(url, title);
+      memoizedCopyToClipboard(url, title);
     }
-  };
+  }, [memoizedCopyToClipboard]);
 
-  const openLink = (url: string) => {
+  const openLink = useCallback((url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer');
-  };
+  }, []);
 
-  const FunnelThumbnail = ({ src, alt, type }: { src: string; alt: string; type: string }) => {
+  const FunnelThumbnail = memo(({ src, alt, type }: { src: string; alt: string; type: string }) => {
     return (
       <div className="relative w-32 h-20 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
         <img
           src={src}
           alt={alt}
           className="w-full h-full object-cover"
+          loading="lazy" // Native lazy loading
           onError={(e) => {
             // Fallback to gradient background with icon if image fails
             const target = e.target as HTMLImageElement;
@@ -291,7 +312,7 @@ export default function AffiliatePage() {
         />
       </div>
     );
-  };
+  });
 
   if (loading) {
     return (
@@ -323,8 +344,7 @@ export default function AffiliatePage() {
     );
   }
 
-  const filteredFunnels = getFilteredFunnels();
-  const updatedFunnelTypes = getUpdatedFunnelTypes();
+
 
   return (
     <>
@@ -336,7 +356,7 @@ export default function AffiliatePage() {
       <AppLayout
         user={{
           id: 1,
-          name: roleDetails.name,
+          name: roleDetails?.name || 'User',
           avatarUrl: '/api/placeholder/40/40'
         }}
         title="Affiliate Portal"
@@ -503,7 +523,7 @@ export default function AffiliatePage() {
                     {/* Compact Action Buttons */}
                     <div className="flex gap-2">
                       <button
-                        onClick={() => copyToClipboard(funnel.affiliateLink, funnel.name)}
+                        onClick={() => memoizedCopyToClipboard(funnel.affiliateLink, funnel.name)}
                         className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors"
                       >
                         <Copy className="h-3 w-3" />

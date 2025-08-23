@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 
 // Define user roles and their hierarchy
-export type UserRole = 'free' | 'trial' | 'monthly' | 'annual' | 'downsell' | 'admin';
+export type UserRole = 'free' | 'trial' | 'monthly' | 'annual' | 'downsell' | 'admin' | 'guest';
 
 // Define permissions for each feature
 export interface UserPermissions {
@@ -34,6 +34,26 @@ export interface UserPermissions {
 
 // Define role configurations
 const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
+  guest: {
+    canAccessIntroVideos: false,
+    canAccessAllCourses: false,
+    canAccessStartHereOnly: false,
+    canAccessMasterclasses: false,
+    canAccessAffiliate: false,
+    canAccessExpertDirectory: false,
+    canAccessDMO: false,
+    canAccessStats: false,
+    canAccessLeads: false,
+    canUpgradeToMonthly: true,
+    canUpgradeToAnnual: true,
+    canDowngrade: false,
+    isAdmin: false,
+    canManageUsers: false,
+    canManageCourses: false,
+    canViewPayments: false,
+    canCreateFunnels: false,
+    canManageCalendar: false,
+  },
   free: {
     canAccessIntroVideos: true,
     canAccessAllCourses: false,
@@ -162,38 +182,50 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
 };
 
 // Define what each role can see in terms of subscription details
-export const ROLE_DETAILS: Record<UserRole, { title: string; badge: string; price?: number; features: string[] }> = {
+export const ROLE_DETAILS: Record<UserRole, { title: string; badge: string; price?: number; features: string[]; name: string }> = {
+  guest: {
+    title: 'Guest User',
+    badge: 'GUEST',
+    name: 'Guest',
+    features: ['Limited access'],
+  },
   free: {
     title: 'Free Account',
     badge: 'FREE',
+    name: 'Free User',
     features: ['Access to intro videos', 'Start Here courses only', 'Limited features'],
   },
   trial: {
     title: '7-Day Trial',
     badge: 'TRIAL',
+    name: 'Trial User',
     features: ['Start Here courses only', 'Limited features', 'Expires in 7 days'],
   },
   monthly: {
     title: 'Monthly Subscription',
     badge: 'MONTHLY',
+    name: 'Monthly Member',
     price: 97,
     features: ['All courses access', 'Expert directory', 'DMO system', 'Affiliate tools', 'Full analytics'],
   },
   annual: {
     title: 'Annual Subscription',
     badge: 'ANNUAL',
+    name: 'Annual Member',
     price: 997,
     features: ['All courses access', 'Expert directory', 'DMO system', 'Affiliate tools', 'Full analytics', 'Priority support'],
   },
   downsell: {
     title: 'Affiliate Only',
     badge: 'DOWNSELL',
+    name: 'Affiliate Member',
     price: 47,
     features: ['Affiliate dashboard', 'Funnel creation', 'Basic analytics'],
   },
   admin: {
     title: 'Administrator',
     badge: 'ADMIN',
+    name: 'Administrator',
     features: ['Full system access', 'User management', 'Course management', 'Payment access', 'All features'],
   },
 };
@@ -202,6 +234,7 @@ interface UserRoleContextType {
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
   permissions: UserPermissions;
+  roleDetails: { title: string; badge: string; price?: number; features: string[]; name: string };
   availableRoles: UserRole[];
   hasPermission: (permission: keyof UserPermissions) => boolean;
   canAccessFeature: (feature: string) => boolean;
@@ -213,6 +246,7 @@ const defaultContextValue: UserRoleContextType = {
   currentRole: 'guest',
   setCurrentRole: () => {},
   permissions: ROLE_PERMISSIONS.guest,
+  roleDetails: { title: 'Guest User', badge: 'GUEST', name: 'Guest', features: ['Limited access'] },
   availableRoles: ['guest', 'free'],
   hasPermission: () => false,
   canAccessFeature: () => false,
@@ -326,7 +360,73 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const permissions = ROLE_PERMISSIONS[currentRole] || ROLE_PERMISSIONS.free;
+  // Memoize computed values to prevent unnecessary re-renders
+  const permissions = useMemo(() => 
+    ROLE_PERMISSIONS[currentRole] || ROLE_PERMISSIONS.free, 
+    [currentRole]
+  );
+  
+  const roleDetails = useMemo(() => 
+    ROLE_DETAILS[currentRole] || ROLE_DETAILS.free, 
+    [currentRole]
+  );
+
+  // Memoize callback functions to prevent re-renders
+  const hasPermission = useMemo(() => 
+    (permission: keyof UserPermissions): boolean => {
+      const result = permissions[permission] || false;
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`hasPermission(${permission}):`, result);
+      }
+      return result;
+    }, [permissions]
+  );
+
+  const canAccessFeature = useMemo(() => 
+    (feature: string): boolean => {
+      const featureMap: Record<string, keyof UserPermissions> = {
+        'courses': 'canAccessAllCourses',
+        'start-here': 'canAccessStartHereOnly',
+        'masterclasses': 'canAccessMasterclasses',
+        'affiliate': 'canAccessAffiliate',
+        'experts': 'canAccessExpertDirectory',
+        'dmo': 'canAccessDMO',
+        'stats': 'canAccessStats',
+        'leads': 'canAccessLeads',
+        'admin': 'isAdmin',
+      };
+
+      const permissionKey = featureMap[feature.toLowerCase()];
+      return permissionKey ? hasPermission(permissionKey) : false;
+    }, [hasPermission]
+  );
+
+  const getRoleHierarchyLevel = useMemo(() => 
+    (role?: UserRole): number => {
+      const hierarchy: Record<UserRole, number> = {
+        guest: -1,
+        free: 0,
+        trial: 1,
+        downsell: 2,
+        monthly: 3,
+        annual: 4,
+        admin: 5,
+      };
+      return hierarchy[role || currentRole] || 0;
+    }, [currentRole]
+  );
+
+  // Memoize the entire context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    currentRole,
+    setCurrentRole,
+    permissions,
+    roleDetails,
+    availableRoles,
+    hasPermission,
+    canAccessFeature,
+    getRoleHierarchyLevel,
+  }), [currentRole, permissions, roleDetails, availableRoles, hasPermission, canAccessFeature, getRoleHierarchyLevel]);
 
   // Debug logging
   useEffect(() => {
@@ -336,55 +436,8 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
     }
   }, [currentRole, permissions]);
 
-  const hasPermission = (permission: keyof UserPermissions): boolean => {
-    const result = permissions[permission] || false;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`hasPermission(${permission}):`, result);
-    }
-    return result;
-  };
-
-  const canAccessFeature = (feature: string): boolean => {
-    const featureMap: Record<string, keyof UserPermissions> = {
-      'courses': 'canAccessAllCourses',
-      'start-here': 'canAccessStartHereOnly',
-      'masterclasses': 'canAccessMasterclasses',
-      'affiliate': 'canAccessAffiliate',
-      'experts': 'canAccessExpertDirectory',
-      'dmo': 'canAccessDMO',
-      'stats': 'canAccessStats',
-      'leads': 'canAccessLeads',
-      'admin': 'isAdmin',
-    };
-
-    const permissionKey = featureMap[feature.toLowerCase()];
-    return permissionKey ? hasPermission(permissionKey) : false;
-  };
-
-  const getRoleHierarchyLevel = (role?: UserRole): number => {
-    const hierarchy: Record<UserRole, number> = {
-      free: 0,
-      trial: 1,
-      downsell: 2,
-      monthly: 3,
-      annual: 4,
-      admin: 5,
-    };
-    return hierarchy[role || currentRole] || 0;
-  };
-
   return (
-    <UserRoleContext.Provider
-      value={{
-        currentRole,
-        setCurrentRole,
-        permissions,
-        availableRoles,
-        hasPermission,
-        canAccessFeature,
-        getRoleHierarchyLevel,
-      }}
-    >
+    <UserRoleContext.Provider value={contextValue}>
       {children}
     </UserRoleContext.Provider>
   );

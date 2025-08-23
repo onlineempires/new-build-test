@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
-import NewBookingModal from '../components/experts/NewBookingModal';
+import dynamic from 'next/dynamic';
+
+// Lazy load the booking modal (only loads when needed)
+const NewBookingModal = dynamic(
+  () => import('../components/experts/NewBookingModal'),
+  { 
+    loading: () => (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-3 text-gray-600">Loading booking form...</p>
+        </div>
+      </div>
+    ),
+    ssr: false
+  }
+);
 import { Expert, getAllExperts } from '../lib/api/experts';
 
 const ExpertDirectory = () => {

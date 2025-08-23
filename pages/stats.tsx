@@ -2,7 +2,21 @@ import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AppLayout from '../components/layout/AppLayout';
-import StatsDashboard from '../components/Affiliate/Stats/StatsDashboard';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy components
+const StatsDashboard = dynamic(
+  () => import('../components/Affiliate/Stats/StatsDashboard'),
+  { 
+    loading: () => (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading dashboard...</span>
+      </div>
+    ),
+    ssr: false  // Disable SSR for heavy chart components
+  }
+);
 import { useCourseAccess } from '../hooks/useCourseAccess';
 import { BarChart3, TrendingUp, Users, DollarSign, Activity } from 'lucide-react';
 
