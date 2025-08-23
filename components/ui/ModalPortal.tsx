@@ -3,9 +3,12 @@ import { createPortal } from 'react-dom';
 
 interface ModalPortalProps {
   children: ReactNode;
+  rootSelector?: string;
 }
 
-export function ModalPortal({ children }: ModalPortalProps) {
+export function ModalPortal({ children, rootSelector = "#content-portal-root" }: ModalPortalProps) {
   if (typeof window === 'undefined') return null;
-  return createPortal(children, document.body);
+  const root = document.querySelector(rootSelector);
+  // Fallback to body if the root is missing (should not happen after this patch)
+  return createPortal(children, root ?? document.body);
 }

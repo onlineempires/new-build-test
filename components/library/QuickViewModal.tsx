@@ -58,7 +58,7 @@ export default function QuickViewModal({
   const modalRef = useRef<HTMLElement>(null);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Handle escape key, focus trap, and body scroll lock
+  // Handle escape key, focus trap, and content area scroll lock
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -89,9 +89,12 @@ export default function QuickViewModal({
 
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      // Lock page scroll and prevent background interaction
-      document.body.style.overflow = 'hidden';
-      document.body.style.paddingRight = '0px'; // Prevent layout shift
+      
+      // Lock scroll on content area only, not the whole page
+      const root = document.querySelector<HTMLElement>("#content-portal-root");
+      if (root) {
+        root.style.overflow = 'hidden';
+      }
       
       // Focus the modal when it opens
       setTimeout(() => {
@@ -101,9 +104,11 @@ export default function QuickViewModal({
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      // Restore page scroll
-      document.body.style.overflow = 'unset';
-      document.body.style.paddingRight = '';
+      // Restore content area scroll
+      const root = document.querySelector<HTMLElement>("#content-portal-root");
+      if (root) {
+        root.style.overflow = '';
+      }
     };
   }, [isOpen, onClose]);
 
@@ -154,30 +159,33 @@ export default function QuickViewModal({
 
   const secondaryHref = item.href ?? `/courses/${item.slug}`;
 
-  const handlePrimaryClick = () => {
-    if (!isNavigating) {
+  const handlePrimaryClick = (e: React.MouseEvent) => {
+    if (!isNavigating && !isLocked) {
+      e.preventDefault();
+      e.stopPropagation();
       setIsNavigating(true);
       
       // Emit tracking events as specified
-      if (isLocked) {
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('library_unlock_clicked', {
-            detail: { slug: item.slug, href: primaryHref }
-          }));
-        }
-        onUnlockAccess?.(item);
-      } else {
-        if (typeof window !== 'undefined') {
-          const eventName = inProgress ? 'library_continue_clicked' : 'library_start_clicked';
-          window.dispatchEvent(new CustomEvent(eventName, {
-            detail: { slug: item.slug, href: primaryHref }
-          }));
-        }
-        trackCourseAction(inProgress ? 'continue' : 'start', item, primaryHref);
+      if (typeof window !== 'undefined') {
+        const eventName = inProgress ? 'library_continue_clicked' : 'library_start_clicked';
+        window.dispatchEvent(new CustomEvent(eventName, {
+          detail: { slug: item.slug, href: primaryHref }
+        }));
       }
+      trackCourseAction(inProgress ? 'continue' : 'start', item, primaryHref);
       
-      // Re-enable after short delay to prevent double clicks
-      setTimeout(() => setIsNavigating(false), 1000);
+      // Navigate using router for smooth transition
+      if (typeof window !== 'undefined') {
+        window.location.href = primaryHref;
+      }
+    } else if (isLocked) {
+      // Handle locked state
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('library_unlock_clicked', {
+          detail: { slug: item.slug, href: primaryHref }
+        }));
+      }
+      onUnlockAccess?.(item);
     }
   };
 
@@ -203,14 +211,14 @@ export default function QuickViewModal({
 
   return (
     <ModalPortal>
-      {/* Overlay */}
+      {/* Overlay covers ONLY the content area */}
       <div 
-        className="fixed inset-0 z-[9999] bg-black/55 backdrop-blur-sm"
+        className="absolute inset-0 z-[60] bg-black/55 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Centering Shell */}
-      <div className="fixed inset-0 z-[10000] grid place-items-center p-4 md:p-6 pointer-events-none">
+      {/* Centering shell within content area */}
+      <div className="absolute inset-0 z-[70] grid place-items-center p-4 md:p-6 pointer-events-none">
         <article
           ref={modalRef}
           role="dialog"
