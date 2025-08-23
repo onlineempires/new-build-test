@@ -4,6 +4,7 @@ import { Play, ChevronRight, Lock } from 'lucide-react';
 import { LibraryItem } from '../../types/library';
 import { getCTAText, trackCourseAction, getFirstLessonHref, getNextLessonHref, hasUserStartedCourse } from '../../utils/courseRouting';
 import { ModalPortal } from '../ui/ModalPortal';
+import SafeLink from '../SafeLink';
 
 interface QuickViewModalProps {
   item: LibraryItem | null;
@@ -366,18 +367,18 @@ export default function QuickViewModal({
                 </Button>
               ) : (
                 <Button asChild size="lg" className="min-w-[200px]">
-                  <Link href={primaryHref} onClick={handlePrimaryClick}>
+                  <SafeLink href={primaryHref} onClick={handlePrimaryClick}>
                     <Play className="mr-2 h-4 w-4" />
                     {primaryLabel}
-                  </Link>
+                  </SafeLink>
                 </Button>
               )}
 
               {/* Secondary */}
               <Button asChild variant="ghost" size="lg" className="min-w-[140px]">
-                <Link href={secondaryHref} onClick={handleSecondaryClick}>
+                <SafeLink href={secondaryHref} onClick={handleSecondaryClick}>
                   View details
-                </Link>
+                </SafeLink>
               </Button>
             </div>
           </footer>

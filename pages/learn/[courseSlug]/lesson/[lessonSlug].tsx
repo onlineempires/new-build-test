@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Link from 'next/link';
 import AppLayout from '../../../../components/layout/AppLayout';
 import { getCourseLessons, type Lesson } from '../../../../utils/courseRouting';
 import { getLibraryItemBySlug } from '../../../../lib/api/library';
@@ -456,7 +455,9 @@ export default function LessonPage({ course }: LessonPageProps) {
                     <button
                       onClick={() => {
                         const nextLesson = getNextLesson()!;
-                        handleLessonSelect(nextLesson);
+                        // Navigate directly using router.push to avoid Link multiple children issues
+                        router.push(`/learn/${courseSlug}/lesson/${nextLesson.id}`);
+                        
                         // Emit next clicked event
                         if (typeof window !== 'undefined') {
                           window.dispatchEvent(new CustomEvent('learn_next_clicked', {
@@ -477,11 +478,13 @@ export default function LessonPage({ course }: LessonPageProps) {
                       }`}
                       title={!progress.completed && progress.watchedPct < 80 ? 'Complete lesson or watch 80% to unlock' : ''}
                     >
-                      Next Lesson
-                      <i className="fas fa-chevron-right ml-2"></i>
-                      {!progress.completed && progress.watchedPct < 80 && (
-                        <i className="fas fa-lock ml-1 text-xs"></i>
-                      )}
+                      <span className="inline-flex items-center gap-2">
+                        Next Lesson
+                        <i className="fas fa-chevron-right"></i>
+                        {!progress.completed && progress.watchedPct < 80 && (
+                          <i className="fas fa-lock text-xs"></i>
+                        )}
+                      </span>
                     </button>
                   )}
                 </div>
