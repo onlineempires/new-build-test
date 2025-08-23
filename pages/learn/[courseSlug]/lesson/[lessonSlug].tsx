@@ -30,6 +30,7 @@ export default function LessonPage({ course }: LessonPageProps) {
   const [courseItem, setCourseItem] = useState<LibraryItem | null>(null);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'transcript'>('resources');
+  const [isLessonComplete, setIsLessonComplete] = useState(false);
 
   // Mock video URL - replace with actual video URL from lesson data
   const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
@@ -164,6 +165,39 @@ export default function LessonPage({ course }: LessonPageProps) {
     return currentIndex > 0 ? lessons[currentIndex - 1] : null;
   };
 
+  const handleMarkComplete = (completed: boolean) => {
+    setIsLessonComplete(completed);
+    
+    // Persist completion status to localStorage
+    if (typeof window !== 'undefined' && courseSlug && currentLesson) {
+      const completionKey = `lesson_complete_${courseSlug}_${currentLesson.id}`;
+      if (completed) {
+        localStorage.setItem(completionKey, 'true');
+      } else {
+        localStorage.removeItem(completionKey);
+      }
+
+      // Emit lesson completion event
+      window.dispatchEvent(new CustomEvent('learn_lesson_completed', {
+        detail: {
+          courseSlug: courseSlug as string,
+          lessonSlug: currentLesson.id,
+          completed,
+          timestamp: new Date().toISOString()
+        }
+      }));
+    }
+  };
+
+  // Load completion status when lesson changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && courseSlug && currentLesson) {
+      const completionKey = `lesson_complete_${courseSlug}_${currentLesson.id}`;
+      const isCompleted = localStorage.getItem(completionKey) === 'true';
+      setIsLessonComplete(isCompleted);
+    }
+  }, [courseSlug, currentLesson?.id]);
+
   if (!currentLesson || !courseItem) {
     return (
       <AppLayout user={mockUser}>
@@ -272,10 +306,40 @@ export default function LessonPage({ course }: LessonPageProps) {
             {/* Lesson Meta */}
             <section className="mt-6 rounded-2xl border border-white/10 bg-[#0b1220] text-white/90">
               <header className="px-6 pt-5">
-                <h2 className="text-2xl font-semibold text-white/95">{currentLesson.title}</h2>
-                <p className="mt-1 text-sm text-white/60">
-                  {formatDuration(currentLesson.duration)} • Lesson {getCurrentLessonIndex() + 1} of {lessons.length}
-                </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-semibold text-white/95">{currentLesson.title}</h2>
+                    <p className="mt-1 text-sm text-white/60">
+                      {formatDuration(currentLesson.duration)} • Lesson {getCurrentLessonIndex() + 1} of {lessons.length}
+                    </p>
+                  </div>
+                  
+                  {/* Mark as Complete Checkbox */}
+                  <div className="flex items-center gap-3 bg-slate-800/50 rounded-lg px-4 py-3 border border-slate-600/50">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isLessonComplete}
+                        onChange={(e) => handleMarkComplete(e.target.checked)}
+                        className="w-5 h-5 rounded border-2 border-slate-500 bg-slate-700 text-green-500 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors"
+                      />
+                      <span className={`text-sm font-medium transition-colors ${
+                        isLessonComplete 
+                          ? 'text-green-400' 
+                          : 'text-white/70 hover:text-white/90'
+                      }`}>
+                        {isLessonComplete ? (
+                          <span className="flex items-center gap-2">
+                            <i className="fas fa-check-circle text-green-400"></i>
+                            Completed
+                          </span>
+                        ) : (
+                          'Mark as Complete'
+                        )}
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </header>
 
               <nav className="mt-4 px-6 border-t border-white/10">
