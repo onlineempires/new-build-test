@@ -310,9 +310,7 @@ export default function LibraryPage() {
         item={selectedItem}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onStartCourse={handleStartCourse}
         onUnlockAccess={handleUnlockAccess}
-        onViewDetails={handleViewDetails}
       />
     </AppLayout>
   );

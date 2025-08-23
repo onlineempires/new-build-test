@@ -270,52 +270,42 @@ export default function LessonPage({ course }: LessonPageProps) {
             </div>
 
             {/* Lesson Meta */}
-            <div className="bg-slate-900/30 rounded-2xl p-6 mb-6 border border-slate-800/50">
-              <h2 className="text-2xl font-bold text-white mb-3">
-                {currentLesson.title}
-              </h2>
-              
-              <div className="flex items-center text-slate-400 text-sm mb-6">
-                <span className="flex items-center mr-6">
-                  <i className="fas fa-clock mr-2"></i>
-                  {formatDuration(currentLesson.duration)}
-                </span>
-                <span className="flex items-center">
-                  <i className="fas fa-list mr-2"></i>
-                  Lesson {getCurrentLessonIndex() + 1} of {lessons.length}
-                </span>
-              </div>
+            <section className="mt-6 rounded-2xl border border-white/10 bg-[#0b1220] text-white/90">
+              <header className="px-6 pt-5">
+                <h2 className="text-2xl font-semibold text-white/95">{currentLesson.title}</h2>
+                <p className="mt-1 text-sm text-white/60">
+                  {formatDuration(currentLesson.duration)} • Lesson {getCurrentLessonIndex() + 1} of {lessons.length}
+                </p>
+              </header>
 
-              {/* Tabs */}
-              <div className="border-b border-slate-800 mb-6">
-                <nav className="flex space-x-8">
+              <nav className="mt-4 px-6 border-t border-white/10">
+                <div className="flex space-x-8 text-white/80">
                   <button
                     onClick={() => setActiveTab('resources')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === 'resources'
                         ? 'border-blue-500 text-blue-400'
-                        : 'border-transparent text-slate-400 hover:text-slate-300'
+                        : 'border-transparent text-white/60 hover:text-white/80'
                     }`}
                   >
                     Resources
                   </button>
                   <button
                     onClick={() => setActiveTab('transcript')}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                       activeTab === 'transcript'
                         ? 'border-blue-500 text-blue-400'
-                        : 'border-transparent text-slate-400 hover:text-slate-300'
+                        : 'border-transparent text-white/60 hover:text-white/80'
                     }`}
                   >
                     Transcript
                   </button>
-                </nav>
-              </div>
+                </div>
+              </nav>
 
-              {/* Tab Content */}
-              <div className="mb-6">
+              <div className="px-6 pb-6">
                 {activeTab === 'resources' ? (
-                  <div className="text-slate-300">
+                  <div className="text-white/86">
                     <p className="mb-4">Resources and additional materials for this lesson will appear here.</p>
                     <div className="space-y-2">
                       <div className="flex items-center text-blue-400 hover:text-blue-300 cursor-pointer">
@@ -329,73 +319,75 @@ export default function LessonPage({ course }: LessonPageProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-slate-300">
+                  <div className="text-white/86">
                     <p>Lesson transcript will be available here.</p>
                   </div>
                 )}
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                {getPrevLesson() && (
-                  <button
-                    onClick={() => handleLessonSelect(getPrevLesson()!)}
-                    className="flex items-center justify-center px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
-                  >
-                    <i className="fas fa-chevron-left mr-2"></i>
-                    Previous Lesson
-                  </button>
-                )}
-                
-                {getNextLesson() && (
-                  <button
-                    onClick={() => {
-                      const nextLesson = getNextLesson()!;
-                      handleLessonSelect(nextLesson);
-                      // Emit next clicked event
-                      if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('learn_next_clicked', {
-                          detail: {
-                            fromLesson: currentLesson.id,
-                            toLesson: nextLesson.id,
-                            courseSlug: courseSlug as string,
-                            timestamp: new Date().toISOString()
-                          }
-                        }));
-                      }
-                    }}
-                    className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors sm:ml-auto"
-                  >
-                    Next Lesson
-                    <i className="fas fa-chevron-right ml-2"></i>
-                  </button>
-                )}
-              </div>
+              <div className="px-6 pb-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  {getPrevLesson() && (
+                    <button
+                      onClick={() => handleLessonSelect(getPrevLesson()!)}
+                      className="flex items-center justify-center px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"
+                    >
+                      <i className="fas fa-chevron-left mr-2"></i>
+                      Previous Lesson
+                    </button>
+                  )}
+                  
+                  {getNextLesson() && (
+                    <button
+                      onClick={() => {
+                        const nextLesson = getNextLesson()!;
+                        handleLessonSelect(nextLesson);
+                        // Emit next clicked event
+                        if (typeof window !== 'undefined') {
+                          window.dispatchEvent(new CustomEvent('learn_next_clicked', {
+                            detail: {
+                              fromLesson: currentLesson.id,
+                              toLesson: nextLesson.id,
+                              courseSlug: courseSlug as string,
+                              timestamp: new Date().toISOString()
+                            }
+                          }));
+                        }
+                      }}
+                      className="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors sm:ml-auto"
+                    >
+                      Next Lesson
+                      <i className="fas fa-chevron-right ml-2"></i>
+                    </button>
+                  )}
+                </div>
 
-              {/* Keyboard Hints */}
-              <div className="mt-6 pt-6 border-t border-slate-800">
-                <p className="text-slate-500 text-xs mb-2">Keyboard shortcuts:</p>
-                <div className="flex flex-wrap gap-4 text-slate-500 text-xs">
-                  <span><kbd className="bg-slate-800 px-1 rounded">K</kbd> Play/Pause</span>
-                  <span><kbd className="bg-slate-800 px-1 rounded">J</kbd> Seek back</span>
-                  <span><kbd className="bg-slate-800 px-1 rounded">L</kbd> Seek forward</span>
-                  <span><kbd className="bg-slate-800 px-1 rounded">Shift+N</kbd> Next lesson</span>
-                  <span><kbd className="bg-slate-800 px-1 rounded">Shift+P</kbd> Previous lesson</span>
+                {/* Keyboard Hints */}
+                <div className="pt-6 border-t border-white/10">
+                  <p className="text-white/60 text-xs mb-2">Keyboard shortcuts:</p>
+                  <div className="flex flex-wrap gap-4 text-white/60 text-xs">
+                    <span><kbd className="bg-white/10 px-1 rounded text-white/80">K</kbd> Play/Pause</span>
+                    <span><kbd className="bg-white/10 px-1 rounded text-white/80">J</kbd> Seek back</span>
+                    <span><kbd className="bg-white/10 px-1 rounded text-white/80">L</kbd> Seek forward</span>
+                    <span><kbd className="bg-white/10 px-1 rounded text-white/80">Shift+N</kbd> Next lesson</span>
+                    <span><kbd className="bg-white/10 px-1 rounded text-white/80">Shift+P</kbd> Previous lesson</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
           {/* Desktop Sidebar Playlist */}
-          <div className="hidden lg:block lg:col-span-4 xl:col-span-3">
-            <div className="sticky top-24">
+          <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
+            <div className="lg:sticky lg:top-[calc(var(--header-height,64px)+16px)]">
               <PlaylistPanel 
                 lessons={lessons}
                 currentLesson={currentLesson}
                 onLessonSelect={handleLessonSelect}
               />
             </div>
-          </div>
+          </aside>
         </div>
       </div>
 
@@ -403,13 +395,13 @@ export default function LessonPage({ course }: LessonPageProps) {
       {isPlaylistOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setIsPlaylistOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 bg-slate-900 rounded-t-2xl max-h-[70vh] overflow-hidden pb-[calc(env(safe-area-inset-bottom)+16px)]">
-            <div className="p-4 border-b border-slate-700">
+          <div className="fixed bottom-0 left-0 right-0 bg-[#0b1220] border-t border-white/10 rounded-t-2xl max-h-[70vh] overflow-hidden pb-[calc(env(safe-area-inset-bottom)+16px)]">
+            <div className="p-4 border-b border-white/10">
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold">Course Lessons</h3>
+                <h3 className="text-white/95 font-semibold">Course Lessons</h3>
                 <button
                   onClick={() => setIsPlaylistOpen(false)}
-                  className="text-slate-400 hover:text-white w-10 h-10 flex items-center justify-center"
+                  className="text-white/60 hover:text-white/90 w-10 h-10 flex items-center justify-center"
                 >
                   <i className="fas fa-times"></i>
                 </button>
@@ -446,68 +438,49 @@ function PlaylistPanel({ lessons, currentLesson, onLessonSelect, isMobile = fals
   };
 
   return (
-    <div className={`bg-slate-900/50 rounded-2xl overflow-hidden ${isMobile ? '' : 'border border-slate-800/50'}`}>
-      <div className="p-4 border-b border-slate-700">
-        <h3 className="text-white font-semibold">Course Content</h3>
-        <p className="text-slate-400 text-sm">
-          {lessons.filter(l => l.isCompleted).length} of {lessons.length} lessons completed
-        </p>
-      </div>
+    <div className={`rounded-2xl border border-white/10 bg-[#0b1220] text-white/90 ${isMobile ? '' : ''}`}>
+      <h3 className="px-4 py-3 text-sm font-semibold text-white/90 border-b border-white/10">
+        Course Content
+      </h3>
       
       <div className={`${isMobile ? 'max-h-none' : 'max-h-96'} overflow-y-auto`}>
-        {lessons.map((lesson, index) => (
-          <button
-            key={lesson.id}
-            onClick={() => onLessonSelect(lesson)}
-            disabled={lesson.isLocked}
-            className={`w-full text-left p-4 border-b border-slate-800/50 transition-colors ${
-              currentLesson?.id === lesson.id
-                ? 'bg-blue-600/20 border-l-4 border-l-blue-500'
-                : lesson.isLocked
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-slate-800/50'
-            } ${isMobile ? 'min-h-[44px] py-3' : ''}`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-                  lesson.isCompleted
-                    ? 'bg-green-500 text-white'
-                    : currentLesson?.id === lesson.id
-                    ? 'bg-blue-500 text-white'
-                    : lesson.isLocked
-                    ? 'bg-slate-700 text-slate-400'
-                    : 'bg-slate-700 text-slate-300'
-                }`}>
-                  {lesson.isCompleted ? (
-                    <i className="fas fa-check"></i>
-                  ) : lesson.isLocked ? (
-                    <i className="fas fa-lock"></i>
-                  ) : (
-                    index + 1
-                  )}
-                </div>
-                
-                <div className="min-w-0 flex-1">
-                  <h4 className={`font-medium text-sm ${
-                    currentLesson?.id === lesson.id ? 'text-blue-400' : 'text-white'
-                  } ${isMobile ? 'text-base' : ''} truncate`}>
-                    {lesson.title}
-                  </h4>
-                  <p className={`text-slate-400 ${isMobile ? 'text-sm' : 'text-xs'}`}>
-                    {formatDuration(lesson.duration)}
-                  </p>
-                </div>
-              </div>
-              
-              {currentLesson?.id === lesson.id && (
-                <div className="text-blue-400 flex-shrink-0">
-                  <i className="fas fa-play text-xs"></i>
-                </div>
-              )}
-            </div>
-          </button>
-        ))}
+        {lessons.map((lesson, index) => {
+          const isActive = currentLesson?.id === lesson.id;
+          return (
+            <button
+              key={lesson.id}
+              onClick={() => onLessonSelect(lesson)}
+              disabled={lesson.isLocked}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
+                isActive
+                  ? 'bg-blue-600/10 border-l-2 border-blue-500/60 text-white'
+                  : lesson.isLocked
+                  ? 'opacity-50 cursor-not-allowed text-white/38'
+                  : 'text-white/80 hover:bg-white/5'
+              } ${isMobile ? 'min-h-[44px]' : ''}`}
+            >
+              <span className={`h-6 w-6 inline-flex items-center justify-center rounded-full text-xs ${
+                lesson.isCompleted
+                  ? 'bg-green-500 text-white'
+                  : isActive
+                  ? 'bg-blue-600/90 text-white'
+                  : lesson.isLocked
+                  ? 'bg-white/10 text-white/38'
+                  : 'bg-white/10 text-white/70'
+              }`}>
+                {lesson.isCompleted ? (
+                  <i className="fas fa-check"></i>
+                ) : lesson.isLocked ? (
+                  <i className="fas fa-lock"></i>
+                ) : (
+                  index + 1
+                )}
+              </span>
+              <span className="flex-1 truncate font-medium text-sm">{lesson.title}</span>
+              <span className="text-xs text-white/60">{formatDuration(lesson.duration)}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
