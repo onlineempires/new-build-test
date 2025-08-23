@@ -140,13 +140,15 @@ export default function OptimizedTrialUserDashboard({
     }
   };
 
-  // Auto-scroll to Choose Your Path section
+  // Auto-scroll to Choose Your Path section (improved for mobile)
   const scrollToChoosePath = () => {
     if (choosePathRef.current) {
       setTimeout(() => {
+        // On mobile, scroll to the top of the Choose Your Path section
+        const isMobile = window.innerWidth < 768;
         choosePathRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'center' 
+          block: isMobile ? 'start' : 'center' 
         });
       }, 300); // Wait for animation to start
     }
@@ -354,78 +356,78 @@ export default function OptimizedTrialUserDashboard({
           </p>
         </div>
 
-        {/* Premium Video Container with Integrated Progress Bar */}
+        {/* Floating 3-Step Progress Bar (No background container - pills float on page) */}
+        <div className="h-10 sm:h-11 mb-2 flex items-center justify-center">
+          <div className="flex items-center justify-between max-w-2xl">
+            {steps.map((step, index) => (
+              <React.Fragment key={step.id}>
+                <button
+                  onClick={() => handleStepClick(index)}
+                  disabled={
+                    index > activeStepIndex && 
+                    !steps[index - 1]?.completed && 
+                    !(index === activeStepIndex + 1 && steps[activeStepIndex].completed)
+                  }
+                  className={`
+                    flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium
+                    transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1
+                    ${
+                      step.completed
+                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm focus:ring-emerald-500'
+                        : step.isActive
+                        ? 'bg-indigo-600 text-white shadow-md focus:ring-indigo-500'
+                        : index <= activeStepIndex || (index === activeStepIndex + 1 && steps[activeStepIndex].completed)
+                        ? 'bg-white text-gray-600 border border-gray-200 shadow-sm hover:bg-gray-50 focus:ring-gray-400'
+                        : 'bg-white text-gray-400 border border-gray-100 shadow-sm cursor-not-allowed opacity-60'
+                    }
+                  `}
+                >
+                  {step.completed ? (
+                    <>
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">Completed</span>
+                      <span className="sm:hidden">✓</span>
+                    </>
+                  ) : (
+                    <>
+                      {index <= activeStepIndex || (index === activeStepIndex + 1 && steps[activeStepIndex].completed) ? (
+                        <span className="flex items-center justify-center w-4 h-4 rounded-full bg-current bg-opacity-20 text-xs font-bold">
+                          {index + 1}
+                        </span>
+                      ) : (
+                        <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      )}
+                      <span className="hidden sm:inline">{step.title}</span>
+                      <span className="sm:hidden">{step.title.split(' ')[0]}</span>
+                    </>
+                  )}
+                </button>
+                
+                {/* Thin connectors only - no rails */}
+                {index < steps.length - 1 && (
+                  <div className={`
+                    w-12 sm:w-16 h-0.5 mx-2 transition-colors duration-300
+                    ${index < activeStepIndex || step.completed ? 'bg-emerald-300' : 'bg-gray-300'}
+                  `} />
+                )}
+              </React.Fragment>
+            ))}
+            
+            {/* Success indicator (floating, no container) */}
+            {allStepsCompleted && (
+              <div className="ml-4 flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-md border border-emerald-200 shadow-sm">
+                <CheckCircle className="w-3 h-3" />
+                <span className="hidden sm:inline">3 of 3 completed</span>
+                <span className="sm:hidden">3/3</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Premium Video Container (attached to floating progress bar) */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100/60 overflow-hidden mb-8">
           
-          {/* Slim 3-Step Progress Bar (≤48px desktop, ≤42px mobile) */}
-          <div className="h-10 sm:h-12 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 px-4 sm:px-6">
-            <div className="flex items-center justify-between h-full max-w-2xl mx-auto">
-              {steps.map((step, index) => (
-                <React.Fragment key={step.id}>
-                  <button
-                    onClick={() => handleStepClick(index)}
-                    disabled={
-                      index > activeStepIndex && 
-                      !steps[index - 1]?.completed && 
-                      !(index === activeStepIndex + 1 && steps[activeStepIndex].completed)
-                    }
-                    className={`
-                      flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium
-                      transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1
-                      ${
-                        step.completed
-                          ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 focus:ring-emerald-500'
-                          : step.isActive
-                          ? 'bg-indigo-600 text-white shadow-md focus:ring-indigo-500'
-                          : index <= activeStepIndex || (index === activeStepIndex + 1 && steps[activeStepIndex].completed)
-                          ? 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 focus:ring-gray-400'
-                          : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed opacity-60'
-                      }
-                    `}
-                  >
-                    {step.completed ? (
-                      <>
-                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Completed</span>
-                        <span className="sm:hidden">✓</span>
-                      </>
-                    ) : (
-                      <>
-                        {index <= activeStepIndex || (index === activeStepIndex + 1 && steps[activeStepIndex].completed) ? (
-                          <span className="flex items-center justify-center w-4 h-4 rounded-full bg-current bg-opacity-20 text-xs font-bold">
-                            {index + 1}
-                          </span>
-                        ) : (
-                          <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
-                        )}
-                        <span className="hidden sm:inline">{step.title}</span>
-                        <span className="sm:hidden">{step.title.split(' ')[0]}</span>
-                      </>
-                    )}
-                  </button>
-                  
-                  {/* Thin connectors */}
-                  {index < steps.length - 1 && (
-                    <div className={`
-                      flex-1 h-0.5 mx-2 transition-colors duration-300
-                      ${index < activeStepIndex || step.completed ? 'bg-emerald-300' : 'bg-gray-200'}
-                    `} />
-                  )}
-                </React.Fragment>
-              ))}
-              
-              {/* Success indicator */}
-              {allStepsCompleted && (
-                <div className="ml-3 flex items-center gap-1.5 px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-md">
-                  <CheckCircle className="w-3 h-3" />
-                  <span className="hidden sm:inline">3 of 3 completed</span>
-                  <span className="sm:hidden">3/3</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Video Player (no extra spacing, tight integration) */}
+          {/* Video Player (no separation from progress bar) */}
           <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 to-gray-800">
             {currentStep.videoUrl ? (
               <>
@@ -499,8 +501,8 @@ export default function OptimizedTrialUserDashboard({
               <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-2">
                 Choose Your Path
               </h2>
-              <p className="text-gray-600">
-                Pick one now or continue watching. You can do both.
+              <p className="text-gray-600 mb-4">
+                Pick one now or continue to the next step.
               </p>
             </div>
 
