@@ -1,5 +1,5 @@
 "use client";
-import '../../../styles/library-theme.css';
+import s from '../../../components/library/library-theme.module.css';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import AppLayout from '../../../components/layout/AppLayout';
@@ -19,6 +19,16 @@ const mockUser = { id: 123, name: "Ashley Kemp", avatarUrl: "/default-avatar.png
 
 export default function LibraryBetaPage() {
   const router = useRouter();
+  
+  // Theme state
+  const [theme, setTheme] = useState("dark");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("library:theme");
+      setTheme(saved || "dark");
+    }
+  }, []);
   
   // State
   const [allItems, setAllItems] = useState<LibraryItem[]>([]);
@@ -179,7 +189,7 @@ export default function LibraryBetaPage() {
       user={mockUser}
     >
       {/* Add content portal root for modal and library theme root */}
-      <div id="library-root" data-theme="dark" className="relative min-h-screen bg-[var(--lib-bg)] transition-colors">
+      <div id="library-root" className={`${s.themeScope} relative min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader

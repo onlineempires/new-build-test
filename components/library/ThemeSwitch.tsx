@@ -17,8 +17,8 @@ export function ThemeSwitch() {
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const root = document.querySelector<HTMLElement>("#library-root") || document.documentElement;
-      root.setAttribute("data-theme", theme);
+      const root = document.getElementById("library-root");
+      if (root) root.setAttribute("data-theme", theme);
       localStorage.setItem("library:theme", theme);
     }
   }, [theme]);

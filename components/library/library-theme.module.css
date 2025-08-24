@@ -1,0 +1,28 @@
+/* components/library/library-theme.module.css */
+.themeScope[data-theme="light"] {
+  --lib-bg: #0b1220;
+  --lib-panel: #0f172a;
+  --lib-text: #e6e9ef;
+  --lib-accent: #3b82f6;
+}
+
+.themeScope[data-theme="dark"] {
+  --lib-bg: #070b13;
+  --lib-panel: #0b1220;
+  --lib-text: #e5e7eb;
+  --lib-accent: #2563eb;
+}
+
+.themeScope[data-theme="pink"] {
+  --lib-bg: #0b1220;
+  --lib-panel: #111827;
+  --lib-text: #fde7f3;
+  --lib-accent: #ec4899;
+}
+
+.themeScope[data-theme="blue"] {
+  --lib-bg: #0b1220;
+  --lib-panel: #0f172a;
+  --lib-text: #e6f0ff;
+  --lib-accent: #60a5fa;
+}

@@ -7,7 +7,7 @@ import LibraryTabs from '../components/library/LibraryTabs';
 import LibraryFilters from '../components/library/LibraryFilters';
 import LibraryGrid from '../components/library/LibraryGrid';
 import { QuickViewDialog } from '../components/library/QuickViewDialog';
-import '../styles/library-theme.css';
+import s from '../components/library/library-theme.module.css';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../types/library';
 import { getLibraryItems } from '../lib/api/library';
 import { getCourseRoute, trackCourseAction } from '../utils/courseRouting';
@@ -16,6 +16,16 @@ const ITEMS_PER_PAGE = 12;
 
 export default function LibraryPage() {
   const router = useRouter();
+  
+  // Theme state
+  const [theme, setTheme] = useState("dark");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("library:theme");
+      setTheme(saved || "dark");
+    }
+  }, []);
   
   // State
   const [allItems, setAllItems] = useState<LibraryItem[]>([]);
@@ -268,7 +278,7 @@ export default function LibraryPage() {
       onLogout={() => router.push('/logout')}
     >
       {/* Main Content */}
-      <div id="library-root" data-theme="dark" className="min-h-screen bg-[var(--lib-bg)] transition-colors">
+      <div id="library-root" className={`${s.themeScope} min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader
