@@ -26,6 +26,31 @@
     -webkit-line-clamp: 3;
   }
 
+  /* Netflix-style scrollbar hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
   /* Enhanced Touch Targets for Mobile */
   .touch-target {
     min-height: 44px;
@@ -208,4 +233,133 @@ button,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+/* Netflix-style hover scaling for library cards */
+.scale-125 {
+  transform: scale(1.25);
+}
+
+/* Digital Era Library Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* GPU-accelerated transforms for smooth video hover */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Smooth video scaling */
+.video-hover-scale {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Enhanced shadow effects for cards */
+.card-shadow {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow-hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Digital Era Library Animations */
+@keyframes videoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-videoFadeIn {
+  animation: videoFadeIn 0.5s ease-out;
+}
+
+/* Enhanced backdrop blur effects */
+.backdrop-blur-enhanced {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Smooth theme transitions */
+.theme-transition {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Enhanced focus states for library elements */
+.library-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-slate-900;
+}
+
+/* Video hover overlay animations */
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  }
+  to {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5), transparent);
+  }
+}
+
+.animate-overlayFadeIn {
+  animation: overlayFadeIn 0.4s ease-out;
+}
+
+/* Optimized instant hover performance */
+.instant-hover-transform {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
+  will-change: transform, opacity;
+}
+
+.instant-hover-scale {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* GPU-accelerated video hover effects */
+@media (prefers-reduced-motion: no-preference) {
+  .video-hover-element {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
+  }
+
+  .video-hover-element.hidden {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+
+  .video-hover-element.visible {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Instant click feedback */
+.click-feedback {
+  transition: transform 0.1s ease-out;
+}
+
+.click-feedback:active {
+  transform: scale(0.98);
 }

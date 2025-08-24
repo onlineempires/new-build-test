@@ -88,14 +88,15 @@ export default function LibraryGrid({
 
   return (
     <div className="py-8">
-      {/* Results Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-7 xl:gap-8 max-w-screen-2xl mx-auto px-4 sm:px-6">
-        {items.map((item) => (
-          <LibraryCard
-            key={item.id}
-            item={item}
-            onClick={onItemClick}
-          />
+      {/* Results Grid - Enhanced spacing for expanded cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-10 xl:gap-12 max-w-screen-2xl mx-auto px-4 sm:px-6" style={{ marginBottom: '200px' }}>
+        {items.map((item, index) => (
+          <div key={item.id} className="relative" style={{ marginBottom: index >= items.length - 4 ? '150px' : '0px' }}>
+            <LibraryCard
+              item={item}
+              onClick={onItemClick}
+            />
+          </div>
         ))}
         
         {/* Show loading skeleton cards while loading more */}
