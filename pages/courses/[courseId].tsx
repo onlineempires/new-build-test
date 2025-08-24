@@ -480,7 +480,7 @@ export default function CoursePage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-lg font-bold text-blue-600">{progress.courseProgress}%</span>
+                        <span className="text-lg font-bold" style={{color: 'var(--color-primary)'}}>{progress.courseProgress}%</span>
                       </div>
                     </div>
                     

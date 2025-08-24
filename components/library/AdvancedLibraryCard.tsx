@@ -55,7 +55,7 @@ const AdvancedLibraryCard: React.FC<AdvancedLibraryCardProps> = ({ course, user,
   const getProgressColor = (progress?: number) => {
     if (!progress) return 'bg-gray-200';
     if (progress === 100) return 'bg-green-500';
-    if (progress >= 50) return 'bg-blue-500';
+    if (progress >= 50) return 'theme-progress-fill';
     return 'bg-yellow-500';
   };
 

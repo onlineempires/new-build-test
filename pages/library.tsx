@@ -98,7 +98,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {/* Progress Badge */}
         {course.progress !== undefined && course.progress > 0 && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-2">
-            <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
+            <span className="bg-white/90 backdrop-blur-sm theme-text-primary text-xs font-medium px-2 py-1 rounded-full">
               {course.progress}%
             </span>
           </div>
@@ -106,7 +106,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
 
         {/* Course Icon/Visual */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl opacity-20 text-gray-400">
+          <div className="text-6xl opacity-20 theme-text-muted">
             {course.id === 'business-blueprint' ? '🏢' : 
              course.id === 'discovery-process' ? '🔍' : 
              course.id === 'next-steps' ? '📈' : 
@@ -143,24 +143,24 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getLevelBadgeColor(section)}`}>
             {section === 'start' ? 'Beginner' : section === 'advanced' ? 'Advanced' : 'Expert'}
           </span>
-          <div className="flex items-center text-xs text-gray-500">
+          <div className="flex items-center text-xs theme-text-muted">
             <Trophy className="w-3 h-3 mr-1" />
             +{course.lessonCount * (section === 'start' ? 15 : section === 'advanced' ? 20 : 25)} XP
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+        <h3 className="text-lg font-semibold theme-text-primary leading-tight transition-colors" style={{color: isHovered ? 'var(--color-primary)' : undefined}}>
           {course.title}
         </h3>
 
         {/* Description */}
-        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+        <p className="text-sm theme-text-secondary leading-relaxed line-clamp-2">
           {course.description}
         </p>
 
         {/* Course Stats */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="flex items-center justify-between text-xs theme-text-muted">
           <div className="flex items-center">
             <BookOpen className="w-3 h-3 mr-1" />
             <span>{course.lessonCount} lessons</span>
@@ -175,8 +175,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {course.progress !== undefined && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600 font-medium">Progress</span>
-              <span className="text-gray-900 font-semibold">
+              <span className="theme-text-secondary font-medium">Progress</span>
+              <span className="theme-text-primary font-semibold">
                 {course.progress === 100 ? 'Completed!' : `${course.progress}%`}
               </span>
             </div>
@@ -378,8 +378,8 @@ export default function LibraryPage() {
               onClick={() => setActiveFilter('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === 'all'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white theme-text-primary shadow-sm'
+                  : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               All Courses
@@ -391,8 +391,8 @@ export default function LibraryPage() {
               onClick={() => setActiveFilter('foundation')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === 'foundation'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white theme-text-primary shadow-sm'
+                  : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Foundation
@@ -404,8 +404,8 @@ export default function LibraryPage() {
               onClick={() => setActiveFilter('advanced')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === 'advanced'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white theme-text-primary shadow-sm'
+                  : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Advanced Training
@@ -417,8 +417,8 @@ export default function LibraryPage() {
               onClick={() => setActiveFilter('masterclass')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeFilter === 'masterclass'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white theme-text-primary shadow-sm'
+                  : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Masterclass Training
@@ -439,8 +439,8 @@ export default function LibraryPage() {
                     <i className="fas fa-play text-sm"></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Foundation Training</h2>
-                    <p className="text-sm text-gray-600">Essential courses to build your online business foundation</p>
+                    <h2 className="text-xl font-bold theme-text-primary">Foundation Training</h2>
+                    <p className="text-sm theme-text-secondary">Essential courses to build your online business foundation</p>
                   </div>
                 </div>
                 
@@ -465,8 +465,8 @@ export default function LibraryPage() {
                     <i className="fas fa-graduation-cap text-sm"></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Advanced Training</h2>
-                    <p className="text-sm text-gray-600">Specialized courses for scaling your business</p>
+                    <h2 className="text-xl font-bold theme-text-primary">Advanced Training</h2>
+                    <p className="text-sm theme-text-secondary">Specialized courses for scaling your business</p>
                   </div>
                 </div>
                 
@@ -491,8 +491,8 @@ export default function LibraryPage() {
                     <i className="fas fa-crown text-sm"></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Masterclass Training</h2>
-                    <p className="text-sm text-gray-600">Premium courses for advanced business growth</p>
+                    <h2 className="text-xl font-bold theme-text-primary">Masterclass Training</h2>
+                    <p className="text-sm theme-text-secondary">Premium courses for advanced business growth</p>
                   </div>
                 </div>
                 
@@ -521,10 +521,10 @@ export default function LibraryPage() {
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold theme-text-primary mb-2">
                 No courses found
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="theme-text-secondary mb-4">
                 Try adjusting your filter to see more courses.
               </p>
               <button

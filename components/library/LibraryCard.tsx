@@ -492,7 +492,7 @@ export default function LibraryCard({ item, onClick }: LibraryCardProps) {
                   <span>{formatDuration(item.durationMin)}</span>
                 </div>
                 {progressPercent > 0 && (
-                  <span className="text-blue-400">{progressPercent}% complete</span>
+                  <span style={{color: 'var(--color-primary)'}}>{progressPercent}% complete</span>
                 )}
               </div>
 

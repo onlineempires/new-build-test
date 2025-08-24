@@ -403,7 +403,7 @@ export default function AllCourses() {
               {/* Progress message for users who have started - REMOVED for cleaner UX */}
 
               <div className="flex items-center mb-3">
-                <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
+                <div className="w-7 h-7 theme-progress-fill text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
                   <i className="fas fa-play"></i>
                 </div>
                 <div className="flex-1">
@@ -514,7 +514,7 @@ export default function AllCourses() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "theme-progress-fill" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -760,7 +760,7 @@ export default function AllCourses() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "theme-progress-fill" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
