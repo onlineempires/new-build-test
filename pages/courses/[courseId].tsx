@@ -272,10 +272,10 @@ export default function CoursePage() {
                   </div>
 
                   {nextLesson && (
-                    <div className="flex items-center justify-between bg-blue-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between theme-bg-secondary rounded-lg p-4">
                       <div>
-                        <h3 className="font-medium text-blue-900">Continue Learning</h3>
-                        <p className="text-sm text-blue-700">Next: {nextLesson.title}</p>
+                        <h3 className="font-medium theme-text-primary">Continue Learning</h3>
+                        <p className="text-sm theme-text-secondary">Next: {nextLesson.title}</p>
                       </div>
                       <button
                         onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
@@ -405,23 +405,23 @@ export default function CoursePage() {
                                 className={`w-full flex items-center p-3 transition-colors text-left first:rounded-t-lg last:rounded-b-lg ${
                                   isLessonLocked 
                                     ? 'cursor-not-allowed opacity-50' 
-                                    : 'hover:bg-gray-50 cursor-pointer'
+                                    : 'theme-hover cursor-pointer'
                                 }`}
                               >
                                 <span className="w-6 h-6 mr-3">
                                   {isLessonLocked ? (
-                                    <i className="fas fa-lock text-gray-400"></i>
+                                    <i className="fas fa-lock theme-text-muted"></i>
                                   ) : lesson.isCompleted ? (
                                     <i className="fas fa-check-circle text-green-500"></i>
                                   ) : (
-                                    <i className="fas fa-play-circle text-gray-400"></i>
+                                    <i className="fas fa-play-circle theme-text-muted"></i>
                                   )}
                                 </span>
                                 <div className="flex-1">
-                                  <div className="font-medium text-gray-900">
+                                  <div className="font-medium theme-text-primary">
                                     {lessonIndex + 1}. {lesson.title}
                                   </div>
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-sm theme-text-secondary">
                                     {lesson.description}
                                   </div>
                                   {isLessonLocked && (
@@ -430,7 +430,7 @@ export default function CoursePage() {
                                     </div>
                                   )}
                                 </div>
-                                <div className="text-sm text-gray-500 ml-4">
+                                <div className="text-sm theme-text-secondary ml-4">
                                   {formatDuration(lesson.duration)}
                                 </div>
                               </button>
@@ -498,8 +498,8 @@ export default function CoursePage() {
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Estimated Time</span>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm theme-text-secondary">Estimated Time</span>
+                        <span className="text-sm font-medium theme-text-primary">
                           {Math.round(course.modules.reduce((acc, module) => 
                             acc + module.lessons.reduce((total, lesson) => total + lesson.duration, 0), 0
                           ) / 3600 * 10) / 10} hours
