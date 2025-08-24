@@ -14,9 +14,19 @@ const mockUser = {
 };
 
 interface CourseCardProps {
-  course: Course;
-  section: 'start' | 'advanced';
+  course: Course | MasterclassCourse;
+  section: 'start' | 'advanced' | 'masterclass';
   onClick: () => void;
+}
+
+interface MasterclassCourse {
+  id: string;
+  title: string;
+  description: string;
+  lessonCount: number;
+  price: number;
+  progress?: number;
+  isCompleted?: boolean;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => {
@@ -28,6 +38,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'advanced':
         return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'masterclass':
+        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -54,6 +66,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
   const getSectionBadge = () => {
     if (section === 'start') return { text: 'Foundation', color: 'bg-blue-500' };
     if (section === 'advanced') return { text: 'Advanced', color: 'bg-purple-500' };
+    if (section === 'masterclass') return { text: 'Premium', color: 'bg-yellow-500' };
     return { text: 'Course', color: 'bg-gray-500' };
   };
 
@@ -62,7 +75,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
   return (
     <div 
       className={`
-        bg-white border border-gray-200 rounded-xl overflow-hidden
+        theme-card rounded-xl overflow-hidden
         transition-all duration-300 ease-out cursor-pointer group
         hover:shadow-lg hover:border-gray-300 hover:-translate-y-1
         ${isHovered ? 'shadow-lg' : 'shadow-sm'}
@@ -128,11 +141,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {/* Level Badge */}
         <div className="flex items-center justify-between">
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getLevelBadgeColor(section)}`}>
-            {section === 'start' ? 'Beginner' : 'Advanced'}
+            {section === 'start' ? 'Beginner' : section === 'advanced' ? 'Advanced' : 'Expert'}
           </span>
           <div className="flex items-center text-xs text-gray-500">
             <Trophy className="w-3 h-3 mr-1" />
-            +{course.lessonCount * (section === 'start' ? 15 : 20)} XP
+            +{course.lessonCount * (section === 'start' ? 15 : section === 'advanced' ? 20 : 25)} XP
           </div>
         </div>
 
@@ -154,7 +167,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
           </div>
           <div className="flex items-center">
             <Clock className="w-3 h-3 mr-1" />
-            <span>{Math.round(course.lessonCount * (section === 'start' ? 0.17 : 0.2))}h</span>
+            <span>{Math.round(course.lessonCount * (section === 'start' ? 0.17 : section === 'advanced' ? 0.2 : 0.5))}h</span>
           </div>
         </div>
 
@@ -181,7 +194,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
           className={`
             w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg 
             font-medium text-sm transition-all duration-200
-            ${course.progress === 100 
+            ${section === 'masterclass' 
+              ? 'bg-orange-500 hover:bg-orange-600 text-white'
+              : course.progress === 100 
               ? 'bg-green-500 hover:bg-green-600 text-white' 
               : course.progress && course.progress > 0
               ? 'bg-blue-500 hover:bg-blue-600 text-white'
@@ -193,8 +208,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
             onClick();
           }}
         >
-          <i className={`${getButtonIcon()} text-sm`}></i>
-          <span>{getButtonText()}</span>
+          <i className={`${section === 'masterclass' ? 'fas fa-shopping-cart' : getButtonIcon()} text-sm`}></i>
+          <span>{section === 'masterclass' ? `Buy Masterclass - $${(course as MasterclassCourse).price}` : getButtonText()}</span>
         </button>
       </div>
     </div>
@@ -205,7 +220,7 @@ export default function LibraryPage() {
   const router = useRouter();
   const [data, setData] = useState<CourseData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'foundation' | 'advanced'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'foundation' | 'advanced' | 'masterclass'>('all');
 
   // Load course data - same as All Courses page
   useEffect(() => {
@@ -231,19 +246,56 @@ export default function LibraryPage() {
     router.push(`/courses/${course.id}`);
   };
 
+  // Masterclass courses data (same as All Courses page)
+  const masterclassCourses: MasterclassCourse[] = [
+    {
+      id: 'email-marketing-secrets',
+      title: 'Email Marketing Secrets',
+      description: 'Build profitable email sequences and automated funnels that convert',
+      lessonCount: 16,
+      price: 49,
+      progress: 0,
+      isCompleted: false
+    },
+    {
+      id: 'advanced-copywriting-masterclass',
+      title: 'Advanced Copywriting Masterclass',
+      description: 'Master the art of persuasive writing that sells and converts at scale',
+      lessonCount: 20,
+      price: 97,
+      progress: 0,
+      isCompleted: false
+    },
+    {
+      id: 'scaling-systems-masterclass',
+      title: 'Scaling Systems Masterclass',
+      description: 'Build automated systems and processes to scale your business to 7-figures',
+      lessonCount: 24,
+      price: 197,
+      progress: 0,
+      isCompleted: false
+    }
+  ];
+
   // Filter courses based on active filter
   const filteredCourses = useMemo(() => {
-    if (!data) return { startHereCourses: [], socialMediaCourses: [] };
+    if (!data) return { startHereCourses: [], socialMediaCourses: [], masterclassCourses: [] };
     
     const result = {
       startHereCourses: data.startHereCourses,
-      socialMediaCourses: data.socialMediaCourses
+      socialMediaCourses: data.socialMediaCourses,
+      masterclassCourses: masterclassCourses
     };
 
     if (activeFilter === 'foundation') {
       result.socialMediaCourses = [];
+      result.masterclassCourses = [];
     } else if (activeFilter === 'advanced') {
       result.startHereCourses = [];
+      result.masterclassCourses = [];
+    } else if (activeFilter === 'masterclass') {
+      result.startHereCourses = [];
+      result.socialMediaCourses = [];
     }
 
     return result;
@@ -251,15 +303,16 @@ export default function LibraryPage() {
 
   const getTotalCourses = () => {
     if (!data) return 0;
-    return data.startHereCourses.length + data.socialMediaCourses.length;
+    return data.startHereCourses.length + data.socialMediaCourses.length + masterclassCourses.length;
   };
 
   const getFilterCounts = () => {
-    if (!data) return { all: 0, foundation: 0, advanced: 0 };
+    if (!data) return { all: 0, foundation: 0, advanced: 0, masterclass: 0 };
     return {
-      all: data.startHereCourses.length + data.socialMediaCourses.length,
+      all: data.startHereCourses.length + data.socialMediaCourses.length + masterclassCourses.length,
       foundation: data.startHereCourses.length,
-      advanced: data.socialMediaCourses.length
+      advanced: data.socialMediaCourses.length,
+      masterclass: masterclassCourses.length
     };
   };
 
@@ -268,18 +321,18 @@ export default function LibraryPage() {
   if (isLoading) {
     return (
       <AppLayout user={mockUser}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen theme-bg">
           <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Loading Header */}
             <div className="mb-8 animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-96"></div>
+              <div className="h-8 theme-card rounded w-64 mb-2"></div>
+              <div className="h-4 theme-card rounded w-96"></div>
             </div>
             
             {/* Loading Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden animate-pulse">
+                <div key={index} className="theme-card rounded-xl overflow-hidden animate-pulse">
                   <div className="aspect-video bg-gray-200"></div>
                   <div className="p-6 space-y-3">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -303,24 +356,24 @@ export default function LibraryPage() {
         <meta name="description" content="Explore our course library with the same courses as All Courses, featuring our new sleek design" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen theme-bg">
         <div className="max-w-7xl mx-auto px-6 py-8">
           
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold theme-text-primary mb-2">
               Explore the Library
             </h1>
-            <p className="text-gray-600 mb-2">
+            <p className="theme-text-secondary mb-2">
               Deep dives, step by step trainings, and replays
             </p>
-            <p className="text-sm text-blue-600 font-medium">
+            <p className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
               Same courses as "All Courses" with new design • {getTotalCourses()} courses available
             </p>
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center space-x-1 mb-8 bg-gray-100 rounded-lg p-1 w-fit">
+          <div className="flex items-center space-x-1 mb-8 theme-hover rounded-lg p-1 w-fit" style={{ backgroundColor: 'var(--color-hover)' }}>
             <button
               onClick={() => setActiveFilter('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -358,6 +411,19 @@ export default function LibraryPage() {
               Advanced Training
               <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
                 {filterCounts.advanced}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveFilter('masterclass')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'masterclass'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Masterclass Training
+              <span className="ml-2 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs">
+                {filterCounts.masterclass}
               </span>
             </button>
           </div>
@@ -417,10 +483,40 @@ export default function LibraryPage() {
               </div>
             )}
 
+            {/* Masterclass Courses */}
+            {filteredCourses.masterclassCourses.length > 0 && (
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-full flex items-center justify-center mr-3">
+                    <i className="fas fa-crown text-sm"></i>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Masterclass Training</h2>
+                    <p className="text-sm text-gray-600">Premium courses for advanced business growth</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredCourses.masterclassCourses.map((course) => (
+                    <CourseCard 
+                      key={course.id}
+                      course={course}
+                      section="masterclass"
+                      onClick={() => {
+                        console.log('Masterclass purchase clicked:', course.title);
+                        // Handle masterclass purchase logic here
+                        alert(`Purchasing ${course.title} for $${course.price}`);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* Empty State */}
-          {!isLoading && filteredCourses.startHereCourses.length === 0 && filteredCourses.socialMediaCourses.length === 0 && (
+          {!isLoading && filteredCourses.startHereCourses.length === 0 && filteredCourses.socialMediaCourses.length === 0 && filteredCourses.masterclassCourses.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-6 h-6 text-gray-400" />

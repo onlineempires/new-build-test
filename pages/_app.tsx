@@ -10,6 +10,7 @@ import { AffiliateProvider } from '../contexts/AffiliateContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { UserProvider } from '../contexts/UserContext';
 import { DevProvider } from '../contexts/DevContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { DevInitializer } from '../components/dev/DevInitializer';
 import { DevToolsToggle } from '../components/dev/DevToolsToggle';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
@@ -75,26 +76,28 @@ export default function App({ Component, pageProps }: AppProps) {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <NotificationProvider>
-        <DevProvider>
-          <UserProvider>
-            <UserRoleProvider>
-              <AffiliateProvider>
-                <CourseAccessProvider>
-                  <AdminAuthProvider>
-                    <UpgradeProvider>
-                      <LoadingIndicator />
-                      <DevInitializer />
-                      <Component {...pageProps} />
-                    </UpgradeProvider>
-                  </AdminAuthProvider>
-                </CourseAccessProvider>
-              </AffiliateProvider>
-            </UserRoleProvider>
-          </UserProvider>
-        </DevProvider>
-      </NotificationProvider>
-      <DevToolsToggle />
+      <ThemeProvider>
+        <NotificationProvider>
+          <DevProvider>
+            <UserProvider>
+              <UserRoleProvider>
+                <AffiliateProvider>
+                  <CourseAccessProvider>
+                    <AdminAuthProvider>
+                      <UpgradeProvider>
+                        <LoadingIndicator />
+                        <DevInitializer />
+                        <Component {...pageProps} />
+                      </UpgradeProvider>
+                    </AdminAuthProvider>
+                  </CourseAccessProvider>
+                </AffiliateProvider>
+              </UserRoleProvider>
+            </UserProvider>
+          </DevProvider>
+        </NotificationProvider>
+        <DevToolsToggle />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -4,11 +4,12 @@ import { useRouter } from 'next/router';
 import NotificationDropdown from '../dashboard/NotificationDropdown';
 import GlobalNotificationDropdown from '../dashboard/GlobalNotificationDropdown';
 import { useNotifications } from '../../contexts/NotificationContext';
-import ProfileDropdown from '../dashboard/ProfileDropdown';
+import UserDropdown from '../UserDropdown';
 import UpgradeButton from '../upgrades/UpgradeButton';
 import { RoleSwitcher, MobileRoleSwitcher } from '../dev/RoleSwitcher';
 import { GatingStatus } from '../dev/GatingStatus';
 import EnvironmentIndicator from '../admin/EnvironmentIndicator';
+import { useTheme } from '../../contexts/ThemeContext';
 // Removed unused import - shouldShowRoleSwitcher
 
 interface User {
@@ -39,6 +40,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { setNotifications } = useNotifications();
+  const { currentTheme } = useTheme();
   
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -89,7 +91,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen theme-bg">
       <EnvironmentIndicator />
       <Sidebar 
         user={user} 
@@ -100,14 +102,14 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
       />
       
       {/* Fixed Header */}
-      <div className="fixed top-0 right-0 left-0 lg:left-64 bg-white border-b border-slate-200 z-[70] shadow-sm">
+      <div className="fixed top-0 right-0 left-0 lg:left-64 border-b z-[70] shadow-sm theme-header">
           {/* Mobile Header */}
           <div className="lg:hidden px-4 h-14 flex items-center">
             <div className="flex items-center justify-between w-full">
               {/* Left: Hamburger */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 text-slate-700 hover:text-slate-900 rounded-xl hover:bg-slate-50 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 theme-text-primary theme-hover rounded-xl transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Toggle menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,7 +126,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                 <input
                   type="text"
                   placeholder="Search courses, lessons..."
-                  className="w-full h-10 rounded-xl border-slate-200 px-3 text-[15px] bg-slate-50 border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-slate-900"
+                  className="w-full h-10 rounded-xl px-3 text-[15px] theme-input focus:outline-none focus:ring-2 transition-all"
                 />
               </div>
               
@@ -137,26 +139,28 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
           </div>
           
           {/* Desktop Header */}
-          <div className="hidden lg:block px-6 py-4 bg-white">
+          <div className="hidden lg:block px-6 py-4 theme-header">
             <div className="flex items-center justify-between">
               {/* Left: Title */}
-              <h1 className="text-2xl font-bold text-slate-900">{getPageTitle()}</h1>
+              <h1 className="text-2xl font-bold theme-text-primary">
+                {getPageTitle()}
+              </h1>
               
-              {/* Right: Search, Bell, Avatar */}
+              {/* Right: Search, Actions, and User Menu */}
               <div className="flex items-center gap-4">
                 {/* Search Input */}
                 <div className="relative w-80 xl:w-[400px]">
                   <input
                     type="text"
                     placeholder="Search courses, lessons..."
-                    className="w-full h-10 pl-10 pr-4 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 bg-white"
+                    className="w-full h-10 pl-10 pr-4 text-sm rounded-lg theme-input focus:outline-none focus:ring-2"
                   />
-                  <div className="absolute left-3 top-2.5 text-slate-400">
+                  <div className="absolute left-3 top-2.5 theme-text-muted">
                     <i className="fas fa-search"></i>
                   </div>
                 </div>
                 
-                {/* Community, Upgrade, and Feedback */}
+                {/* Action Items */}
                 <div className="flex items-center gap-3">
                   {/* Dev Tools - Always show in development */}
                   <RoleSwitcher />
@@ -173,14 +177,14 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                     href="https://www.facebook.com/groups/onlineempiresvip" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-flex items-center px-4 py-2 theme-button-primary text-sm font-medium rounded-lg transition-colors"
                   >
                     <i className="fab fa-facebook-f mr-2"></i>
                     Join The Community
                   </a>
                   <button 
                     onClick={onFeedbackClick || (() => {})} 
-                    className="inline-flex items-center px-3 py-2 text-slate-600 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors"
+                    className="inline-flex items-center px-3 py-2 theme-text-secondary theme-hover rounded-lg transition-colors"
                     aria-label="Send Feedback"
                   >
                     <i className="fas fa-comment mr-2"></i>
@@ -188,14 +192,13 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
                   </button>
                 </div>
 
-                {/* Bell with Dropdown - Global Notification System */}
+                {/* Notifications */}
                 <GlobalNotificationDropdown />
                 
-                {/* Avatar + Name + Dropdown */}
-                <ProfileDropdown 
+                {/* User Dropdown with Theme Selector */}
+                <UserDropdown 
                   user={user}
                   onLogout={handleLogout}
-                  onFeedbackClick={onFeedbackClick || (() => {})}
                 />
               </div>
             </div>

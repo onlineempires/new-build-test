@@ -91,13 +91,13 @@ export default function CoursePage() {
   if (loading) {
     return (
       <AppLayout user={{ id: 0, name: 'Loading...', avatarUrl: '' }}>
-        <div className="p-6">
+        <div className="p-6 theme-bg">
           <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-96 mb-6"></div>
-            <div className="bg-gray-200 h-64 rounded-lg mb-6"></div>
+            <div className="h-4 theme-card rounded w-96 mb-6"></div>
+            <div className="theme-card h-64 rounded-lg mb-6"></div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-gray-200 h-96 rounded-lg"></div>
-              <div className="bg-gray-200 h-96 rounded-lg"></div>
+              <div className="lg:col-span-2 theme-card h-96 rounded-lg"></div>
+              <div className="theme-card h-96 rounded-lg"></div>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function CoursePage() {
   if (error || !course) {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-        <div className="p-6">
+        <div className="p-6 theme-bg">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error || 'Course not found'}
             <button 
@@ -216,26 +216,26 @@ export default function CoursePage() {
         onClearNotifications={() => {}}
         onFeedbackClick={() => setFeedbackModalOpen(true)}
       >
-        <div className="min-h-screen bg-gray-50 pb-8">
+        <div className="min-h-screen theme-bg pb-8">
           
           {/* Breadcrumb Navigation */}
-          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
-            <nav className="flex flex-wrap text-sm text-gray-500">
+          <div className="theme-header theme-border border-b px-4 sm:px-6 py-3 sm:py-4">
+            <nav className="flex flex-wrap text-sm theme-text-muted">
               <button 
                 onClick={() => router.push('/')}
-                className="hover:text-gray-700 transition-colors"
+                className="theme-hover theme-text-secondary transition-colors"
               >
                 Dashboard
               </button>
               <span className="mx-2">&gt;</span>
               <button 
                 onClick={() => router.push('/courses')}
-                className="hover:text-gray-700 transition-colors"
+                className="theme-hover theme-text-secondary transition-colors"
               >
                 All Courses
               </button>
               <span className="mx-2">&gt;</span>
-              <span className="text-gray-900 font-medium">{course.title}</span>
+              <span className="theme-text-primary font-medium">{course.title}</span>
             </nav>
           </div>
 
@@ -246,7 +246,7 @@ export default function CoursePage() {
               <div className="lg:col-span-2">
                 
                 {/* Course Header */}
-                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
+                <div className="theme-card rounded-lg shadow-sm p-4 sm:p-6 mb-6">
                   <div className="flex items-center mb-4">
                     <img
                       src={course.thumbnailUrl}
@@ -254,9 +254,9 @@ export default function CoursePage() {
                       className="w-16 h-16 rounded-lg object-cover mr-4"
                     />
                     <div className="flex-1">
-                      <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title}</h1>
-                      <p className="text-gray-600 mb-2">{course.description}</p>
-                      <div className="flex items-center text-sm text-gray-500 flex-wrap gap-2 sm:gap-4">
+                      <h1 className="text-2xl font-bold theme-text-primary mb-2">{course.title}</h1>
+                      <p className="theme-text-secondary mb-2">{course.description}</p>
+                      <div className="flex items-center text-sm theme-text-muted flex-wrap gap-2 sm:gap-4">
                         <span className="whitespace-nowrap">{course.moduleCount}&nbsp;Modules</span>
                         <span className="whitespace-nowrap">{course.lessonCount}&nbsp;Lessons</span>
                         <span className="whitespace-nowrap">{progress.courseProgress}%&nbsp;Complete</span>
@@ -264,7 +264,7 @@ export default function CoursePage() {
                     </div>
                   </div>
                   
-                  <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                  <div className="w-full theme-border rounded-full h-3 mb-4">
                     <div
                       className="bg-blue-600 h-3 rounded-full transition-all duration-300"
                       style={{ width: `${progress.courseProgress}%` }}
@@ -297,7 +297,7 @@ export default function CoursePage() {
                     const isLocked = module.isLocked || !isUnlocked;
                     
                     return (
-                      <div key={module.id} className={`bg-white rounded-lg shadow-sm p-4 sm:p-6 relative ${
+                      <div key={module.id} className={`theme-card rounded-lg shadow-sm p-4 sm:p-6 relative ${
                         isLocked ? 'opacity-60' : ''
                       }`}>
                         {isLocked && (
@@ -314,30 +314,30 @@ export default function CoursePage() {
                             </span>
                             <div>
                               <div className="flex items-center">
-                                <h3 className="text-lg font-semibold text-gray-900">{module.title}</h3>
+                                <h3 className="text-lg font-semibold theme-text-primary">{module.title}</h3>
                                 {isLocked && (
                                   <span className="ml-2 px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
                                     Locked
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-500">{module.lessons.length} lessons</p>
+                              <p className="text-sm theme-text-muted">{module.lessons.length} lessons</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium text-gray-600">{moduleProgress}%</div>
-                            <div className="text-xs text-gray-500">{completedInModule}/{module.lessons.length}</div>
+                            <div className="text-sm font-medium theme-text-secondary">{moduleProgress}%</div>
+                            <div className="text-xs theme-text-muted">{completedInModule}/{module.lessons.length}</div>
                           </div>
                         </div>
                         
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                        <div className="w-full theme-border rounded-full h-2 mb-4">
                           <div
                             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${moduleProgress}%` }}
                           ></div>
                         </div>
 
-                        <p className="text-gray-600 mb-4">{module.description}</p>
+                        <p className="theme-text-secondary mb-4">{module.description}</p>
                         
                         {isLocked && (
                           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">

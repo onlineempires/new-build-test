@@ -251,10 +251,10 @@ export default function LessonPage() {
   if (loading) {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen theme-bg">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading lesson...</p>
+            <p className="theme-text-secondary">Loading lesson...</p>
           </div>
         </div>
       </AppLayout>
@@ -264,7 +264,7 @@ export default function LessonPage() {
   if (error || !course || !currentLesson) {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-        <div className="p-6">
+        <div className="p-6 theme-bg">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error || 'Lesson not found'}
             <button 
@@ -295,7 +295,7 @@ export default function LessonPage() {
       
       return (
         <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-          <div className="p-6">
+          <div className="p-6 theme-bg">
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               Course access required. Redirecting to course page in 3 seconds...
               <button 
@@ -315,13 +315,13 @@ export default function LessonPage() {
     if (course.id === 'business-blueprint' && (userFlags.role === 'free' || userFlags.role === 'trial') && currentLesson.id !== 'lesson-1-1') {
       return (
         <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-          <div className="p-6">
+          <div className="p-6 theme-bg">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="text-blue-600 w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Locked</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-xl font-bold theme-text-primary mb-2">Lesson Locked</h3>
+              <p className="theme-text-secondary mb-6">
                 Complete the previous lesson in your Business Blueprint journey to unlock this content.
               </p>
               <div className="space-y-3">
@@ -347,13 +347,13 @@ export default function LessonPage() {
     // Default progress lock panel for sequential lessons
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-        <div className="p-6">
+        <div className="p-6 theme-bg">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Lock className="text-yellow-600 w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Lesson Locked</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-xl font-bold theme-text-primary mb-2">Lesson Locked</h3>
+            <p className="theme-text-secondary mb-6">
               Complete the previous lessons to unlock this content.
             </p>
             <div className="flex gap-4 justify-center">

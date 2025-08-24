@@ -2,6 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Theme Variables */
+:root {
+  /* Default light theme variables will be overridden by ThemeProvider */
+  --color-background: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-sidebar: #F9FAFB;
+  --color-header: #FFFFFF;
+  --color-text-primary: #1E1E1E;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-primary: #2563EB;
+  --color-secondary: #6366F1;
+  --color-success: #22C55E;
+  --color-warning: #FACC15;
+  --color-error: #EF4444;
+  --color-hover: #F3F4F6;
+  --color-border: #E5E7EB;
+  --color-divider: #F3F4F6;
+}
+
+/* Apply theme to body */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global theme utility classes for consistent theming */
+.theme-bg {
+  background-color: var(--color-background);
+  transition: background-color 0.3s ease;
+}
+
+.theme-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-sidebar {
+  background-color: var(--color-sidebar);
+  border-color: var(--color-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-header {
+  background-color: var(--color-header);
+  border-color: var(--color-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-text-primary {
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.theme-text-muted {
+  color: var(--color-text-muted);
+  transition: color 0.3s ease;
+}
+
+.theme-button-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.theme-button-primary:hover {
+  opacity: 0.9;
+}
+
+.theme-button-secondary {
+  background-color: var(--color-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-input {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary)20;
+  outline: none;
+}
+
+.theme-hover {
+  transition: background-color 0.2s ease;
+}
+
+.theme-hover:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+  transition: border-color 0.3s ease;
+}
+
+.theme-divider {
+  border-color: var(--color-divider);
+  transition: border-color 0.3s ease;
+}
+
 /* Mobile-First Optimizations */
 @layer utilities {
   /* Line Clamping for better text overflow */
@@ -78,9 +197,61 @@
   }
 }
 
+/* Theme-specific component styles */
+.theme-card {
+  background-color: var(--color-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.theme-button-primary {
+  background-color: var(--color-primary);
+  color: white;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.theme-button-primary:hover {
+  opacity: 0.9;
+}
+
+.theme-button-primary:active {
+  transform: scale(0.98);
+}
+
+.theme-button-secondary {
+  background-color: var(--color-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-input {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary)20;
+  outline: none;
+}
+
+.theme-hover:hover {
+  background-color: var(--color-hover);
+}
+
 /* Performance Optimizations */
 * {
   box-sizing: border-box;
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
 }
 
 html {
@@ -94,6 +265,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Improve image loading performance */
