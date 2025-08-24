@@ -519,14 +519,7 @@ export default function LessonPage({ course }: LessonPageProps) {
             </div>
             
           </div>
-        </div>
-        
-          </div>
-        </div>
-        
       </div>
-
-
     </AppLayout>
   );
 }
