@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { GetServerSideProps } from 'next';
 import AppLayout from '../../../../components/layout/AppLayout';
 import { getCourseLessons, type Lesson } from '../../../../utils/courseRouting';
 import { getLibraryItemBySlug } from '../../../../lib/api/library';
 import { LibraryItem } from '../../../../types/library';
 import { useLessonProgress } from '../../../../hooks/useLessonProgress';
+import { findLibraryCourseByLesson, LibraryCourse } from '../../../../lib/courseMapping';
+import { checkAdvancedTrainingAccess, User, AccessResult } from '../../../../utils/accessControl';
 
 // Mock user data - in production this would come from authentication
 const mockUser = {
@@ -20,16 +23,35 @@ interface LessonPageProps {
     title: string;
     description: string;
   };
+  libraryCourse?: LibraryCourse;
+  libraryCourseId?: string;
+  accessVerified?: boolean;
 }
 
-export default function LessonPage({ course }: LessonPageProps) {
+export default function LessonPage({ course, libraryCourse: propLibraryCourse, libraryCourseId: propLibraryCourseId, accessVerified }: LessonPageProps) {
   const router = useRouter();
-  const { courseSlug, lessonSlug } = router.query;
+  const { courseSlug, lessonSlug, from, courseId } = router.query;
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [courseItem, setCourseItem] = useState<LibraryItem | null>(null);
+  const [libraryCourse, setLibraryCourse] = useState<LibraryCourse | null>(propLibraryCourse || null);
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'resources' | 'transcript'>('resources');
+  const [accessResult, setAccessResult] = useState<AccessResult | null>(null);
+  const [isAccessLoading, setIsAccessLoading] = useState(true);
+  
+  // Check if this lesson was accessed from the library
+  const isFromLibrary = from === 'library';
+  const libraryCourseId = courseId as string;
+  
+  // Mock user for access control
+  const user: User = {
+    id: 1,
+    name: 'Ashley Kemp',
+    email: 'ashley@example.com',
+    membershipLevel: 'monthly',
+    subscriptionStatus: 'active'
+  };
   
   // Use the new lesson progress hook
   const { progress, loading: progressLoading, toggleCompleted, setWatchedPct } = useLessonProgress(
@@ -49,6 +71,34 @@ export default function LessonPage({ course }: LessonPageProps) {
       getLibraryItemBySlug(courseSlug).then(item => {
         setCourseItem(item);
       });
+      
+      // If accessed from library, get the mapped course info and check access
+      if (isFromLibrary && lessonSlug && typeof lessonSlug === 'string') {
+        // If we already have server-verified access, use that
+        if (accessVerified && propLibraryCourse) {
+          setLibraryCourse(propLibraryCourse);
+          setAccessResult({ hasAccess: true });
+        } else {
+          // Client-side fallback for courses not caught by server-side check
+          const mappedCourse = findLibraryCourseByLesson(courseSlug, lessonSlug);
+          if (mappedCourse) {
+            setLibraryCourse(mappedCourse.course);
+            
+            // Check access for this specific course
+            const access = checkAdvancedTrainingAccess(user, mappedCourse.course.accessLevel);
+            setAccessResult(access);
+            
+            if (!access.hasAccess) {
+              // If no access, redirect to upgrade page after a brief delay
+              setTimeout(() => {
+                router.push(access.upgradeUrl || '/upgrade');
+              }, 2000);
+            }
+          }
+        }
+      }
+      
+      setIsAccessLoading(false);
 
       // Find current lesson
       if (lessonSlug && typeof lessonSlug === 'string') {
@@ -228,13 +278,59 @@ export default function LessonPage({ course }: LessonPageProps) {
     }
   }, [progress.completed, currentLesson?.id]);
 
-  if (!currentLesson || !courseItem) {
+  // Show loading state
+  if (!currentLesson || !courseItem || isAccessLoading) {
     return (
       <AppLayout user={mockUser}>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-white text-lg">Loading lesson...</p>
+            <p className="text-gray-700 text-lg">Loading lesson...</p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+  
+  // Show access denied state for library courses (client-side fallback)
+  if (isFromLibrary && accessResult && !accessResult.hasAccess && !accessVerified) {
+    return (
+      <AppLayout user={mockUser}>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="max-w-md mx-auto text-center p-8">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i className="fas fa-lock text-red-600 text-2xl"></i>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Access Restricted
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {accessResult.reason}
+            </p>
+            {libraryCourse && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-yellow-800">
+                  <strong>{libraryCourse.title}</strong> requires {accessResult.requiredPlan} membership to access.
+                </p>
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button 
+                onClick={() => router.push('/library')}
+                className="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+              >
+                Back to Library
+              </button>
+              <button 
+                onClick={() => router.push(accessResult.upgradeUrl || '/upgrade')}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Upgrade Now
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">
+              Redirecting to upgrade page in a few seconds...
+            </p>
           </div>
         </div>
       </AppLayout>
@@ -257,7 +353,7 @@ export default function LessonPage({ course }: LessonPageProps) {
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-4">
             
-            {/* Light Theme Breadcrumb Navigation */}
+            {/* Enhanced Breadcrumb Navigation with Library Context */}
             <div className="flex items-center space-x-2 text-sm text-gray-500 mb-2">
               <button 
                 onClick={() => router.push('/dashboard')}
@@ -266,22 +362,74 @@ export default function LessonPage({ course }: LessonPageProps) {
                 Dashboard
               </button>
               <i className="fas fa-chevron-right text-xs"></i>
-              <button 
-                onClick={() => router.push('/library')}
-                className="hover:text-gray-700 transition-colors"
-              >
-                All Courses
-              </button>
-              <i className="fas fa-chevron-right text-xs"></i>
-              <button 
-                onClick={() => router.push(`/learn/${courseSlug}`)}
-                className="hover:text-gray-700 transition-colors"
-              >
-                {courseTitle}
-              </button>
-              <i className="fas fa-chevron-right text-xs"></i>
-              <span className="text-gray-900 font-medium">{currentLesson.title}</span>
+              
+              {isFromLibrary ? (
+                // Breadcrumb when accessed from library
+                <>
+                  <button 
+                    onClick={() => router.push('/library')}
+                    className="hover:text-gray-700 transition-colors flex items-center space-x-1"
+                  >
+                    <i className="fas fa-book text-xs"></i>
+                    <span>Library</span>
+                  </button>
+                  <i className="fas fa-chevron-right text-xs"></i>
+                  {libraryCourse && (
+                    <>
+                      <span className="text-gray-700 font-medium">{libraryCourse.title}</span>
+                      <i className="fas fa-chevron-right text-xs"></i>
+                    </>
+                  )}
+                  <span className="text-gray-900 font-medium">{currentLesson.title}</span>
+                </>
+              ) : (
+                // Standard breadcrumb for Advanced Training
+                <>
+                  <button 
+                    onClick={() => router.push('/library')}
+                    className="hover:text-gray-700 transition-colors"
+                  >
+                    Advanced Training
+                  </button>
+                  <i className="fas fa-chevron-right text-xs"></i>
+                  <button 
+                    onClick={() => router.push(`/learn/${courseSlug}`)}
+                    className="hover:text-gray-700 transition-colors"
+                  >
+                    {courseTitle}
+                  </button>
+                  <i className="fas fa-chevron-right text-xs"></i>
+                  <span className="text-gray-900 font-medium">{currentLesson.title}</span>
+                </>
+              )}
             </div>
+            
+            {/* Library Context Indicator */}
+            {isFromLibrary && libraryCourse && (
+              <div className="flex items-center space-x-3 mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i className="fas fa-book text-blue-600 text-sm"></i>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-blue-900">
+                    Accessed from Library: {libraryCourse.title}
+                  </p>
+                  <p className="text-xs text-blue-700">
+                    {libraryCourse.level} • {libraryCourse.duration} • {libraryCourse.category}
+                  </p>
+                </div>
+                <div className="flex-shrink-0">
+                  <button 
+                    onClick={() => router.push('/library')}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    ← Back to Library
+                  </button>
+                </div>
+              </div>
+            )}
             
           </div>
         </div>
@@ -595,10 +743,58 @@ export default function LessonPage({ course }: LessonPageProps) {
 
 
 
-// This page doesn't need getStaticProps/getServerSideProps for the mock data
-// In production, you would fetch course and lesson data here
-export async function getServerSideProps() {
+// Server-side access verification for library courses
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { courseSlug, lessonSlug, from, courseId } = context.query;
+  
+  // If accessed from library, verify access on server-side
+  if (from === 'library' && courseSlug && lessonSlug) {
+    try {
+      // Find the mapped course
+      const mappedCourse = findLibraryCourseByLesson(
+        courseSlug as string, 
+        lessonSlug as string
+      );
+      
+      if (mappedCourse) {
+        // Mock user data (in production, get from session/auth)
+        const user: User = {
+          id: 1,
+          name: 'Ashley Kemp',
+          email: 'ashley@example.com',
+          membershipLevel: 'monthly',
+          subscriptionStatus: 'active'
+        };
+        
+        // Check access
+        const accessResult = checkAdvancedTrainingAccess(user, mappedCourse.course.accessLevel);
+        
+        if (!accessResult.hasAccess) {
+          // Redirect to upgrade page if no access
+          return {
+            redirect: {
+              destination: accessResult.upgradeUrl || '/upgrade',
+              permanent: false,
+            },
+          };
+        }
+        
+        // Pass course info as props
+        return {
+          props: {
+            libraryCourse: mappedCourse.course,
+            libraryCourseId: mappedCourse.id,
+            accessVerified: true,
+          },
+        };
+      }
+    } catch (error) {
+      console.error('Server-side access check failed:', error);
+      // Continue to regular lesson page if mapping check fails
+    }
+  }
+  
   return {
-    props: {}
+    props: {},
   };
-}
+};

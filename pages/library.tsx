@@ -10,10 +10,12 @@ import { QuickViewDialog } from '../components/library/QuickViewDialog';
 import { HoverPreviewProvider } from '../components/library/HoverPreviewProvider';
 import { HoverPreviewCard } from '../components/library/HoverPreviewCard';
 
-import s from '../components/library/library-theme.module.css';
+// CSS import moved to _app.tsx
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../types/library';
 import { getLibraryItems } from '../lib/api/library';
 import { getCourseRoute, trackCourseAction } from '../utils/courseRouting';
+import { getAllLibraryCourses, getLibraryCourse, LibraryCourse } from '../lib/courseMapping';
+import { hasAccessToLibraryCourse, checkAdvancedTrainingAccess, getMembershipBadgeText, getMembershipBadgeColor, getUpgradeUrl } from '../utils/accessControl';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -32,11 +34,13 @@ export default function LibraryPage() {
   
   // State
   const [allItems, setAllItems] = useState<LibraryItem[]>([]);
+  const [mappedCourses, setMappedCourses] = useState<(LibraryCourse & { id: string })[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<LibraryItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [displayedItems, setDisplayedItems] = useState<LibraryItem[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [user] = useState({ id: 123, name: 'Ashley Kemp', avatarUrl: '/default-avatar.png', membershipLevel: 'monthly' as const });
 
   // URL-based state
   const [activeTab, setActiveTab] = useState<LibraryItemType | 'all'>('all');
@@ -78,13 +82,17 @@ export default function LibraryPage() {
     router.replace({ pathname: '/library', query }, undefined, { shallow: true });
   }, [router]);
 
-  // Load library items
+  // Load library items and mapped courses
   useEffect(() => {
     const loadItems = async () => {
       setIsLoading(true);
       try {
+        // Load both traditional library items and mapped courses
         const items = await getLibraryItems();
+        const courses = getAllLibraryCourses();
+        
         setAllItems(items);
+        setMappedCourses(courses);
       } catch (error) {
         console.error('Failed to load library items:', error);
       } finally {
@@ -226,26 +234,58 @@ export default function LibraryPage() {
     setSelectedItem(null);
   };
 
-  const handleStartCourse = (item: LibraryItem) => {
-    const targetRoute = getCourseRoute(item);
-    const isStarting = item.progressPct === 0 || !item.progressPct;
+  const handleAdvancedCourseNavigate = (courseSlug: string, lessonSlug: string, courseId: string) => {
+    const course = getLibraryCourse(courseId);
+    if (!course) {
+      console.error('Course not found:', courseId);
+      return;
+    }
     
-    // Track the action
-    trackCourseAction(isStarting ? 'start' : 'continue', item, targetRoute);
+    // Check access before navigation
+    const accessCheck = checkAdvancedTrainingAccess(user, course.accessLevel);
+    if (!accessCheck.hasAccess) {
+      router.push(accessCheck.upgradeUrl || '/upgrade');
+      return;
+    }
     
-    // Navigate to the appropriate lesson
+    // Navigate to Advanced Training lesson with library context
+    const targetRoute = `/learn/${courseSlug}/lesson/${lessonSlug}?from=library&courseId=${courseId}`;
+    trackCourseAction('start', { ...course, id: courseId }, targetRoute);
     router.push(targetRoute);
+  };
+
+  const handleStartCourse = (item: LibraryItem | (LibraryCourse & { id: string })) => {
+    // Check if this is a mapped course
+    if ('courseSlug' in item && 'lessonSlug' in item) {
+      const course = item as LibraryCourse & { id: string };
+      handleAdvancedCourseNavigate(course.courseSlug, course.lessonSlug, course.id);
+    } else {
+      // Handle traditional library items
+      const targetRoute = getCourseRoute(item as LibraryItem);
+      const isStarting = (item as LibraryItem).progressPct === 0 || !(item as LibraryItem).progressPct;
+      
+      trackCourseAction(isStarting ? 'start' : 'continue', item, targetRoute);
+      router.push(targetRoute);
+    }
     handleCloseModal();
   };
 
-  const handleUnlockAccess = (item: LibraryItem) => {
+  const handleUnlockAccess = (item: LibraryItem | (LibraryCourse & { id: string })) => {
     console.log('Unlocking access for:', item.title);
-    // In production, this would navigate to the paywall/purchase page
-    if (item.purchaseHref) {
-      router.push(item.purchaseHref);
+    
+    if ('courseSlug' in item && 'lessonSlug' in item) {
+      // Handle mapped course upgrade
+      const course = item as LibraryCourse & { id: string };
+      const upgradeUrl = getUpgradeUrl(course);
+      router.push(upgradeUrl);
     } else {
-      // Fallback to general upgrade page
-      router.push('/upgrade');
+      // Handle traditional library items
+      const libraryItem = item as LibraryItem;
+      if (libraryItem.purchaseHref) {
+        router.push(libraryItem.purchaseHref);
+      } else {
+        router.push('/upgrade');
+      }
     }
     handleCloseModal();
   };
@@ -277,11 +317,11 @@ export default function LibraryPage() {
 
   return (
     <AppLayout 
-      user={{ id: 123, name: "Ashley Kemp", avatarUrl: "/default-avatar.png" }}
+      user={user}
       onLogout={() => router.push('/logout')}
     >
       {/* Main Content */}
-      <div id="library-root" className={`${s.themeScope} min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
+      <div id="library-root" className={`themeScope min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
         <HoverPreviewProvider>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
@@ -314,10 +354,14 @@ export default function LibraryPage() {
           {/* Grid */}
           <LibraryGrid
             items={displayedItems}
+            mappedCourses={mappedCourses}
+            user={user}
             isLoading={isLoading}
             onItemClick={handleItemClick}
+            onAdvancedCourseClick={handleAdvancedCourseNavigate}
             onLoadMore={hasMore ? handleLoadMore : undefined}
             hasMore={hasMore}
+            showMappedCourses={true}
           />
         </div>
 
