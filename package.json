@@ -25,6 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
+    "framer-motion": "^12.23.12",
     "idb": "^8.0.0",
     "iron-session": "^6.3.1",
     "lucide-react": "^0.539.0",

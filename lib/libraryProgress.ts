@@ -5,6 +5,16 @@ export interface ResumeInfo {
   started: boolean;
 }
 
+export interface LibraryCourse {
+  slug: string;
+  title: string;
+  summary: string;
+  durationLabel: string; // "48 minutes"
+  imageUrl: string;
+  isNew?: boolean;
+  lessons: { slug: string }[];
+}
+
 export function getResumeHref(userId: string, courseSlug: string): ResumeInfo {
   const lessons = getCourseLessons(courseSlug);
   
@@ -41,5 +51,28 @@ export function getResumeHref(userId: string, courseSlug: string): ResumeInfo {
   return {
     href: `/library/learn/${courseSlug}/lesson/${firstIncompleteLesson.id}`,
     started: hasProgress
+  };
+}
+
+// Enhanced version for hover preview - supports LibraryItem and LibraryCourse
+export function getResumeForCourse(userId: string, course: LibraryCourse | any) {
+  // Read localStorage or call existing progress API:
+  // key: lib:prog:${userId}:${course.slug} -> { lastLessonSlug?: string }
+  const saved = typeof window !== "undefined"
+    ? localStorage.getItem(`lib:prog:${userId}:${course.slug}`)
+    : null;
+
+  const lastData = saved ? JSON.parse(saved) : null;
+  const lastLessonSlug = lastData?.lastLessonSlug;
+  
+  // If we have lessons array, use it; otherwise fallback
+  const lessons = course.lessons || [];
+  const lessonSlug = lastLessonSlug || lessons?.[0]?.slug || "lesson-1";
+  const started = Boolean(lastLessonSlug);
+
+  return {
+    href: `/learn/${course.slug}/lesson/${lessonSlug}`.toLowerCase(),
+    started,
+    label: started ? "Continue course" : "Watch now",
   };
 }

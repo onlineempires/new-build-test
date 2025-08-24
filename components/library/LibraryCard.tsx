@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { LibraryItem } from '../../types/library';
 import { generateThumbnail } from '../../lib/api/thumbnails';
+import { usePreview } from './PreviewProvider';
+import { getResumeForCourse } from '../../lib/libraryProgress';
 
 interface LibraryCardProps {
   item: LibraryItem;
@@ -8,9 +11,27 @@ interface LibraryCardProps {
 }
 
 export default function LibraryCard({ item, onClick }: LibraryCardProps) {
+  const router = useRouter();
+  const preview = usePreview();
+  const cardRef = useRef<HTMLDivElement>(null);
+  
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(item.heroImage);
+  const [isPointerDevice, setIsPointerDevice] = useState(false);
+
+  // Detect pointer capability
+  useEffect(() => {
+    const checkPointer = () => {
+      setIsPointerDevice(window.matchMedia('(pointer: fine)').matches);
+    };
+    
+    checkPointer();
+    const mediaQuery = window.matchMedia('(pointer: fine)');
+    mediaQuery.addEventListener('change', checkPointer);
+    
+    return () => mediaQuery.removeEventListener('change', checkPointer);
+  }, []);
 
   // Generate realistic thumbnail if needed
   useEffect(() => {
@@ -54,21 +75,88 @@ export default function LibraryCard({ item, onClick }: LibraryCardProps) {
     }
   };
 
+  // Handle hover for pointer devices
+  const handleMouseEnter = () => {
+    if (isPointerDevice && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      preview.open({ rect, course: item });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPointerDevice) {
+      preview.close();
+    }
+  };
+
+  const handleFocus = () => {
+    if (isPointerDevice && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      preview.open({ rect, course: item });
+    }
+  };
+
+  const handleBlur = () => {
+    if (isPointerDevice) {
+      preview.close();
+    }
+  };
+
   const handleCardClick = () => {
-    onClick(item);
+    if (isPointerDevice) {
+      // On pointer devices, navigate directly to resume route
+      const courseData = {
+        slug: item.slug,
+        title: item.title,
+        summary: item.shortDescription,
+        durationLabel: formatDuration(item.durationMin),
+        imageUrl: item.heroImage,
+        isNew: item.updatedAt && new Date(item.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        lessons: [{ slug: 'lesson-1' }]
+      };
+      const resume = getResumeForCourse('mock-user', courseData);
+      router.push(resume.href);
+    } else {
+      // On coarse pointer devices, show modal
+      onClick(item);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onClick(item);
+      if (isPointerDevice) {
+        // Navigate directly on keyboard activation for pointer devices
+        const courseData = {
+          slug: item.slug,
+          title: item.title,
+          summary: item.shortDescription,
+          durationLabel: formatDuration(item.durationMin),
+          imageUrl: item.heroImage,
+          isNew: item.updatedAt && new Date(item.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          lessons: [{ slug: 'lesson-1' }]
+        };
+        const resume = getResumeForCourse('mock-user', courseData);
+        router.push(resume.href);
+      } else {
+        onClick(item);
+      }
+    } else if (e.key === 'Escape') {
+      if (isPointerDevice) {
+        preview.close();
+      }
     }
   };
 
   return (
     <div
+      ref={cardRef}
       className="group relative bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 transform hover:-translate-y-1 hover:scale-[1.02]"
       onClick={handleCardClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"

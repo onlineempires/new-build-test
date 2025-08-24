@@ -1,13 +1,13 @@
 "use client";
 import s from '../../../components/library/library-theme.module.css';
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/router';
 import AppLayout from '../../../components/layout/AppLayout';
 import LibraryHeader from '../../../components/library/LibraryHeader';
 import LibraryTabs from '../../../components/library/LibraryTabs';
 import LibraryFilters from '../../../components/library/LibraryFilters';
 import LibraryGrid from '../../../components/library/LibraryGrid';
 import { QuickViewDialog } from '../../../components/library/QuickViewDialog';
+import { PreviewProvider } from '../../../components/library/PreviewProvider';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../../../types/library';
 import { getLibraryItems } from '../../../lib/api/library';
 
@@ -18,7 +18,6 @@ const ITEMS_PER_PAGE = 12;
 const mockUser = { id: 123, name: "Ashley Kemp", avatarUrl: "/default-avatar.png" };
 
 export default function LibraryBetaPage() {
-  const router = useRouter();
   
   // Theme state
   const [theme, setTheme] = useState("dark");
@@ -170,10 +169,7 @@ export default function LibraryBetaPage() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
-  };
+  // Removed unused handleCloseModal function
 
 
 
@@ -190,6 +186,7 @@ export default function LibraryBetaPage() {
     >
       {/* Add content portal root for modal and library theme root */}
       <div id="library-root" className={`${s.themeScope} relative min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
+        <PreviewProvider>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader
@@ -226,12 +223,13 @@ export default function LibraryBetaPage() {
           />
         </div>
 
-        {/* Quick View Dialog */}
-        <QuickViewDialog
-          course={selectedItem}
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-        />
+          {/* Quick View Dialog */}
+          <QuickViewDialog
+            course={selectedItem}
+            open={isModalOpen}
+            onOpenChange={setIsModalOpen}
+          />
+        </PreviewProvider>
       </div>
     </AppLayout>
   );

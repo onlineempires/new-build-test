@@ -7,6 +7,7 @@ import LibraryTabs from '../components/library/LibraryTabs';
 import LibraryFilters from '../components/library/LibraryFilters';
 import LibraryGrid from '../components/library/LibraryGrid';
 import { QuickViewDialog } from '../components/library/QuickViewDialog';
+import { PreviewProvider } from '../components/library/PreviewProvider';
 import s from '../components/library/library-theme.module.css';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../types/library';
 import { getLibraryItems } from '../lib/api/library';
@@ -279,6 +280,7 @@ export default function LibraryPage() {
     >
       {/* Main Content */}
       <div id="library-root" className={`${s.themeScope} min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
+        <PreviewProvider>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader
@@ -314,14 +316,15 @@ export default function LibraryPage() {
             hasMore={hasMore}
           />
         </div>
-      </div>
 
-      {/* Quick View Dialog */}
-      <QuickViewDialog
-        course={selectedItem}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
+          {/* Quick View Dialog */}
+          <QuickViewDialog
+            course={selectedItem}
+            open={isModalOpen}
+            onOpenChange={setIsModalOpen}
+          />
+        </PreviewProvider>
+      </div>
     </AppLayout>
   );
 }

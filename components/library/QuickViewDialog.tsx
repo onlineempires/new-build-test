@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { X, Play, Clock, TrendingUp, Calendar } from "lucide-react";
 import { useRouter } from "next/router";
 import { LibraryItem } from "../../types/library";
-import { getResumeHref, ResumeInfo } from "../../lib/libraryProgress";
+import { getResumeForCourse } from "../../lib/libraryProgress";
 
 interface QuickViewDialogProps {
   open: boolean;
@@ -17,8 +17,32 @@ export function QuickViewDialog({ open, onOpenChange, course }: QuickViewDialogP
   
   if (!course) return null;
 
-  const resume: ResumeInfo = typeof window !== 'undefined' ? getResumeHref('mock-user', course.slug) : { href: `/library/learn/${course.slug}/lesson/lesson-1`, started: false };
-  const primaryLabel = resume.started ? "Continue course" : "Start course";
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes}m`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  };
+
+  // Convert LibraryItem to LibraryCourse format
+  const courseData = {
+    slug: course.slug,
+    title: course.title,
+    summary: course.shortDescription,
+    durationLabel: formatDuration(course.durationMin),
+    imageUrl: course.heroImage,
+    isNew: course.updatedAt && new Date(course.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    lessons: [{ slug: 'lesson-1' }] // Fallback - would be populated with real lesson data
+  };
+  
+  const resume = typeof window !== 'undefined' ? getResumeForCourse('mock-user', courseData) : { 
+    href: `/learn/${course.slug}/lesson/lesson-1`, 
+    started: false, 
+    label: "Watch now" 
+  };
+  const primaryLabel = resume.label;
 
   function goPrimary() {
     router.push(resume.href.toLowerCase());
@@ -29,15 +53,6 @@ export function QuickViewDialog({ open, onOpenChange, course }: QuickViewDialogP
     router.push(`/courses/${course.slug}`.toLowerCase());
     onOpenChange(false);
   }
-
-  const formatDuration = (minutes: number) => {
-    if (minutes < 60) {
-      return `${minutes}m`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
-  };
 
   const getTypeDisplayName = (type: string) => {
     switch (type) {
