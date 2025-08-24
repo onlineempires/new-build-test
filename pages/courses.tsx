@@ -147,7 +147,7 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center theme-button-success py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
           >
             <i className="fas fa-redo mr-2"></i>Completed - Watch Again
           </a>
@@ -159,7 +159,7 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center theme-button-primary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
           >
             <i className="fas fa-play mr-2"></i>Continue ({completedLessons}/{course.lessonCount})
           </a>
@@ -169,7 +169,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center theme-button-secondary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
         >
           <i className="fas fa-rocket mr-2"></i>Start Course
         </a>
@@ -192,7 +192,7 @@ export default function AllCourses() {
       return (
         <button
           onClick={() => setShowPremiumModal(true)}
-          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center theme-button-primary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
         >
           <i className="fas fa-crown mr-2"></i>Upgrade to Premium
         </button>
@@ -203,7 +203,7 @@ export default function AllCourses() {
       return (
         <button
           onClick={() => handleMasterclassPurchase(course)}
-          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
         >
           <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${course.price || 97}
         </button>
@@ -631,7 +631,7 @@ export default function AllCourses() {
                       <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto mb-3">
                         <button
                           onClick={() => setShowPremiumModal(true)}
-                          className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
+                          className="theme-button-primary px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
                         >
                           <i className="fas fa-crown mr-2"></i>Upgrade to Unlock
                         </button>
@@ -871,7 +871,7 @@ export default function AllCourses() {
                         lessonCount: 16,
                         price: 49
                       })}
-                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $49
                     </button>
@@ -934,7 +934,7 @@ export default function AllCourses() {
                         lessonCount: 20,
                         price: 97
                       })}
-                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $97
                     </button>
@@ -997,7 +997,7 @@ export default function AllCourses() {
                         lessonCount: 24,
                         price: 197
                       })}
-                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $197
                     </button>

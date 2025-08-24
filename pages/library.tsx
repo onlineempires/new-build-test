@@ -35,7 +35,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
   const getLevelBadgeColor = (sectionType: string) => {
     switch (sectionType) {
       case 'start':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'theme-bg-secondary theme-text-primary theme-border';
       case 'advanced':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'masterclass':
@@ -59,12 +59,12 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
 
   const getProgressColor = () => {
     if (course.progress === 100) return 'bg-green-500';
-    if (course.progress && course.progress > 0) return 'bg-blue-500';
+    if (course.progress && course.progress > 0) return 'theme-progress-fill';
     return 'bg-gray-300';
   };
 
   const getSectionBadge = () => {
-    if (section === 'start') return { text: 'Foundation', color: 'bg-blue-500' };
+    if (section === 'start') return { text: 'Foundation', color: 'theme-badge-primary' };
     if (section === 'advanced') return { text: 'Advanced', color: 'bg-purple-500' };
     if (section === 'masterclass') return { text: 'Premium', color: 'bg-yellow-500' };
     return { text: 'Course', color: 'bg-gray-500' };
@@ -199,7 +199,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
               : course.progress === 100 
               ? 'bg-green-500 hover:bg-green-600 text-white' 
               : course.progress && course.progress > 0
-              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+              ? 'theme-button-primary'
               : 'bg-gray-600 hover:bg-gray-700 text-white'
             }
           `}
@@ -396,7 +396,7 @@ export default function LibraryPage() {
               }`}
             >
               Foundation
-              <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+              <span className="ml-2 theme-badge-primary px-2 py-0.5 rounded-full text-xs">
                 {filterCounts.foundation}
               </span>
             </button>

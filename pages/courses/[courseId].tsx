@@ -266,7 +266,7 @@ export default function CoursePage() {
                   
                   <div className="w-full theme-border rounded-full h-3 mb-4">
                     <div
-                      className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                      className="theme-progress-fill h-3 rounded-full transition-all duration-300"
                       style={{ width: `${progress.courseProgress}%` }}
                     ></div>
                   </div>
@@ -279,7 +279,7 @@ export default function CoursePage() {
                       </div>
                       <button
                         onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                        className="theme-button-primary px-4 py-2 rounded-lg font-medium transition-colors"
                       >
                         <i className="fas fa-play mr-2"></i>
                         Continue
@@ -332,7 +332,7 @@ export default function CoursePage() {
                         
                         <div className="w-full theme-border rounded-full h-2 mb-4">
                           <div
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            className="theme-progress-fill h-2 rounded-full transition-all duration-300"
                             style={{ width: `${moduleProgress}%` }}
                           ></div>
                         </div>
@@ -524,7 +524,7 @@ export default function CoursePage() {
                       {nextLesson && (
                         <button
                           onClick={() => router.push(`/courses/${courseId}/${nextLesson.id}`)}
-                          className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          className="w-full flex items-center justify-center px-4 py-2 theme-button-primary rounded-lg transition-colors"
                         >
                           <i className="fas fa-play mr-2"></i>
                           Continue Learning

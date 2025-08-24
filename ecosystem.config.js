@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'digital-era-webapp',
     script: 'node_modules/.bin/next',
-    args: 'start',
+    args: 'dev',
     cwd: '/home/user/webapp',
     instances: 1,
     autorestart: true,
