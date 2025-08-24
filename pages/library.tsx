@@ -1,386 +1,452 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { GetServerSideProps } from 'next';
+import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
-import LibraryHeader from '../components/library/LibraryHeader';
-import LibraryTabs from '../components/library/LibraryTabs';
-import LibraryFilters from '../components/library/LibraryFilters';
-import LibraryGrid from '../components/library/LibraryGrid';
-import { QuickViewDialog } from '../components/library/QuickViewDialog';
-import { HoverPreviewProvider } from '../components/library/HoverPreviewProvider';
-import { HoverPreviewCard } from '../components/library/HoverPreviewCard';
+import { getAllCourses, CourseData, Course } from '../lib/api/courses';
+import { Play, Clock, BookOpen, Trophy, Lock } from 'lucide-react';
 
-// CSS import moved to _app.tsx
-import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../types/library';
-import { getLibraryItems } from '../lib/api/library';
-import { getCourseRoute, trackCourseAction } from '../utils/courseRouting';
-import { getAllLibraryCourses, getLibraryCourse, LibraryCourse } from '../lib/courseMapping';
-import { hasAccessToLibraryCourse, checkAdvancedTrainingAccess, getMembershipBadgeText, getMembershipBadgeColor, getUpgradeUrl } from '../utils/accessControl';
+// Mock user data - same as existing courses page
+const mockUser = {
+  id: 123,
+  name: 'Ashley Kemp',
+  avatarUrl: '/default-avatar.png'
+};
 
-const ITEMS_PER_PAGE = 12;
+interface CourseCardProps {
+  course: Course;
+  section: 'start' | 'advanced';
+  onClick: () => void;
+}
+
+const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const getLevelBadgeColor = (sectionType: string) => {
+    switch (sectionType) {
+      case 'start':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'advanced':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border-gray-200';
+    }
+  };
+
+  const getButtonText = () => {
+    if (course.progress === 100) return 'Replay Course';
+    if (course.progress && course.progress > 0) return 'Continue Course';
+    return 'Start Course';
+  };
+
+  const getButtonIcon = () => {
+    if (course.progress === 100) return 'fas fa-redo';
+    if (course.progress && course.progress > 0) return 'fas fa-play';
+    return 'fas fa-rocket';
+  };
+
+  const getProgressColor = () => {
+    if (course.progress === 100) return 'bg-green-500';
+    if (course.progress && course.progress > 0) return 'bg-blue-500';
+    return 'bg-gray-300';
+  };
+
+  const getSectionBadge = () => {
+    if (section === 'start') return { text: 'Foundation', color: 'bg-blue-500' };
+    if (section === 'advanced') return { text: 'Advanced', color: 'bg-purple-500' };
+    return { text: 'Course', color: 'bg-gray-500' };
+  };
+
+  const sectionBadge = getSectionBadge();
+
+  return (
+    <div 
+      className={`
+        bg-white border border-gray-200 rounded-xl overflow-hidden
+        transition-all duration-300 ease-out cursor-pointer group
+        hover:shadow-lg hover:border-gray-300 hover:-translate-y-1
+        ${isHovered ? 'shadow-lg' : 'shadow-sm'}
+      `}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      
+      {/* Course Video/Image Area */}
+      <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
+        
+        {/* Section Badge */}
+        <div className="absolute top-3 left-3 z-10">
+          <span className={`${sectionBadge.color} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+            {sectionBadge.text}
+          </span>
+        </div>
+
+        {/* Progress Badge */}
+        {course.progress !== undefined && course.progress > 0 && (
+          <div className="absolute top-3 right-3 z-10 flex items-center space-x-2">
+            <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
+              {course.progress}%
+            </span>
+          </div>
+        )}
+
+        {/* Course Icon/Visual */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-6xl opacity-20 text-gray-400">
+            {course.id === 'business-blueprint' ? '🏢' : 
+             course.id === 'discovery-process' ? '🔍' : 
+             course.id === 'next-steps' ? '📈' : 
+             course.id === 'tiktok-mastery' ? '🎵' : 
+             course.id === 'facebook-advertising' ? '📱' : 
+             course.id === 'instagram-marketing' ? '📸' : 
+             course.id === 'sales-funnel-mastery' ? '🧠' : 
+             '📚'}
+          </div>
+        </div>
+
+        {/* Play Button Overlay */}
+        <div className={`
+          absolute inset-0 flex items-center justify-center
+          transition-all duration-300
+          ${isHovered ? 'bg-black/30' : 'bg-transparent'}
+        `}>
+          <div className={`
+            bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg
+            transition-all duration-300
+            ${isHovered ? 'scale-110 shadow-xl' : 'scale-100'}
+          `}>
+            <Play className="w-6 h-6 text-gray-700" fill="currentColor" />
+          </div>
+        </div>
+        
+      </div>
+
+      {/* Card Content */}
+      <div className="p-6 space-y-4">
+        
+        {/* Level Badge */}
+        <div className="flex items-center justify-between">
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getLevelBadgeColor(section)}`}>
+            {section === 'start' ? 'Beginner' : 'Advanced'}
+          </span>
+          <div className="flex items-center text-xs text-gray-500">
+            <Trophy className="w-3 h-3 mr-1" />
+            +{course.lessonCount * (section === 'start' ? 15 : 20)} XP
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+          {course.title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+          {course.description}
+        </p>
+
+        {/* Course Stats */}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center">
+            <BookOpen className="w-3 h-3 mr-1" />
+            <span>{course.lessonCount} lessons</span>
+          </div>
+          <div className="flex items-center">
+            <Clock className="w-3 h-3 mr-1" />
+            <span>{Math.round(course.lessonCount * (section === 'start' ? 0.17 : 0.2))}h</span>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        {course.progress !== undefined && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-gray-600 font-medium">Progress</span>
+              <span className="text-gray-900 font-semibold">
+                {course.progress === 100 ? 'Completed!' : `${course.progress}%`}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className={`h-1.5 rounded-full transition-all duration-500 ${getProgressColor()}`}
+                style={{ width: `${course.progress || 0}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Action Button */}
+        <button 
+          className={`
+            w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg 
+            font-medium text-sm transition-all duration-200
+            ${course.progress === 100 
+              ? 'bg-green-500 hover:bg-green-600 text-white' 
+              : course.progress && course.progress > 0
+              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-gray-600 hover:bg-gray-700 text-white'
+            }
+          `}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+        >
+          <i className={`${getButtonIcon()} text-sm`}></i>
+          <span>{getButtonText()}</span>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function LibraryPage() {
   const router = useRouter();
-  
-  // Theme state
-  const [theme, setTheme] = useState("dark");
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem("library:theme");
-      setTheme(saved || "dark");
-    }
-  }, []);
-  
-  // State
-  const [allItems, setAllItems] = useState<LibraryItem[]>([]);
-  const [mappedCourses, setMappedCourses] = useState<(LibraryCourse & { id: string })[]>([]);
+  const [data, setData] = useState<CourseData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<LibraryItem | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [displayedItems, setDisplayedItems] = useState<LibraryItem[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [user] = useState({ id: 123, name: 'Ashley Kemp', avatarUrl: '/default-avatar.png', membershipLevel: 'monthly' as const });
+  const [activeFilter, setActiveFilter] = useState<'all' | 'foundation' | 'advanced'>('all');
 
-  // URL-based state
-  const [activeTab, setActiveTab] = useState<LibraryItemType | 'all'>('all');
-  const [filters, setFilters] = useState<ILibraryFilters>({
-    search: '',
-    tags: [],
-    duration: '',
-    level: '' as LibraryLevel | '',
-    sort: 'recent' as LibrarySort,
-  });
-
-  // Initialize state from URL on load
+  // Load course data - same as All Courses page
   useEffect(() => {
-    if (router.isReady) {
-      const { tab, q, tags, duration, level, sort } = router.query;
-      
-      setActiveTab((tab as LibraryItemType) || 'all');
-      setFilters({
-        search: (q as string) || '',
-        tags: tags ? (tags as string).split(',') : [],
-        duration: (duration as string) || '',
-        level: (level as LibraryLevel) || '',
-        sort: (sort as LibrarySort) || 'recent',
-      });
-    }
-  }, [router.isReady, router.query]);
-
-  // Update URL when state changes
-  const updateURL = useCallback((newTab: LibraryItemType | 'all', newFilters: ILibraryFilters) => {
-    const query: any = {};
-    
-    if (newTab !== 'all') query.tab = newTab;
-    if (newFilters.search) query.q = newFilters.search;
-    if (newFilters.tags.length > 0) query.tags = newFilters.tags.join(',');
-    if (newFilters.duration) query.duration = newFilters.duration;
-    if (newFilters.level) query.level = newFilters.level;
-    if (newFilters.sort !== 'recent') query.sort = newFilters.sort;
-
-    router.replace({ pathname: '/library', query }, undefined, { shallow: true });
-  }, [router]);
-
-  // Load library items and mapped courses
-  useEffect(() => {
-    const loadItems = async () => {
-      setIsLoading(true);
+    const loadCourses = async () => {
       try {
-        // Load both traditional library items and mapped courses
-        const items = await getLibraryItems();
-        const courses = getAllLibraryCourses();
-        
-        setAllItems(items);
-        setMappedCourses(courses);
+        setIsLoading(true);
+        const coursesData = await getAllCourses();
+        setData(coursesData);
       } catch (error) {
-        console.error('Failed to load library items:', error);
+        console.error('Failed to load courses:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadItems();
+    loadCourses();
   }, []);
 
-  // Save last selected tab to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined' && activeTab) {
-      localStorage.setItem('library-last-tab', activeTab);
-    }
-  }, [activeTab]);
+  // Navigate to existing course pages - SAME as All Courses page
+  const goToCourse = (course: Course) => {
+    console.log('Navigating to existing course:', course.title);
+    // Use the SAME navigation as All Courses page
+    router.push(`/courses/${course.id}`);
+  };
 
-  // Load last selected tab from localStorage on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !router.query.tab) {
-      const lastTab = localStorage.getItem('library-last-tab') as LibraryItemType | 'all';
-      if (lastTab && lastTab !== activeTab) {
-        setActiveTab(lastTab);
-      }
-    }
-  }, []);
+  // Filter courses based on active filter
+  const filteredCourses = useMemo(() => {
+    if (!data) return { startHereCourses: [], socialMediaCourses: [] };
+    
+    const result = {
+      startHereCourses: data.startHereCourses,
+      socialMediaCourses: data.socialMediaCourses
+    };
 
-  // Filter and sort items
-  const filteredItems = useMemo(() => {
-    let filtered = [...allItems];
-
-    // Filter by tab
-    if (activeTab !== 'all') {
-      filtered = filtered.filter(item => item.type === activeTab);
+    if (activeFilter === 'foundation') {
+      result.socialMediaCourses = [];
+    } else if (activeFilter === 'advanced') {
+      result.startHereCourses = [];
     }
 
-    // Filter by search
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(searchLower) ||
-        item.shortDescription.toLowerCase().includes(searchLower) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    }
+    return result;
+  }, [data, activeFilter]);
 
-    // Filter by tags
-    if (filters.tags.length > 0) {
-      filtered = filtered.filter(item =>
-        filters.tags.some(tag => item.tags.includes(tag))
-      );
-    }
+  const getTotalCourses = () => {
+    if (!data) return 0;
+    return data.startHereCourses.length + data.socialMediaCourses.length;
+  };
 
-    // Filter by duration
-    if (filters.duration) {
-      filtered = filtered.filter(item => {
-        const duration = item.durationMin;
-        switch (filters.duration) {
-          case '<30': return duration < 30;
-          case '30-60': return duration >= 30 && duration <= 60;
-          case '60-120': return duration > 60 && duration <= 120;
-          case '120+': return duration > 120;
-          default: return true;
-        }
-      });
-    }
-
-    // Filter by level
-    if (filters.level) {
-      filtered = filtered.filter(item => item.level === filters.level);
-    }
-
-    // Sort items
-    filtered.sort((a, b) => {
-      switch (filters.sort) {
-        case 'a-z':
-          return a.title.localeCompare(b.title);
-        case 'most-watched':
-          // Sort by progress (completed first, then by progress percentage)
-          const aProgress = a.progressPct || 0;
-          const bProgress = b.progressPct || 0;
-          return bProgress - aProgress;
-        case 'recent':
-        default:
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      }
-    });
-
-    return filtered;
-  }, [allItems, activeTab, filters]);
-
-  // Update displayed items for pagination
-  useEffect(() => {
-    const itemsToShow = filteredItems.slice(0, ITEMS_PER_PAGE);
-    setDisplayedItems(itemsToShow);
-    setHasMore(filteredItems.length > ITEMS_PER_PAGE);
-  }, [filteredItems]);
-
-  // Calculate tab counts
-  const tabCounts: LibraryTabCounts = useMemo(() => {
+  const getFilterCounts = () => {
+    if (!data) return { all: 0, foundation: 0, advanced: 0 };
     return {
-      courses: allItems.filter(item => item.type === 'course').length,
-      masterclasses: allItems.filter(item => item.type === 'masterclass').length,
-      replays: allItems.filter(item => item.type === 'replay').length,
+      all: data.startHereCourses.length + data.socialMediaCourses.length,
+      foundation: data.startHereCourses.length,
+      advanced: data.socialMediaCourses.length
     };
-  }, [allItems]);
-
-  // Event handlers
-  const handleTabChange = (tab: LibraryItemType | 'all') => {
-    setActiveTab(tab);
-    updateURL(tab, filters);
   };
 
-  const handleFiltersChange = (newFilters: Partial<ILibraryFilters>) => {
-    const updatedFilters = { ...filters, ...newFilters };
-    setFilters(updatedFilters);
-    updateURL(activeTab, updatedFilters);
-  };
+  const filterCounts = getFilterCounts();
 
-  const handleResetFilters = () => {
-    const resetFilters: ILibraryFilters = {
-      search: '',
-      tags: [],
-      duration: '',
-      level: '',
-      sort: 'recent',
-    };
-    setFilters(resetFilters);
-    updateURL(activeTab, resetFilters);
-  };
-
-  const handleItemClick = (item: LibraryItem) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
-  };
-
-  const handleAdvancedCourseNavigate = (courseSlug: string, lessonSlug: string, courseId: string) => {
-    const course = getLibraryCourse(courseId);
-    if (!course) {
-      console.error('Course not found:', courseId);
-      return;
-    }
-    
-    // Check access before navigation
-    const accessCheck = checkAdvancedTrainingAccess(user, course.accessLevel);
-    if (!accessCheck.hasAccess) {
-      router.push(accessCheck.upgradeUrl || '/upgrade');
-      return;
-    }
-    
-    // Navigate to Advanced Training lesson with library context
-    const targetRoute = `/learn/${courseSlug}/lesson/${lessonSlug}?from=library&courseId=${courseId}`;
-    trackCourseAction('start', { ...course, id: courseId }, targetRoute);
-    router.push(targetRoute);
-  };
-
-  const handleStartCourse = (item: LibraryItem | (LibraryCourse & { id: string })) => {
-    // Check if this is a mapped course
-    if ('courseSlug' in item && 'lessonSlug' in item) {
-      const course = item as LibraryCourse & { id: string };
-      handleAdvancedCourseNavigate(course.courseSlug, course.lessonSlug, course.id);
-    } else {
-      // Handle traditional library items
-      const targetRoute = getCourseRoute(item as LibraryItem);
-      const isStarting = (item as LibraryItem).progressPct === 0 || !(item as LibraryItem).progressPct;
-      
-      trackCourseAction(isStarting ? 'start' : 'continue', item, targetRoute);
-      router.push(targetRoute);
-    }
-    handleCloseModal();
-  };
-
-  const handleUnlockAccess = (item: LibraryItem | (LibraryCourse & { id: string })) => {
-    console.log('Unlocking access for:', item.title);
-    
-    if ('courseSlug' in item && 'lessonSlug' in item) {
-      // Handle mapped course upgrade
-      const course = item as LibraryCourse & { id: string };
-      const upgradeUrl = getUpgradeUrl(course);
-      router.push(upgradeUrl);
-    } else {
-      // Handle traditional library items
-      const libraryItem = item as LibraryItem;
-      if (libraryItem.purchaseHref) {
-        router.push(libraryItem.purchaseHref);
-      } else {
-        router.push('/upgrade');
-      }
-    }
-    handleCloseModal();
-  };
-
-  const handleViewDetails = (item: LibraryItem) => {
-    console.log('Viewing details for:', item.title);
-    // Navigate to detailed course page if available
-    if (item.href) {
-      router.push(item.href);
-    } else {
-      router.push(`/courses/${item.slug}`);
-    }
-    handleCloseModal();
-  };
-
-  const handleLoadMore = async () => {
-    const currentLength = displayedItems.length;
-    const nextItems = filteredItems.slice(currentLength, currentLength + ITEMS_PER_PAGE);
-    setDisplayedItems(prev => [...prev, ...nextItems]);
-    setHasMore(filteredItems.length > currentLength + ITEMS_PER_PAGE);
-  };
-
-  // Listen for reset filters event from empty state
-  useEffect(() => {
-    const handleResetEvent = () => handleResetFilters();
-    window.addEventListener('reset-library-filters', handleResetEvent);
-    return () => window.removeEventListener('reset-library-filters', handleResetEvent);
-  }, []);
+  if (isLoading) {
+    return (
+      <AppLayout user={mockUser}>
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Loading Header */}
+            <div className="mb-8 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-96"></div>
+            </div>
+            
+            {/* Loading Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden animate-pulse">
+                  <div className="aspect-video bg-gray-200"></div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-6 bg-gray-200 rounded w-full"></div>
+                    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-8 bg-gray-200 rounded w-full"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
-    <AppLayout 
-      user={user}
-      onLogout={() => router.push('/logout')}
-    >
-      {/* Main Content */}
-      <div id="library-root" className={`themeScope min-h-screen bg-[var(--lib-bg)] transition-colors`} data-theme={theme}>
-        <HoverPreviewProvider>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <LibraryHeader
-            searchQuery={filters.search}
-            onSearchChange={(search) => handleFiltersChange({ search })}
-            theme={theme}
-            onThemeChange={setTheme}
-          />
+    <AppLayout user={mockUser}>
+      <Head>
+        <title>Library - Digital Era</title>
+        <meta name="description" content="Explore our course library with the same courses as All Courses, featuring our new sleek design" />
+      </Head>
 
-          {/* Tabs */}
-          <div className="mt-8">
-            <LibraryTabs
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              tabCounts={tabCounts}
-            />
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Explore the Library
+            </h1>
+            <p className="text-gray-600 mb-2">
+              Deep dives, step by step trainings, and replays
+            </p>
+            <p className="text-sm text-blue-600 font-medium">
+              Same courses as "All Courses" with new design • {getTotalCourses()} courses available
+            </p>
           </div>
 
-          {/* Filters */}
-          <LibraryFilters
-            tags={filters.tags}
-            duration={filters.duration}
-            level={filters.level}
-            sort={filters.sort}
-            onFiltersChange={handleFiltersChange}
-            onResetFilters={handleResetFilters}
-          />
+          {/* Filter Tabs */}
+          <div className="flex items-center space-x-1 mb-8 bg-gray-100 rounded-lg p-1 w-fit">
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              All Courses
+              <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                {filterCounts.all}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveFilter('foundation')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'foundation'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Foundation
+              <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+                {filterCounts.foundation}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveFilter('advanced')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'advanced'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Advanced Training
+              <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
+                {filterCounts.advanced}
+              </span>
+            </button>
+          </div>
 
-          {/* Grid */}
-          <LibraryGrid
-            items={displayedItems}
-            mappedCourses={mappedCourses}
-            user={user}
-            isLoading={isLoading}
-            onItemClick={handleItemClick}
-            onAdvancedCourseClick={handleAdvancedCourseNavigate}
-            onLoadMore={hasMore ? handleLoadMore : undefined}
-            hasMore={hasMore}
-            showMappedCourses={true}
-          />
+          {/* Course Grid with New Design */}
+          <div className="space-y-12">
+            
+            {/* Foundation Courses */}
+            {filteredCourses.startHereCourses.length > 0 && (
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                    <i className="fas fa-play text-sm"></i>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Foundation Training</h2>
+                    <p className="text-sm text-gray-600">Essential courses to build your online business foundation</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredCourses.startHereCourses.map((course) => (
+                    <CourseCard 
+                      key={course.id}
+                      course={course}
+                      section="start"
+                      onClick={() => goToCourse(course)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Advanced Courses */}
+            {filteredCourses.socialMediaCourses.length > 0 && (
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mr-3">
+                    <i className="fas fa-graduation-cap text-sm"></i>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Advanced Training</h2>
+                    <p className="text-sm text-gray-600">Specialized courses for scaling your business</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredCourses.socialMediaCourses.map((course) => (
+                    <CourseCard 
+                      key={course.id}
+                      course={course}
+                      section="advanced"
+                      onClick={() => goToCourse(course)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Empty State */}
+          {!isLoading && filteredCourses.startHereCourses.length === 0 && filteredCourses.socialMediaCourses.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No courses found
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Try adjusting your filter to see more courses.
+              </p>
+              <button
+                onClick={() => setActiveFilter('all')}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                View All Courses
+              </button>
+            </div>
+          )}
+
         </div>
-
-          {/* Quick View Dialog */}
-          <QuickViewDialog
-            course={selectedItem}
-            open={isModalOpen}
-            onOpenChange={setIsModalOpen}
-          />
-
-          {/* Netflix-style Hover Preview */}
-          <HoverPreviewCard />
-        </HoverPreviewProvider>
       </div>
     </AppLayout>
   );
 }
 
-// Opt out of SSG for this page since it uses dynamic router query
+// Use server-side props for consistency with All Courses page
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {},
