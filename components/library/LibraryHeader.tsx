@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ThemeSwitch } from './ThemeSwitch';
 
 interface LibraryHeaderProps {
   searchQuery: string;
@@ -34,29 +35,37 @@ export default function LibraryHeader({ searchQuery, onSearchChange }: LibraryHe
         </p>
       </div>
 
-      {/* Search Section */}
-      <div className="w-full lg:w-auto lg:min-w-[320px]">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i className="fas fa-search text-slate-400 text-sm"></i>
+      {/* Search Section + Theme Switcher */}
+      <div className="w-full lg:w-auto lg:min-w-[320px] flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+        {/* Theme Switcher */}
+        <div className="lg:order-2">
+          <ThemeSwitch />
+        </div>
+        
+        {/* Search Input */}
+        <div className="lg:order-1 flex-1 lg:min-w-[280px]">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i className="fas fa-search text-slate-400 text-sm"></i>
+            </div>
+            <input
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
+              placeholder="Search by title or keyword"
+              aria-label="Search library"
+            />
+            {localSearch && (
+              <button
+                onClick={() => setLocalSearch('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors"
+                aria-label="Clear search"
+              >
+                <i className="fas fa-times text-sm"></i>
+              </button>
+            )}
           </div>
-          <input
-            type="text"
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 backdrop-blur-sm"
-            placeholder="Search by title or keyword"
-            aria-label="Search library"
-          />
-          {localSearch && (
-            <button
-              onClick={() => setLocalSearch('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition-colors"
-              aria-label="Clear search"
-            >
-              <i className="fas fa-times text-sm"></i>
-            </button>
-          )}
         </div>
       </div>
     </div>

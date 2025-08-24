@@ -1,4 +1,5 @@
 "use client";
+import '../../../styles/library-theme.css';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '../../../components/layout/AppLayout';
@@ -6,7 +7,7 @@ import LibraryHeader from '../../../components/library/LibraryHeader';
 import LibraryTabs from '../../../components/library/LibraryTabs';
 import LibraryFilters from '../../../components/library/LibraryFilters';
 import LibraryGrid from '../../../components/library/LibraryGrid';
-import QuickViewModal from '../../../components/library/QuickViewModal';
+import { QuickViewDialog } from '../../../components/library/QuickViewDialog';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../../../types/library';
 import { getLibraryItems } from '../../../lib/api/library';
 import { getCourseRoute, trackCourseAction } from '../../../utils/courseRouting';
@@ -186,8 +187,8 @@ export default function LibraryBetaPage() {
       user={mockUser}
       onLogout={() => router.push('/logout')}
     >
-      {/* Add content portal root for modal */}
-      <div id="content-portal-root" className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Add content portal root for modal and library theme root */}
+      <div id="library-root" data-theme="dark" className="relative min-h-screen bg-[var(--lib-bg)] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader
@@ -224,12 +225,11 @@ export default function LibraryBetaPage() {
           />
         </div>
 
-        {/* Quick View Modal */}
-        <QuickViewModal
-          item={selectedItem}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onUnlockAccess={handleUnlockAccess}
+        {/* Quick View Dialog */}
+        <QuickViewDialog
+          course={selectedItem}
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
         />
       </div>
     </AppLayout>

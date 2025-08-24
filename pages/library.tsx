@@ -6,7 +6,8 @@ import LibraryHeader from '../components/library/LibraryHeader';
 import LibraryTabs from '../components/library/LibraryTabs';
 import LibraryFilters from '../components/library/LibraryFilters';
 import LibraryGrid from '../components/library/LibraryGrid';
-import QuickViewModal from '../components/library/QuickViewModal';
+import { QuickViewDialog } from '../components/library/QuickViewDialog';
+import '../styles/library-theme.css';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../types/library';
 import { getLibraryItems } from '../lib/api/library';
 import { getCourseRoute, trackCourseAction } from '../utils/courseRouting';
@@ -267,7 +268,7 @@ export default function LibraryPage() {
       onLogout={() => router.push('/logout')}
     >
       {/* Main Content */}
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div id="library-root" data-theme="dark" className="min-h-screen bg-[var(--lib-bg)] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <LibraryHeader
@@ -305,12 +306,11 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      {/* Quick View Modal */}
-      <QuickViewModal
-        item={selectedItem}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onUnlockAccess={handleUnlockAccess}
+      {/* Quick View Dialog */}
+      <QuickViewDialog
+        course={selectedItem}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
       />
     </AppLayout>
   );
