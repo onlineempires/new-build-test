@@ -50,8 +50,10 @@ export function QuickViewDialog({ open, onOpenChange, course }: QuickViewDialogP
   }
 
   function goDetails() {
-    router.push(`/courses/${course.slug}`.toLowerCase());
-    onOpenChange(false);
+    if (course) {
+      router.push(`/courses/${course.slug}`.toLowerCase());
+      onOpenChange(false);
+    }
   }
 
   const getTypeDisplayName = (type: string) => {
