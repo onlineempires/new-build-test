@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Play, ChevronRight, Lock } from 'lucide-react';
 import { LibraryItem } from '../../types/library';
@@ -58,6 +59,7 @@ export default function QuickViewModal({
 }: QuickViewModalProps) {
   const modalRef = useRef<HTMLElement>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const router = useRouter();
   
   // Respect motion preferences
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -155,11 +157,18 @@ export default function QuickViewModal({
     ? "Continue course"
     : "Start course";
 
+  // Use Library namespace routes for new routing
+  const getLibraryFirstLessonHref = (courseSlug: string) => `/library/learn/${courseSlug}/lesson/lesson-1`;
+  const getLibraryNextLessonHref = (courseSlug: string) => {
+    // For now, default to first lesson - in production, get actual next lesson from API
+    return `/library/learn/${courseSlug}/lesson/lesson-1`;
+  };
+
   const primaryHref = isLocked
     ? item.purchaseHref ?? "/pricing"
     : inProgress
-    ? getNextLessonHref(item.slug)
-    : getFirstLessonHref(item.slug);
+    ? getLibraryNextLessonHref(item.slug)
+    : getLibraryFirstLessonHref(item.slug);
 
   const secondaryHref = item.href ?? `/courses/${item.slug}`;
 
@@ -179,9 +188,7 @@ export default function QuickViewModal({
       trackCourseAction(inProgress ? 'continue' : 'start', item, primaryHref);
       
       // Navigate using router for smooth transition
-      if (typeof window !== 'undefined') {
-        window.location.href = primaryHref;
-      }
+      router.push(primaryHref.toLowerCase());
     } else if (isLocked) {
       // Handle locked state
       if (typeof window !== 'undefined') {
@@ -355,29 +362,23 @@ export default function QuickViewModal({
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
 
               {/* Primary */}
-              {isLocked ? (
-                <Button 
-                  size="lg" 
-                  className="min-w-[200px]"
-                  disabled={isNavigating}
-                  onClick={handlePrimaryClick}
-                >
-                  <Lock className="mr-2 h-4 w-4" />
+              <Button 
+                size="lg" 
+                className="min-w-[200px]"
+                disabled={isNavigating}
+                onClick={handlePrimaryClick}
+              >
+                <span className="inline-flex items-center gap-2">
+                  {isLocked ? <Lock className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   {primaryLabel}
-                </Button>
-              ) : (
-                <Button asChild size="lg" className="min-w-[200px]">
-                  <SafeLink href={primaryHref} onClick={handlePrimaryClick}>
-                    <Play className="mr-2 h-4 w-4" />
-                    {primaryLabel}
-                  </SafeLink>
-                </Button>
-              )}
+                  {!isLocked && <ChevronRight className="h-4 w-4" />}
+                </span>
+              </Button>
 
               {/* Secondary */}
               <Button asChild variant="ghost" size="lg" className="min-w-[140px]">
                 <SafeLink href={secondaryHref} onClick={handleSecondaryClick}>
-                  View details
+                  <span>View details</span>
                 </SafeLink>
               </Button>
             </div>
