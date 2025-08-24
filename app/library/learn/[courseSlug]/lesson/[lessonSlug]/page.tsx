@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { ChevronRight, CheckCircle } from "lucide-react";
 import { CompleteToggle } from "../../../../../../components/library/CompleteToggle";
 import { SidebarItem } from "../../../../../../components/library/SidebarItem";
@@ -19,10 +19,10 @@ const mockUser = {
 };
 
 export default function LibraryLessonPage() {
-  const params = useParams();
   const router = useRouter();
-  const courseSlug = params.courseSlug as string;
-  const lessonSlug = params.lessonSlug as string;
+  const { courseSlug, lessonSlug } = router.query;
+  const courseSlugStr = courseSlug as string;
+  const lessonSlugStr = lessonSlug as string;
   
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -33,45 +33,45 @@ export default function LibraryLessonPage() {
   // Use the Library lesson progress hook
   const { progress, setWatched, setCompleted } = useLessonProgress(
     'mock-user', // In production, get from auth context
-    courseSlug,
-    lessonSlug
+    courseSlugStr || '',
+    lessonSlugStr || ''
   );
 
   // Demo video URL - replace with actual video URL from lesson data
   const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
 
   useEffect(() => {
-    if (courseSlug) {
-      const courseLessons = getCourseLessons(courseSlug);
+    if (courseSlugStr) {
+      const courseLessons = getCourseLessons(courseSlugStr);
       setLessons(courseLessons);
 
       // Get course info from library
-      getLibraryItemBySlug(courseSlug).then(item => {
+      getLibraryItemBySlug(courseSlugStr).then(item => {
         setCourseItem(item);
       });
 
       // Find current lesson
-      if (lessonSlug) {
-        const lesson = courseLessons.find(l => l.id === lessonSlug);
+      if (lessonSlugStr) {
+        const lesson = courseLessons.find(l => l.id === lessonSlugStr);
         setCurrentLesson(lesson || courseLessons[0]);
       } else {
         setCurrentLesson(courseLessons[0]);
       }
     }
-  }, [courseSlug, lessonSlug]);
+  }, [courseSlugStr, lessonSlugStr]);
 
   const handleLessonSelect = (lesson: Lesson) => {
     if (lesson.isLocked) return;
     
     setCurrentLesson(lesson);
-    router.push(`/library/learn/${courseSlug}/lesson/${lesson.id}`);
+    router.push(`/library/learn/${courseSlugStr}/lesson/${lesson.id}`);
     setIsPlaylistOpen(false);
 
     // Track lesson opened event
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('library_lesson_opened', {
         detail: {
-          courseSlug,
+          courseSlug: courseSlugStr,
           lessonSlug: lesson.id,
           timestamp: new Date().toISOString()
         }
@@ -99,12 +99,6 @@ export default function LibraryLessonPage() {
     return currentIndex > 0 ? lessons[currentIndex - 1] : null;
   };
 
-  const getLessonState = (lesson: Lesson): LessonState => {
-    if (lesson.isCompleted) return "completed";
-    if (lesson.isLocked) return "locked";
-    return "ready";
-  };
-
   if (!currentLesson || !courseItem) {
     return (
       <AppLayout user={mockUser}>
@@ -119,7 +113,7 @@ export default function LibraryLessonPage() {
   }
 
   const nextLesson = getNextLesson();
-  const nextHref = nextLesson ? `/library/learn/${courseSlug}/lesson/${nextLesson.id}` : '';
+  const nextHref = nextLesson ? `/library/learn/${courseSlugStr}/lesson/${nextLesson.id}` : '';
 
   return (
     <AppLayout user={mockUser}>

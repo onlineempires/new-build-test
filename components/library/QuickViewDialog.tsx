@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { X, Play, Clock, TrendingUp, Calendar } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { LibraryItem } from "../../types/library";
 import { getResumeHref, ResumeInfo } from "../../lib/libraryProgress";
 
@@ -17,7 +17,7 @@ export function QuickViewDialog({ open, onOpenChange, course }: QuickViewDialogP
   
   if (!course) return null;
 
-  const resume: ResumeInfo = getResumeHref('mock-user', course.slug);
+  const resume: ResumeInfo = typeof window !== 'undefined' ? getResumeHref('mock-user', course.slug) : { href: `/library/learn/${course.slug}/lesson/lesson-1`, started: false };
   const primaryLabel = resume.started ? "Continue course" : "Start course";
 
   function goPrimary() {

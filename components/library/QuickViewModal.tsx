@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { Play, ChevronRight, Lock } from 'lucide-react';
 import { LibraryItem } from '../../types/library';
-import { getCTAText, trackCourseAction, getFirstLessonHref, getNextLessonHref, hasUserStartedCourse } from '../../utils/courseRouting';
+import { trackCourseAction } from '../../utils/courseRouting';
 import { ModalPortal } from '../ui/ModalPortal';
 import SafeLink from '../SafeLink';
 
@@ -206,6 +205,7 @@ export default function QuickViewModal({
         detail: { slug: item.slug, href: secondaryHref }
       }));
     }
+    router.push(secondaryHref.toLowerCase());
   };
 
   // Compact modal sizing for sleek appearance  
@@ -376,10 +376,13 @@ export default function QuickViewModal({
               </Button>
 
               {/* Secondary */}
-              <Button asChild variant="ghost" size="lg" className="min-w-[140px]">
-                <SafeLink href={secondaryHref} onClick={handleSecondaryClick}>
-                  <span>View details</span>
-                </SafeLink>
+              <Button 
+                variant="ghost" 
+                size="lg" 
+                className="min-w-[140px] border border-white/20 hover:border-white/30 hover:bg-white/10 text-white"
+                onClick={handleSecondaryClick}
+              >
+                View details
               </Button>
             </div>
           </footer>

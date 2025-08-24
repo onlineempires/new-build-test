@@ -1,7 +1,7 @@
 "use client";
 import '../../../styles/library-theme.css';
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import AppLayout from '../../../components/layout/AppLayout';
 import LibraryHeader from '../../../components/library/LibraryHeader';
 import LibraryTabs from '../../../components/library/LibraryTabs';
@@ -10,7 +10,7 @@ import LibraryGrid from '../../../components/library/LibraryGrid';
 import { QuickViewDialog } from '../../../components/library/QuickViewDialog';
 import { LibraryItem, LibraryItemType, LibraryFilters as ILibraryFilters, LibraryLevel, LibrarySort, LibraryTabCounts } from '../../../types/library';
 import { getLibraryItems } from '../../../lib/api/library';
-import { getCourseRoute, trackCourseAction } from '../../../utils/courseRouting';
+
 
 const ITEMS_PER_PAGE = 12;
 
@@ -165,15 +165,7 @@ export default function LibraryBetaPage() {
     setSelectedItem(null);
   };
 
-  const handleUnlockAccess = (item: LibraryItem) => {
-    console.log('Unlocking access for:', item.title);
-    if (item.purchaseHref) {
-      router.push(item.purchaseHref);
-    } else {
-      router.push('/upgrade');
-    }
-    handleCloseModal();
-  };
+
 
   const handleLoadMore = async () => {
     const currentLength = displayedItems.length;
@@ -185,7 +177,6 @@ export default function LibraryBetaPage() {
   return (
     <AppLayout 
       user={mockUser}
-      onLogout={() => router.push('/logout')}
     >
       {/* Add content portal root for modal and library theme root */}
       <div id="library-root" data-theme="dark" className="relative min-h-screen bg-[var(--lib-bg)] transition-colors">
