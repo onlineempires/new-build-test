@@ -119,10 +119,10 @@ const ProfilePage = () => {
           <meta name="description" content="Manage your profile settings, billing information, and account preferences" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen theme-bg-primary flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading Profile...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'var(--color-primary)' }}></div>
+            <p className="mt-4 theme-text-secondary">Loading Profile...</p>
           </div>
         </div>
       </>
@@ -279,15 +279,15 @@ const ProfilePage = () => {
         {/* Left Column */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Username</label>
             <div className="relative">
-              <i className="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="text"
                 value={profileData.username}
                 onChange={(e) => setProfileData({...profileData, username: e.target.value})}
                 disabled={!isEditing}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               />
             </div>
             {isEditing && (
@@ -298,62 +298,64 @@ const ProfilePage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Full Name *</label>
             <div className="relative">
-              <i className="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="text"
                 value={profileData.name}
                 onChange={(e) => setProfileData({...profileData, name: e.target.value})}
                 disabled={!isEditing}
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors ${
-                  errors.name ? 'border-red-300' : 'border-gray-300'
+                className={`theme-input w-full pl-10 pr-4 py-3 ${
+                  errors.name ? 'border-red-500' : ''
                 }`}
+                style={errors.name ? { borderColor: 'var(--color-error)' } : {}}
               />
             </div>
-            {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-xs mt-1" style={{ color: 'var(--color-error)' }}>{errors.name}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Email *</label>
             <div className="relative">
-              <i className="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="email"
                 value={profileData.email}
                 onChange={(e) => setProfileData({...profileData, email: e.target.value})}
                 disabled={!isEditing}
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                className={`theme-input w-full pl-10 pr-4 py-3 ${
+                  errors.email ? 'border-red-500' : ''
                 }`}
+                style={errors.email ? { borderColor: 'var(--color-error)' } : {}}
               />
             </div>
-            {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-xs mt-1" style={{ color: 'var(--color-error)' }}>{errors.email}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Phone</label>
             <div className="relative">
-              <i className="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="tel"
                 value={profileData.phone}
                 onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
                 disabled={!isEditing}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Time Zone</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Time Zone</label>
             <div className="relative">
-              <i className="fas fa-globe absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-globe absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <select
                 value={profileData.timezone}
                 onChange={(e) => setProfileData({...profileData, timezone: e.target.value})}
                 disabled={!isEditing}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               >
                 <option value="Asia/Manila">Asia/Manila</option>
                 <option value="America/New_York">America/New_York</option>
@@ -361,7 +363,7 @@ const ProfilePage = () => {
                 <option value="Europe/London">Europe/London</option>
               </select>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs theme-text-muted mt-1">
               Current time: {isClient ? currentTime : 'Loading...'}
             </p>
           </div>
@@ -370,7 +372,7 @@ const ProfilePage = () => {
         {/* Right Column */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Current Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -378,12 +380,12 @@ const ProfilePage = () => {
                 onChange={(e) => setProfileData({...profileData, currentPassword: e.target.value})}
                 disabled={!isEditing}
                 placeholder="Leave blank if unchanged"
-                className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pr-10 pl-4 py-3"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary hover:theme-text-secondary transition-colors"
               >
                 <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
@@ -391,7 +393,7 @@ const ProfilePage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">New Password</label>
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
@@ -399,23 +401,24 @@ const ProfilePage = () => {
                 onChange={(e) => setProfileData({...profileData, newPassword: e.target.value})}
                 disabled={!isEditing}
                 placeholder="Leave blank if unchanged"
-                className={`w-full pr-10 pl-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors ${
-                  errors.newPassword ? 'border-red-300' : 'border-gray-300'
+                className={`theme-input w-full pr-10 pl-4 py-3 ${
+                  errors.newPassword ? 'border-red-500' : ''
                 }`}
+                style={errors.newPassword ? { borderColor: 'var(--color-error)' } : {}}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary hover:theme-text-secondary transition-colors"
               >
                 <i className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
             </div>
-            {errors.newPassword && <p className="text-red-600 text-xs mt-1">{errors.newPassword}</p>}
+            {errors.newPassword && <p className="text-xs mt-1" style={{ color: 'var(--color-error)' }}>{errors.newPassword}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Confirm New Password</label>
             <div className="relative">
               <input
                 type="password"
@@ -423,59 +426,60 @@ const ProfilePage = () => {
                 onChange={(e) => setProfileData({...profileData, confirmPassword: e.target.value})}
                 disabled={!isEditing}
                 placeholder="Confirm new password"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors ${
-                  errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                className={`theme-input w-full px-4 py-3 ${
+                  errors.confirmPassword ? 'border-red-500' : ''
                 }`}
+                style={errors.confirmPassword ? { borderColor: 'var(--color-error)' } : {}}
               />
             </div>
-            {errors.confirmPassword && <p className="text-red-600 text-xs mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && <p className="text-xs mt-1" style={{ color: 'var(--color-error)' }}>{errors.confirmPassword}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               Business Name/ABN 
-              <span className="text-gray-500 text-xs">(appears on invoices)</span>
+              <span className="theme-text-muted text-xs">(appears on invoices)</span>
             </label>
             <div className="relative">
-              <i className="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="text"
                 value={profileData.businessName}
                 onChange={(e) => setProfileData({...profileData, businessName: e.target.value})}
                 disabled={!isEditing}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               Business Partner's Email 
-              <span className="text-gray-500 text-xs">(if applicable)</span>
+              <span className="theme-text-muted text-xs">(if applicable)</span>
             </label>
             <div className="relative">
-              <i className="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="email"
                 value={profileData.businessPartnerEmail}
                 onChange={(e) => setProfileData({...profileData, businessPartnerEmail: e.target.value})}
                 disabled={!isEditing}
                 placeholder="Optional"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Calendar Booking Link</label>
+            <label className="block text-sm font-medium theme-text-primary mb-2">Calendar Booking Link</label>
             <div className="relative">
-              <i className="fas fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <i className="fas fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 theme-text-tertiary"></i>
               <input
                 type="url"
                 value={profileData.calendarBookingLink}
                 onChange={(e) => setProfileData({...profileData, calendarBookingLink: e.target.value})}
                 disabled={!isEditing}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 transition-colors"
+                className="theme-input w-full pl-10 pr-4 py-3"
               />
             </div>
             {isClient && profileData.calendarBookingLink && (
@@ -483,7 +487,8 @@ const ProfilePage = () => {
                 href={profileData.calendarBookingLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-sm mt-1 inline-block"
+                className="text-sm mt-1 inline-block hover:underline transition-colors"
+                style={{ color: 'var(--color-primary)' }}
               >
                 View your booking page →
               </a>
@@ -494,9 +499,9 @@ const ProfilePage = () => {
 
       {/* Testimonial Section */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium theme-text-primary mb-2">
           My Testimonial 
-          <span className="text-gray-500 text-xs cursor-help" title="Share your success story or experience with the platform">(what is this?)</span>
+          <span className="theme-text-muted text-xs cursor-help" title="Share your success story or experience with the platform">(what is this?)</span>
         </label>
         <textarea
           value={profileData.testimonial}
@@ -504,7 +509,7 @@ const ProfilePage = () => {
           disabled={!isEditing}
           rows={4}
           placeholder="Share your success story or experience..."
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 resize-none transition-colors"
+          className="theme-input w-full px-4 py-3 resize-none"
         />
       </div>
     </div>

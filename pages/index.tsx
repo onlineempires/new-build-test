@@ -104,15 +104,16 @@ export default function Dashboard() {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
         <div className="p-3 sm:p-4 lg:p-6">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-xl shadow-sm">
+          <div className="theme-card px-4 py-4 rounded-xl shadow-sm border-l-4" style={{ borderLeftColor: 'var(--color-error)', backgroundColor: 'var(--bg-card)', color: 'var(--color-error)' }}>
             <div className="flex items-start">
-              <i className="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3"></i>
+              <i className="fas fa-exclamation-triangle mt-0.5 mr-3" style={{ color: 'var(--color-error)' }}></i>
               <div className="flex-1">
-                <div className="font-medium mb-1">Unable to load dashboard</div>
-                <div className="text-sm text-red-600 mb-3">{error || 'Failed to load dashboard data'}</div>
+                <div className="font-medium mb-1" style={{ color: 'var(--color-error)' }}>Unable to load dashboard</div>
+                <div className="text-sm mb-3 theme-text-secondary">{error || 'Failed to load dashboard data'}</div>
                 <button 
                   onClick={loadDashboard}
-                  className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 theme-button-secondary"
+                  style={{ backgroundColor: 'var(--color-error)', color: 'white' }}
                 >
                   <i className="fas fa-refresh mr-2"></i>
                   Try Again
@@ -207,42 +208,48 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="theme-card rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-shadow">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mr-3">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mr-3"
+                    style={{ backgroundColor: 'var(--color-warning)' }}
+                  >
                     <i className="fas fa-star text-white text-lg"></i>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{data.stats.xpPoints}</div>
-                    <div className="text-sm font-medium text-gray-600">XP Points</div>
+                    <div className="text-2xl font-bold theme-text-primary">{data.stats.xpPoints}</div>
+                    <div className="text-sm font-medium theme-text-secondary">XP Points</div>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="theme-card rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-shadow">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center mr-3">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mr-3"
+                    style={{ backgroundColor: 'var(--color-info)' }}
+                  >
                     <i className="fas fa-level-up-alt text-white text-lg"></i>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{data.stats.level}</div>
-                    <div className="text-sm font-medium text-gray-600">Level</div>
+                    <div className="text-2xl font-bold theme-text-primary">{data.stats.level}</div>
+                    <div className="text-sm font-medium theme-text-secondary">Level</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Slim Green Tips Bar */}
-            <div className="bg-green-50 rounded-xl py-3 px-4 mt-4 mb-6 flex flex-wrap justify-center gap-3">
-              <div className="flex items-center text-green-700 text-sm">
-                <i className="fas fa-play mr-2"></i>
+            {/* Tips Bar */}
+            <div className="theme-card rounded-xl py-3 px-4 mt-4 mb-6 flex flex-wrap justify-center gap-3 border-l-4" style={{ borderLeftColor: 'var(--color-success)' }}>
+              <div className="flex items-center theme-text-primary text-sm">
+                <i className="fas fa-play mr-2" style={{ color: 'var(--color-success)' }}></i>
                 <span className="font-medium">15 min lessons</span>
               </div>
-              <div className="flex items-center text-green-700 text-sm">
-                <i className="fas fa-star mr-2"></i>
+              <div className="flex items-center theme-text-primary text-sm">
+                <i className="fas fa-star mr-2" style={{ color: 'var(--color-success)' }}></i>
                 <span className="font-medium">Earn XP rewards</span>
               </div>
-              <div className="flex items-center text-green-700 text-sm">
-                <i className="fas fa-trophy mr-2"></i>
+              <div className="flex items-center theme-text-primary text-sm">
+                <i className="fas fa-trophy mr-2" style={{ color: 'var(--color-success)' }}></i>
                 <span className="font-medium">Track progress</span>
               </div>
             </div>
@@ -252,13 +259,13 @@ export default function Dashboard() {
               /* NEW USER EXPERIENCE - Clean and Action-Oriented */
               <>
                 {/* Compact Start Here CTA */}
-                <div className="bg-white rounded-2xl shadow-sm border border-black/5 p-6 md:p-8 text-center mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-3">Start Here</h2>
-                  <p className="text-gray-600 text-base mb-6 max-w-md mx-auto">
+                <div className="theme-card rounded-2xl shadow-sm p-6 md:p-8 text-center mb-8">
+                  <h2 className="text-2xl font-bold theme-text-primary mb-3">Start Here</h2>
+                  <p className="theme-text-secondary text-base mb-6 max-w-md mx-auto">
                     Kick off with The Business Blueprint – it's just 15 minutes and will change how you think about online business.
                   </p>
                   <Link href="/courses/business-blueprint">
-                    <a className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-14 px-6 rounded-2xl transition-colors w-full sm:w-auto inline-flex items-center justify-center">
+                    <a className="theme-button-primary h-14 px-6 rounded-2xl w-full sm:w-auto inline-flex items-center justify-center">
                       Start The Business Blueprint
                     </a>
                   </Link>

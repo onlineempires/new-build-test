@@ -102,7 +102,7 @@ export default function AppLayout({ children, user = { id: 1, name: 'Guest User'
       />
       
       {/* Fixed Header */}
-      <div className="fixed top-0 right-0 left-0 lg:left-64 theme-border border-b z-[70] shadow-sm theme-header">
+      <div className="fixed top-0 right-0 left-0 lg:left-64 theme-border border-b shadow-sm theme-header" style={{ zIndex: 'var(--z-header)' }}>
           {/* Mobile Header */}
           <div className="lg:hidden px-4 h-14 flex items-center">
             <div className="flex items-center justify-between w-full">

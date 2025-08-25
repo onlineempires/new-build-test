@@ -130,12 +130,12 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
               <div key={item.href} className="relative">
                 <Link href={item.href}>
                   <a 
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 transition-colors ${ 
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 sidebar-nav-item ${ 
                       isActive(item.href) 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium shadow-lg' 
+                        ? 'active' 
                         : userHasAccess
-                        ? 'theme-text-secondary theme-hover'
-                        : 'theme-text-muted cursor-not-allowed opacity-60'
+                        ? 'theme-text-secondary'
+                        : 'restricted theme-text-muted'
                     }`}
                     onClick={(e) => {
                       if (!userHasAccess) {
@@ -149,7 +149,7 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
                     <span className="text-lg">{item.icon}</span>
                     <span className="flex-1">{item.label}</span>
                     {!userHasAccess && (
-                      <span className="text-xs bg-yellow-500 text-white px-2 py-1 rounded font-medium">
+                      <span className="text-xs px-2 py-1 rounded font-medium" style={{ backgroundColor: 'var(--color-warning)', color: 'var(--text-on-warning)' }}>
                         🔒
                       </span>
                     )}
@@ -164,7 +164,7 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
         <div className="p-4 theme-border border-t">
           <Link href="/profile">
             <a 
-              className="flex items-center space-x-3 theme-hover rounded-lg p-2 transition-colors"
+              className="flex items-center space-x-3 sidebar-nav-item rounded-lg p-2"
               onClick={closeMobileMenu}
             >
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">

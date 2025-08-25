@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
+import Badge, { LevelBadge, SpecialtyBadge } from '../components/ui/Badge';
 import dynamic from 'next/dynamic';
 
 // Lazy load the booking modal (only loads when needed)
@@ -91,19 +92,19 @@ const ExpertDirectory = () => {
         <div className="p-3 sm:p-4 lg:p-6">
           <div className="animate-pulse">
             {/* Header Skeleton */}
-            <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
+            <div className="h-8 theme-bg-secondary rounded w-64 mb-2"></div>
+            <div className="h-4 theme-bg-secondary rounded w-96 mb-8"></div>
             
             {/* Filter Skeleton */}
             <div className="flex gap-4 mb-8">
-              <div className="h-10 bg-gray-200 rounded w-80"></div>
-              <div className="h-10 bg-gray-200 rounded w-40"></div>
+              <div className="h-10 theme-bg-secondary rounded w-80"></div>
+              <div className="h-10 theme-bg-secondary rounded w-40"></div>
             </div>
             
             {/* Expert Cards Skeleton */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-gray-200 h-80 rounded-xl"></div>
+                <div key={i} className="theme-bg-secondary h-80 rounded-xl"></div>
               ))}
             </div>
           </div>
@@ -116,15 +117,16 @@ const ExpertDirectory = () => {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
         <div className="p-3 sm:p-4 lg:p-6">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-4 rounded-xl shadow-sm">
+          <div className="theme-card px-4 py-4 rounded-xl shadow-sm border-l-4" style={{ borderLeftColor: 'var(--color-error)', backgroundColor: 'var(--bg-card)', color: 'var(--color-error)' }}>
             <div className="flex items-start">
-              <i className="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3"></i>
+              <i className="fas fa-exclamation-triangle mt-0.5 mr-3" style={{ color: 'var(--color-error)' }}></i>
               <div className="flex-1">
-                <div className="font-medium mb-1">Unable to load experts</div>
-                <div className="text-sm text-red-600 mb-3">{error}</div>
+                <div className="font-medium mb-1" style={{ color: 'var(--color-error)' }}>Unable to load experts</div>
+                <div className="text-sm mb-3 theme-text-secondary">{error}</div>
                 <button 
                   onClick={loadExperts}
-                  className="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 theme-button-secondary"
+                  style={{ backgroundColor: 'var(--color-error)', color: 'white' }}
                 >
                   <i className="fas fa-refresh mr-2"></i>
                   Try Again
@@ -149,8 +151,8 @@ const ExpertDirectory = () => {
         <div className="p-3 sm:p-4 lg:p-6">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Expert Directory</h1>
-            <p className="text-gray-600 text-sm sm:text-base">
+            <h1 className="text-2xl sm:text-3xl font-bold theme-text-primary mb-2">Expert Directory</h1>
+            <p className="theme-text-secondary text-sm sm:text-base">
               Book 1-on-1 coaching calls with our top 6A+ Enagic leaders
             </p>
           </div>
@@ -164,9 +166,9 @@ const ExpertDirectory = () => {
                 placeholder="Search experts by name, title, or specialty..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-4 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="theme-input w-full h-12 pl-12 pr-4 text-sm"
               />
-              <div className="absolute left-4 top-3.5 text-gray-400">
+              <div className="absolute left-4 top-3.5 theme-text-tertiary">
                 <i className="fas fa-search"></i>
               </div>
             </div>
@@ -176,7 +178,7 @@ const ExpertDirectory = () => {
               <select
                 value={filterLevel}
                 onChange={(e) => setFilterLevel(e.target.value)}
-                className="h-12 pl-4 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                className="theme-input h-12 pl-4 pr-10 text-sm"
               >
                 <option value="all">All Levels</option>
                 <option value="6A Leader">6A Leader</option>
@@ -193,24 +195,25 @@ const ExpertDirectory = () => {
             {filteredExperts.map((expert) => (
               <div
                 key={expert.id}
-                className="group bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
+                className="group theme-card rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
               >
                 {/* Expert Avatar & Header */}
-                <div className="p-5 text-center border-b border-gray-100">
+                <div className="p-5 text-center border-b" style={{ borderColor: 'var(--color-border)' }}>
                   <div className="relative mb-4">
                     <img
                       src={expert.avatarUrl}
                       alt={expert.name}
-                      className="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-md group-hover:scale-105 transition-transform duration-300"
+                      className="w-20 h-20 rounded-full mx-auto border-4 shadow-md group-hover:scale-105 transition-transform duration-300"
+                      style={{ borderColor: 'var(--bg-card)' }}
                     />
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{expert.name}</h3>
+                  <h3 className="text-xl font-bold theme-text-primary mb-2">{expert.name}</h3>
                   
                   {/* Rating */}
                   <div className="space-y-2 mb-3">
                     <div className="flex items-center justify-center">
-                      <div className="flex text-yellow-400 mr-2">
+                      <div className="flex mr-2" style={{ color: 'var(--color-warning)' }}>
                         {[...Array(5)].map((_, i) => (
                           <i 
                             key={i} 
@@ -220,15 +223,15 @@ const ExpertDirectory = () => {
                           ></i>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-600 font-medium">({expert.stats.averageRating})</span>
+                      <span className="text-sm theme-text-secondary font-medium">({expert.stats.averageRating})</span>
                     </div>
                   </div>
 
                   {/* Level Badge */}
-                  <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ${getLevelColor(expert.level)}`}>
+                  <LevelBadge level={expert.level} className="inline-flex items-center">
                     <i className="fas fa-award mr-1"></i>
                     {expert.level}
-                  </div>
+                  </LevelBadge>
                 </div>
 
                 {/* Expert Details */}
@@ -236,20 +239,15 @@ const ExpertDirectory = () => {
                   <div className="flex-grow space-y-4">
                     {/* Title and Description */}
                     <div>
-                      <h4 className="font-semibold text-gray-900 text-lg mb-2">{expert.title}</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">{expert.description}</p>
+                      <h4 className="font-semibold theme-text-primary text-lg mb-2">{expert.title}</h4>
+                      <p className="text-sm theme-text-secondary leading-relaxed">{expert.description}</p>
                     </div>
 
                     {/* Specialties */}
                     <div>
                       <div className="flex justify-center gap-1.5 flex-wrap">
                         {expert.specialties.slice(0, 3).map((specialty, index) => (
-                          <span
-                            key={index}
-                            className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100 whitespace-nowrap inline-block"
-                          >
-                            {specialty}
-                          </span>
+                          <SpecialtyBadge key={index} specialty={specialty} />
                         ))}
                       </div>
                     </div>
@@ -257,19 +255,19 @@ const ExpertDirectory = () => {
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-6 py-3">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-gray-900">{expert.stats.totalSessions}</div>
-                        <div className="text-xs text-gray-500 font-medium">Sessions</div>
+                        <div className="text-lg font-bold theme-text-primary">{expert.stats.totalSessions}</div>
+                        <div className="text-xs theme-text-muted font-medium">Sessions</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-gray-900">{expert.stats.responseTime}</div>
-                        <div className="text-xs text-gray-500 font-medium">Response</div>
+                        <div className="text-lg font-bold theme-text-primary">{expert.stats.responseTime}</div>
+                        <div className="text-xs theme-text-muted font-medium">Response</div>
                       </div>
                     </div>
 
                     {/* Duration & Price */}
                     <div className="text-center py-2">
-                      <div className="text-gray-600 text-sm font-medium mb-1">{expert.sessionDuration} Minutes</div>
-                      <div className="text-3xl font-bold text-blue-600">${expert.price}</div>
+                      <div className="theme-text-secondary text-sm font-medium mb-1">{expert.sessionDuration} Minutes</div>
+                      <div className="text-3xl font-bold" style={{ color: 'var(--color-primary)' }}>${expert.price}</div>
                     </div>
                   </div>
 
@@ -277,7 +275,7 @@ const ExpertDirectory = () => {
                   <div className="pt-4">
                     <button
                       onClick={() => handleBookCall(expert)}
-                      className="w-full py-3 px-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700"
+                      className="theme-button-primary w-full py-3 px-4 rounded-lg font-semibold flex items-center justify-center"
                     >
                       <i className="fas fa-calendar-plus mr-2"></i>
                       Book Call Now
@@ -294,11 +292,11 @@ const ExpertDirectory = () => {
           {/* Empty State */}
           {filteredExperts.length === 0 && !loading && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="fas fa-search text-2xl text-gray-400"></i>
+              <div className="w-16 h-16 theme-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-search text-2xl theme-text-tertiary"></i>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No experts found</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-lg font-semibold theme-text-primary mb-2">No experts found</h3>
+              <p className="theme-text-secondary mb-4">
                 {searchQuery || filterLevel !== 'all' 
                   ? 'Try adjusting your search or filter criteria'
                   : 'No experts are currently available'
@@ -310,7 +308,8 @@ const ExpertDirectory = () => {
                     setSearchQuery('');
                     setFilterLevel('all');
                   }}
-                  className="text-blue-600 hover:text-blue-700 font-medium"
+                  className="font-medium hover:opacity-80 transition-opacity"
+                  style={{ color: 'var(--color-primary)' }}
                 >
                   Clear filters
                 </button>
@@ -320,7 +319,7 @@ const ExpertDirectory = () => {
 
           {/* Results Count */}
           {!loading && filteredExperts.length > 0 && (
-            <div className="mt-8 text-center text-sm text-gray-600">
+            <div className="mt-8 text-center text-sm theme-text-secondary">
               Showing {filteredExperts.length} of {experts.length} expert{experts.length === 1 ? '' : 's'}
             </div>
           )}

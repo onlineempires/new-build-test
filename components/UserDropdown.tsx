@@ -60,160 +60,133 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="user-dropdown-container" ref={dropdownRef}>
       {/* User Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 p-2 rounded-lg theme-hover transition-all duration-200"
+        className="user-dropdown-trigger"
         aria-label="User menu"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <div 
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
+        <div className="user-avatar">
           {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
         </div>
-        <span className="theme-text-primary text-sm font-medium hidden sm:inline">
+        <span className="user-name">
           {user.name}
         </span>
-        <ChevronDown className="w-4 h-4 theme-text-secondary transition-transform duration-200" 
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+        <ChevronDown className={`user-dropdown-icon ${isOpen ? 'open' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div 
-            className="absolute right-0 top-full mt-2 w-72 rounded-lg shadow-xl border z-50 theme-card overflow-hidden"
-          >
-            {/* User Info Section */}
-            <div className="p-4 border-b theme-divider">
-              <div className="flex items-center space-x-3">
-                <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
-                  style={{ backgroundColor: 'var(--color-primary)' }}
-                >
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <div>
-                  <div className="theme-text-primary font-medium">{user.name}</div>
-                  <div className="theme-text-secondary text-sm">{user.email || 'user@example.com'}</div>
-                </div>
-              </div>
+        <div className="user-dropdown-menu">
+          {/* User Info Section */}
+          <div className="user-dropdown-header">
+            <div className="user-dropdown-avatar">
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
-
-            {/* Menu Items */}
-            <div className="py-2">
-              <Link href="/profile">
-                <a 
-                  className="w-full flex items-center space-x-3 px-4 py-3 theme-hover transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <User className="w-4 h-4 theme-text-secondary" />
-                  <span className="theme-text-primary">Profile Settings</span>
-                </a>
-              </Link>
-              
-              <Link href="/settings">
-                <a 
-                  className="w-full flex items-center space-x-3 px-4 py-3 theme-hover transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Settings className="w-4 h-4 theme-text-secondary" />
-                  <span className="theme-text-primary">Account Settings</span>
-                </a>
-              </Link>
-
-              {/* Theme Selector Section */}
-              <div className="relative">
-                <button 
-                  onClick={() => setShowThemeSelector(!showThemeSelector)}
-                  className="w-full flex items-center justify-between px-4 py-3 theme-hover transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Palette className="w-4 h-4 theme-text-secondary" />
-                    <span className="theme-text-primary">Theme</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="theme-text-secondary text-sm">{currentTheme.name}</span>
-                    <ChevronDown className={`w-4 h-4 theme-text-secondary transition-transform duration-200 ${
-                      showThemeSelector ? 'rotate-180' : 'rotate-0'
-                    }`} />
-                  </div>
-                </button>
-
-                {/* Theme Options */}
-                {showThemeSelector && (
-                  <div className="px-4 pb-2">
-                    <div className="space-y-1">
-                      {allThemes.map((theme) => (
-                        <button
-                          key={theme.id}
-                          onClick={() => handleThemeChange(theme.id)}
-                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg theme-hover transition-colors"
-                        >
-                          <div className="flex items-center space-x-3">
-                            {/* Theme Preview */}
-                            <div className="flex space-x-1">
-                              <div 
-                                className="w-3 h-3 rounded-full border"
-                                style={{ 
-                                  backgroundColor: theme.colors.background, 
-                                  borderColor: 'var(--color-border)' 
-                                }}
-                              />
-                              <div 
-                                className="w-3 h-3 rounded-full border"
-                                style={{ 
-                                  backgroundColor: theme.colors.primary, 
-                                  borderColor: 'var(--color-border)' 
-                                }}
-                              />
-                              <div 
-                                className="w-3 h-3 rounded-full border"
-                                style={{ 
-                                  backgroundColor: theme.colors.cardBackground, 
-                                  borderColor: 'var(--color-border)' 
-                                }}
-                              />
-                            </div>
-                            <span className="theme-text-primary text-sm">{theme.name}</span>
-                          </div>
-                          
-                          {themeId === theme.id && (
-                            <Check className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <div className="mt-2 pt-2 border-t theme-divider">
-                      <Link href="/profile">
-                        <a 
-                          className="text-xs theme-text-secondary hover:underline"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          More theme options in Profile Settings →
-                        </a>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <hr className="my-2 theme-divider" />
-              
-              <button 
-                onClick={handleLogoutClick}
-                className="w-full flex items-center space-x-3 px-4 py-3 theme-hover transition-colors"
-              >
-                <LogOut className="w-4 h-4 theme-text-secondary" />
-                <span className="theme-text-primary">Sign Out</span>
-              </button>
+            <div className="user-dropdown-info">
+              <div className="user-dropdown-name">{user.name}</div>
+              <div className="user-dropdown-email">{user.email || 'user@example.com'}</div>
             </div>
           </div>
-        </>
+
+          {/* Menu Items */}
+          <div className="user-dropdown-menu-items">
+            <Link href="/profile">
+              <a 
+                className="user-dropdown-menu-item"
+                onClick={() => setIsOpen(false)}
+              >
+                <User className="user-dropdown-menu-icon" />
+                <span>Profile Settings</span>
+              </a>
+            </Link>
+            
+            <Link href="/settings">
+              <a 
+                className="user-dropdown-menu-item"
+                onClick={() => setIsOpen(false)}
+              >
+                <Settings className="user-dropdown-menu-icon" />
+                <span>Account Settings</span>
+              </a>
+            </Link>
+
+            {/* Theme Selector Section */}
+            <div className="user-dropdown-theme-section">
+              <button 
+                onClick={() => setShowThemeSelector(!showThemeSelector)}
+                className="user-dropdown-menu-item user-dropdown-theme-toggle"
+              >
+                <div className="user-dropdown-menu-item-content">
+                  <Palette className="user-dropdown-menu-icon" />
+                  <span>Theme</span>
+                </div>
+                <div className="user-dropdown-theme-current">
+                  <span className="user-dropdown-theme-name">{currentTheme.name}</span>
+                  <ChevronDown className={`user-dropdown-theme-icon ${showThemeSelector ? 'open' : ''}`} />
+                </div>
+              </button>
+
+              {/* Theme Options */}
+              {showThemeSelector && (
+                <div className="user-dropdown-theme-options">
+                  <div className="user-dropdown-theme-list">
+                    {allThemes.map((theme) => (
+                      <button
+                        key={theme.id}
+                        onClick={() => handleThemeChange(theme.id)}
+                        className={`user-dropdown-theme-option ${themeId === theme.id ? 'active' : ''}`}
+                      >
+                        <div className="user-dropdown-theme-preview">
+                          <div 
+                            className="user-dropdown-theme-dot"
+                            style={{ backgroundColor: theme.colors.background }}
+                          />
+                          <div 
+                            className="user-dropdown-theme-dot"
+                            style={{ backgroundColor: theme.colors.primary }}
+                          />
+                          <div 
+                            className="user-dropdown-theme-dot"
+                            style={{ backgroundColor: theme.colors.cardBackground }}
+                          />
+                        </div>
+                        <span className="user-dropdown-theme-label">{theme.name}</span>
+                        {themeId === theme.id && (
+                          <Check className="user-dropdown-theme-check" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="user-dropdown-theme-more">
+                    <Link href="/profile">
+                      <a 
+                        className="user-dropdown-theme-link"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        More theme options in Profile Settings →
+                      </a>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="user-dropdown-divider" />
+            
+            <button 
+              onClick={handleLogoutClick}
+              className="user-dropdown-menu-item user-dropdown-logout"
+            >
+              <LogOut className="user-dropdown-menu-icon" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
