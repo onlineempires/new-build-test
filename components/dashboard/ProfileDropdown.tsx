@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { SafeLink } from '../ui/SafeLink';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { ThemeSelector } from '../ThemeSelector';
@@ -137,24 +137,23 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
           </div>
           
           <div className="py-2">
-            <Link href="/profile">
-              <a 
-                className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
-                style={{ color: 'var(--color-text-primary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-                onClick={() => setIsOpen(false)}
-              >
-                <span className="mr-3">👤</span>
-                Edit Profile
-              </a>
-            </Link>
+            <SafeLink 
+              href="/profile"
+              className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
+              style={{ color: 'var(--color-text-primary)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="mr-3">👤</span>
+              Edit Profile
+            </SafeLink>
             
-            <Link 
+            <SafeLink 
               href="/settings"
               className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
               style={{ color: 'var(--color-text-primary)' }}
@@ -168,7 +167,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
             >
               <span className="mr-3">⚙️</span>
               Settings
-            </Link>
+            </SafeLink>
             
             {/* Theme Selector Divider */}
             <div 

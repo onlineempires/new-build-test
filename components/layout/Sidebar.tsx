@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { useNavigationHelper } from '../../utils/navigationHelpers';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
+import { SafeLink } from '../ui/SafeLink';
 
 interface User {
   id: number;
@@ -257,10 +257,10 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
         </div>
 
-        {/* Nav items - FIXED: Modern Next.js Link usage */}
+        {/* Nav items - FIXED: Using SafeLink to prevent multiple children error */}
         <nav className="flex-1 py-4">
           {visibleMenuItems.map((item) => (
-            <Link 
+            <SafeLink 
               key={item.href} 
               href={item.href}
               className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl cursor-pointer ${
@@ -278,7 +278,7 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
                 isActive(item.href) ? 'text-white' : 'theme-text-secondary'
               }`}></i>
               <span className="font-medium">{item.name}</span>
-            </Link>
+            </SafeLink>
           ))}
         </nav>
 
@@ -301,9 +301,9 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <MobileRoleSwitcher onSelect={closeMobileMenu} />
         </div>
 
-        {/* User Profile - FIXED: Modern Next.js Link usage */}
+        {/* User Profile - FIXED: Using SafeLink to prevent multiple children error */}
         <div className="border-t theme-border theme-sidebar">
-          <Link 
+          <SafeLink 
             href="/profile"
             className="flex items-center p-4 theme-hover transition-colors cursor-pointer"
             onClick={(e) => {
@@ -321,7 +321,7 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
               <div className="theme-text-primary text-sm font-medium">{user.name}</div>
               <div className="theme-text-secondary text-xs">View Profile</div>
             </div>
-          </Link>
+          </SafeLink>
         </div>
       </div>
 

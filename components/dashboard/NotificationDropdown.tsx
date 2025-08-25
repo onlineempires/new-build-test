@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { SafeLink } from '../ui/SafeLink';
 
 interface Notification {
   id: number;
@@ -166,13 +166,13 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
                           <i className="fas fa-clock mr-1"></i>
                           {formatTime(notification.ts)}
                         </span>
-                        <Link 
+                        <SafeLink 
                           href={notification.actionHref}
                           className="text-blue-600 hover:text-blue-700 text-sm font-medium px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
                           onClick={() => setIsOpen(false)}
                         >
                           {notification.actionLabel}
-                        </Link>
+                        </SafeLink>
                       </div>
                     </div>
                   </div>
@@ -183,14 +183,14 @@ export default function NotificationDropdown({ notifications, onClear, onRemove 
           
           {notifications.length > 0 && (
             <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-              <Link 
+              <SafeLink 
                 href="/notifications"
                 className="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 font-medium text-sm py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 <i className="fas fa-external-link-alt mr-2"></i>
                 View All Notifications
-              </Link>
+              </SafeLink>
             </div>
           )}
         </div>
