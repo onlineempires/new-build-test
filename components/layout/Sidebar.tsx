@@ -1,9 +1,10 @@
-import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useNavigationHelper } from '../../utils/navigationHelpers';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
+// Removed SafeLink import - using button-based navigation instead
 
 interface User {
   id: number;
@@ -21,8 +22,8 @@ interface MenuItem {
 }
 
 interface SidebarProps {
-  user: User;
-  onLogout: () => void;
+  user?: User;
+  onLogout?: () => void;
   isMobileOpen?: boolean;
   setIsMobileOpen?: (open: boolean) => void;
   onFeedbackClick?: () => void;
@@ -102,10 +103,10 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
+export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
   const router = useRouter();
-  const { permissions, hasPermission, currentRole, setUserRole } = useUserRole();
-  const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
+  const { navigate, preload, isNavigating } = useNavigationHelper(router);
+  const { currentRole } = useUserRole();
   
   const closeMobileMenu = () => {
     if (setIsMobileOpen) {
@@ -113,10 +114,55 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     }
   };
 
+  // Handle navigation with enhanced error handling and logging
+  const handleNavigation = async (href: string, itemName: string) => {
+    console.log(`🚀 Navigation requested: ${itemName} -> ${href}`);
+    
+    // Prevent navigation if already in progress
+    if (isNavigating()) {
+      console.log('⚠️ Navigation already in progress, ignoring click');
+      return;
+    }
+
+    // Close mobile menu first
+    closeMobileMenu();
+    
+    // For debugging route cancellations, try simple router.push first
+    try {
+      console.log(`📍 Attempting direct router.push to ${href}`);
+      await router.push(href);
+      console.log(`✅ Direct navigation successful to ${itemName} (${href})`);
+      return;
+    } catch (directError) {
+      console.warn(`⚠️ Direct router.push failed for ${itemName}:`, directError);
+      
+      // Fallback to enhanced navigation helper
+      console.log(`🔄 Falling back to navigation helper for ${href}`);
+      const success = await navigate(href, {
+        delay: 50,
+        fallbackToWindowLocation: true,
+        retries: 3, // Increased retries
+        onError: (error: any, url: string) => {
+          console.error(`❌ Navigation helper failed to ${itemName} (${url}):`, error);
+        },
+        onSuccess: (url: string) => {
+          console.log(`✅ Navigation helper successful to ${itemName} (${url})`);
+        }
+      });
+      
+      if (!success) {
+        console.error(`❌ All navigation attempts failed for ${itemName} (${href})`);
+        // Emergency fallback
+        console.log(`🚨 Using window.location as emergency fallback for ${href}`);
+        window.location.href = href;
+      }
+    }
+  };
+
   // Filter menu items based on role directly
   const visibleMenuItems = menuItems.filter(item => {
-    // Admin sees everything
-    if (currentRole === 'admin') return true;
+    // Admin sees everything - Note: admin not in current UserRole type but kept for future extension
+    if (currentRole === 'admin' as any) return true;
     
     // Check specific items by name for clarity
     switch (item.name) {
@@ -141,29 +187,63 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
       
       case 'Admin':
-        // Only admin role
-        return currentRole === 'admin';
+        // Only admin role - Note: admin not in current UserRole type but kept for future extension
+        return currentRole === 'admin' as any;
       
       default:
         return false;
     }
   });
   
-  // Debug logging - ALWAYS log to see what's happening
+  // Navigation debugging and preloading
   useEffect(() => {
     console.log('=== SIDEBAR DEBUG ===');
     console.log('Current role:', currentRole);
-    console.log('Permissions object:', permissions);
-    console.log('All menu items:', menuItems.map(i => i.name));
-    console.log('Filtered menu items:', visibleMenuItems.map(i => i.name));
-    console.log('Should see DMO?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('Should see Expert Directory?', currentRole === 'monthly' || currentRole === 'annual');
+    console.log('Router pathname:', router.pathname);
+    console.log('Router ready:', router.isReady);
+    console.log('Navigation in progress:', isNavigating());
+    console.log('Filtered menu items:', visibleMenuItems.map(i => ({ name: i.name, href: i.href })));
     console.log('===================');
-  }, [currentRole, permissions, visibleMenuItems]);
+    
+    // Preload visible menu items for better performance
+    visibleMenuItems.forEach(item => {
+      preload(item.href).catch((err: any) => 
+        console.warn(`Failed to preload ${item.name}:`, err)
+      );
+    });
+  }, [currentRole, router.pathname, router.isReady, visibleMenuItems, isNavigating, preload]);
+
+  // Navigation event tracking
+  useEffect(() => {
+    const handleRouteChangeStart = (url: string) => {
+      console.log('🚀 Navigation started to:', url);
+    };
+    
+    const handleRouteChangeComplete = (url: string) => {
+      console.log('✅ Navigation completed to:', url);
+    };
+    
+    const handleRouteChangeError = (err: Error, url: string) => {
+      console.error('❌ Navigation failed to:', url, err);
+    };
+    
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', handleRouteChangeError);
+    
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router]);
 
   const isActive = (href: string) => {
     if (href === '/courses') {
       return router.pathname === '/courses' || router.pathname.startsWith('/courses/');
+    }
+    if (href === '/dashboard') {
+      return router.pathname === '/' || router.pathname === '/dashboard';
     }
     return router.pathname === href;
   };
@@ -194,25 +274,27 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
         </div>
 
-        {/* Nav items */}
+        {/* Nav items - FIXED: Using button navigation to prevent multiple children error */}
         <nav className="flex-1 py-4">
-          {visibleMenuItems.map((item, index) => (
-            <Link key={item.href} href={item.href}>
-              <a
-                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl ${
-                  isActive(item.href) 
-                    ? 'text-white shadow-md' 
-                    : 'theme-text-primary theme-hover'
-                }`}
-                style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
-                onClick={closeMobileMenu}
-              >
-                <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-white' : 'theme-text-secondary'
-                }`}></i>
-                <span className="font-medium">{item.name}</span>
-              </a>
-            </Link>
+          {visibleMenuItems.map((item) => (
+            <button
+              key={item.href}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href, item.name);
+              }}
+              className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl cursor-pointer w-full text-left ${
+                isActive(item.href) 
+                  ? 'text-white shadow-md' 
+                  : 'theme-text-primary theme-hover'
+              }`}
+              style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
+            >
+              <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
+                isActive(item.href) ? 'text-white' : 'theme-text-secondary'
+              }`}></i>
+              <span className="font-medium">{item.name}</span>
+            </button>
           ))}
         </nav>
 
@@ -235,22 +317,26 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <MobileRoleSwitcher onSelect={closeMobileMenu} />
         </div>
 
-        {/* User Profile */}
+        {/* User Profile - FIXED: Using button navigation to prevent multiple children error */}
         <div className="border-t theme-border theme-sidebar">
-          <Link href="/profile">
-            <a className="flex items-center p-4 theme-hover transition-colors">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
-                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-              </div>
-              <div className="flex-1">
-                <div className="theme-text-primary text-sm font-medium">{user.name}</div>
-                <div className="theme-text-secondary text-xs">View Profile</div>
-              </div>
-            </a>
-          </Link>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigation('/profile', 'Profile');
+            }}
+            className="flex items-center p-4 theme-hover transition-colors cursor-pointer w-full text-left"
+          >
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="flex-1">
+              <div className="theme-text-primary text-sm font-medium">{user?.name || 'Guest User'}</div>
+              <div className="theme-text-secondary text-xs">View Profile</div>
+            </div>
+          </button>
         </div>
       </div>
 
