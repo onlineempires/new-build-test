@@ -64,10 +64,10 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
   };
 
   const getSectionBadge = () => {
-    if (section === 'start') return { text: 'Foundation', color: 'theme-badge-primary' };
-    if (section === 'advanced') return { text: 'Advanced', color: 'bg-purple-500' };
-    if (section === 'masterclass') return { text: 'Premium', color: 'bg-yellow-500' };
-    return { text: 'Course', color: 'bg-gray-500' };
+    if (section === 'start') return { text: 'Foundation', color: 'chip-foundation' };
+    if (section === 'advanced') return { text: 'Advanced', color: 'chip-advanced' };
+    if (section === 'masterclass') return { text: 'Premium', color: 'chip-masterclass' };
+    return { text: 'Course', color: 'theme-badge-primary' };
   };
 
   const sectionBadge = getSectionBadge();
@@ -90,7 +90,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         
         {/* Section Badge */}
         <div className="absolute top-3 left-3 z-10">
-          <span className={`${sectionBadge.color} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+          <span className={`${sectionBadge.color} px-3 py-1 rounded-full text-xs font-bold uppercase letter-spacing-wide`}>
             {sectionBadge.text}
           </span>
         </div>
@@ -189,23 +189,45 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
           </div>
         )}
 
-        {/* Action Button */}
+        {/* Action Button - FIXED: Use theme colors instead of gray */}
         <button 
-          className={`
-            w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg 
-            font-medium text-sm transition-all duration-200
-            ${section === 'masterclass' 
-              ? 'bg-orange-500 hover:bg-orange-600 text-white'
+          className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
+          style={{
+            backgroundColor: section === 'masterclass' 
+              ? '#FF5722' // Orange for masterclass
               : course.progress === 100 
-              ? 'bg-green-500 hover:bg-green-600 text-white' 
-              : course.progress && course.progress > 0
-              ? 'theme-button-primary'
-              : 'bg-gray-600 hover:bg-gray-700 text-white'
-            }
-          `}
+              ? 'var(--color-success)' // Green for completed
+              : 'var(--color-primary)', // Use theme primary color
+            color: section === 'masterclass'
+              ? '#FFFFFF'
+              : course.progress === 100
+              ? 'var(--text-on-success)'
+              : 'var(--text-on-primary)', // Use proper text contrast
+            fontWeight: '600'
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onClick();
+          }}
+          onMouseEnter={(e) => {
+            const target = e.target as HTMLElement;
+            if (section === 'masterclass') {
+              target.style.backgroundColor = '#E64A19'; // Darker orange on hover
+            } else if (course.progress === 100) {
+              target.style.backgroundColor = 'var(--color-success-hover)';
+            } else {
+              target.style.backgroundColor = 'var(--color-primary-hover)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            const target = e.target as HTMLElement;
+            if (section === 'masterclass') {
+              target.style.backgroundColor = '#FF5722';
+            } else if (course.progress === 100) {
+              target.style.backgroundColor = 'var(--color-success)';
+            } else {
+              target.style.backgroundColor = 'var(--color-primary)';
+            }
           }}
         >
           <i className={`${section === 'masterclass' ? 'fas fa-shopping-cart' : getButtonIcon()} text-sm`}></i>
@@ -434,13 +456,13 @@ export default function LibraryPage() {
             {/* Foundation Courses */}
             {filteredCourses.startHereCourses.length > 0 && (
               <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                <div className="foundation-header">
+                  <div className="icon-container">
                     <i className="fas fa-play text-sm"></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold theme-text-primary">Foundation Training</h2>
-                    <p className="text-sm theme-text-secondary">Essential courses to build your online business foundation</p>
+                    <h2 className="foundation-title">Foundation Training</h2>
+                    <p className="foundation-description">Essential courses to build your online business foundation</p>
                   </div>
                 </div>
                 
@@ -460,13 +482,13 @@ export default function LibraryPage() {
             {/* Advanced Courses */}
             {filteredCourses.socialMediaCourses.length > 0 && (
               <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mr-3">
-                    <i className="fas fa-graduation-cap text-sm"></i>
+                <div className="foundation-header">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-4" style={{ backgroundColor: 'var(--color-secondary)' }}>
+                    <i className="fas fa-graduation-cap text-lg" style={{ color: 'var(--text-on-secondary)' }}></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold theme-text-primary">Advanced Training</h2>
-                    <p className="text-sm theme-text-secondary">Specialized courses for scaling your business</p>
+                    <h2 className="section-header">Advanced Training</h2>
+                    <p className="section-description">Specialized courses for scaling your business</p>
                   </div>
                 </div>
                 
@@ -486,13 +508,13 @@ export default function LibraryPage() {
             {/* Masterclass Courses */}
             {filteredCourses.masterclassCourses.length > 0 && (
               <div>
-                <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-full flex items-center justify-center mr-3">
-                    <i className="fas fa-crown text-sm"></i>
+                <div className="foundation-header">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-xl flex items-center justify-center mr-4">
+                    <i className="fas fa-crown text-lg"></i>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold theme-text-primary">Masterclass Training</h2>
-                    <p className="text-sm theme-text-secondary">Premium courses for advanced business growth</p>
+                    <h2 className="section-header">Masterclass Training</h2>
+                    <p className="section-description">Premium courses for advanced business growth</p>
                   </div>
                 </div>
                 
