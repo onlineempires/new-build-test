@@ -23,38 +23,67 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   useEffect(() => {
-    // Apply all CSS variables to root element for maximum compatibility
+    // Apply ALL CSS variables to root element for complete dynamic theming
     const root = document.documentElement;
     const colors = currentTheme.colors;
     
-    // Apply new variable structure
+    // Background Variables (complete hierarchy)
+    root.style.setProperty('--bg-primary', colors.background);
+    root.style.setProperty('--bg-secondary', colors.backgroundSecondary);
+    root.style.setProperty('--bg-tertiary', colors.backgroundTertiary);
+    root.style.setProperty('--bg-card', colors.cardBackground);
+    root.style.setProperty('--bg-sidebar', colors.sidebarBackground);
+    root.style.setProperty('--bg-header', colors.headerBackground);
+    
+    // Legacy background support
     root.style.setProperty('--color-background', colors.background);
     root.style.setProperty('--color-background-secondary', colors.backgroundSecondary);
+    root.style.setProperty('--color-background-tertiary', colors.backgroundTertiary);
     root.style.setProperty('--color-card-background', colors.cardBackground);
     root.style.setProperty('--color-sidebar-background', colors.sidebarBackground);
     root.style.setProperty('--color-header-background', colors.headerBackground);
     
-    // Text colors with high contrast
+    // Text Variables (all contrast levels)
+    root.style.setProperty('--text-primary', colors.textPrimary);
+    root.style.setProperty('--text-secondary', colors.textSecondary);
+    root.style.setProperty('--text-muted', colors.textMuted);
+    root.style.setProperty('--text-inverse', colors.textInverse);
+    
+    // Legacy text support
     root.style.setProperty('--color-text-primary', colors.textPrimary);
     root.style.setProperty('--color-text-secondary', colors.textSecondary);
     root.style.setProperty('--color-text-muted', colors.textMuted);
     root.style.setProperty('--color-text-inverse', colors.textInverse);
     
-    // Interactive colors (fixes blue button problem)
+    // Brand Variables (REPLACES ALL BLUE)
     root.style.setProperty('--color-primary', colors.primary);
     root.style.setProperty('--color-primary-hover', colors.primaryHover);
+    root.style.setProperty('--color-primary-light', colors.primaryLight);
+    root.style.setProperty('--color-primary-dark', colors.primaryDark);
     root.style.setProperty('--color-secondary', colors.secondary);
     root.style.setProperty('--color-secondary-hover', colors.secondaryHover);
     
-    // Status colors
+    // Status Variables (complete set with hovers)
     root.style.setProperty('--color-success', colors.success);
+    root.style.setProperty('--color-success-hover', colors.successHover);
     root.style.setProperty('--color-warning', colors.warning);
+    root.style.setProperty('--color-warning-hover', colors.warningHover);
     root.style.setProperty('--color-error', colors.error);
+    root.style.setProperty('--color-error-hover', colors.errorHover);
     root.style.setProperty('--color-info', colors.info);
+    root.style.setProperty('--color-info-hover', colors.infoHover);
     
-    // UI colors
+    // Interactive Variables
     root.style.setProperty('--color-hover', colors.hover);
+    root.style.setProperty('--color-active', colors.active);
+    root.style.setProperty('--color-focus', colors.focus);
+    root.style.setProperty('--color-disabled', colors.disabled);
+    root.style.setProperty('--color-disabled-text', colors.disabledText);
+    
+    // Structure Variables
     root.style.setProperty('--color-border', colors.border);
+    root.style.setProperty('--color-border-light', colors.borderLight);
+    root.style.setProperty('--color-border-strong', colors.borderStrong);
     root.style.setProperty('--color-divider', colors.divider);
     root.style.setProperty('--color-overlay', colors.overlay);
     root.style.setProperty('--color-shadow', colors.shadow);
@@ -63,6 +92,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.style.setProperty('--color-card', colors.cardBackground);
     root.style.setProperty('--color-sidebar', colors.sidebarBackground);
     root.style.setProperty('--color-header', colors.headerBackground);
+    
+    // Additional legacy mappings for older components
+    root.style.setProperty('--primary', colors.primary);
+    root.style.setProperty('--primary-hover', colors.primaryHover);
+    root.style.setProperty('--secondary', colors.secondary);
+    root.style.setProperty('--text-color', colors.textPrimary);
+    root.style.setProperty('--background-color', colors.background);
+    root.style.setProperty('--card-bg', colors.cardBackground);
 
     // Add theme class to body for additional styling
     document.body.className = `theme-${themeId}`;

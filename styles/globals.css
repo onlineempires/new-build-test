@@ -179,9 +179,9 @@ body {
 }
 
 .theme-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-focus);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .theme-input::placeholder {
@@ -281,22 +281,102 @@ a[class*="bg-blue"]:hover {
   background-color: var(--color-primary-hover) !important;
 }
 
-/* Continue Learning and similar primary action buttons */
+/* COMPREHENSIVE OVERRIDE SYSTEM - ELIMINATES ALL HARDCODED BLUES */
+
+/* Override ALL blue variants in Tailwind */
+.bg-blue-50 { background-color: var(--color-primary-light) !important; }
+.bg-blue-100 { background-color: var(--color-primary-light) !important; }
+.bg-blue-200 { background-color: var(--color-primary-light) !important; }
+.bg-blue-300 { background-color: var(--color-primary) !important; opacity: 0.7; }
+.bg-blue-400 { background-color: var(--color-primary) !important; opacity: 0.8; }
+.bg-blue-500 { background-color: var(--color-primary) !important; }
+.bg-blue-600 { background-color: var(--color-primary) !important; }
+.bg-blue-700 { background-color: var(--color-primary-hover) !important; }
+.bg-blue-800 { background-color: var(--color-primary-dark) !important; }
+.bg-blue-900 { background-color: var(--color-primary-dark) !important; }
+
+/* Override blue text colors */
+.text-blue-50 { color: var(--color-primary-light) !important; }
+.text-blue-100 { color: var(--color-primary-light) !important; }
+.text-blue-200 { color: var(--color-primary-light) !important; }
+.text-blue-300 { color: var(--color-primary) !important; opacity: 0.7; }
+.text-blue-400 { color: var(--color-primary) !important; opacity: 0.8; }
+.text-blue-500 { color: var(--color-primary) !important; }
+.text-blue-600 { color: var(--color-primary) !important; }
+.text-blue-700 { color: var(--color-primary-hover) !important; }
+.text-blue-800 { color: var(--color-primary-dark) !important; }
+.text-blue-900 { color: var(--color-primary-dark) !important; }
+
+/* Override blue borders */
+.border-blue-50 { border-color: var(--color-primary-light) !important; }
+.border-blue-100 { border-color: var(--color-primary-light) !important; }
+.border-blue-200 { border-color: var(--color-primary-light) !important; }
+.border-blue-300 { border-color: var(--color-primary) !important; opacity: 0.7; }
+.border-blue-400 { border-color: var(--color-primary) !important; opacity: 0.8; }
+.border-blue-500 { border-color: var(--color-primary) !important; }
+.border-blue-600 { border-color: var(--color-primary) !important; }
+.border-blue-700 { border-color: var(--color-primary-hover) !important; }
+.border-blue-800 { border-color: var(--color-primary-dark) !important; }
+.border-blue-900 { border-color: var(--color-primary-dark) !important; }
+
+/* Override hover states for blue backgrounds */
+.hover\:bg-blue-50:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-100:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-200:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-300:hover { background-color: var(--color-primary) !important; opacity: 0.7; }
+.hover\:bg-blue-400:hover { background-color: var(--color-primary) !important; opacity: 0.8; }
+.hover\:bg-blue-500:hover { background-color: var(--color-primary-hover) !important; }
+.hover\:bg-blue-600:hover { background-color: var(--color-primary-hover) !important; }
+.hover\:bg-blue-700:hover { background-color: var(--color-primary-dark) !important; }
+
+/* Continue Learning and ALL primary action buttons */
 .continue-button,
 .primary-action-button,
 button[class*="Continue"],
-a[class*="Continue"] {
+a[class*="Continue"],
+button[class*="Start"],
+a[class*="Start"],
+button[class*="Join"],
+a[class*="Join"],
+.btn-primary,
+.button-primary {
   background-color: var(--color-primary) !important;
-  color: var(--color-text-inverse) !important;
+  color: var(--text-inverse) !important;
+  border: none !important;
   transition: all 0.2s ease;
 }
 
 .continue-button:hover,
 .primary-action-button:hover,
 button[class*="Continue"]:hover,
-a[class*="Continue"]:hover {
+a[class*="Continue"]:hover,
+button[class*="Start"]:hover,
+a[class*="Start"]:hover,
+button[class*="Join"]:hover,
+a[class*="Join"]:hover,
+.btn-primary:hover,
+.button-primary:hover {
   background-color: var(--color-primary-hover) !important;
   transform: translateY(-1px);
+}
+
+/* Override any remaining hardcoded blue values */
+[style*="background: blue"],
+[style*="background-color: blue"],
+[style*="background: #0000FF"],
+[style*="background-color: #0000FF"],
+[style*="background: #2563EB"],
+[style*="background-color: #2563EB"],
+[style*="background: #1D4ED8"],
+[style*="background-color: #1D4ED8"] {
+  background-color: var(--color-primary) !important;
+}
+
+[style*="color: blue"],
+[style*="color: #0000FF"],
+[style*="color: #2563EB"],
+[style*="color: #1D4ED8"] {
+  color: var(--color-primary) !important;
 }
 
 /* Smooth transitions for all theme changes */
@@ -367,9 +447,24 @@ a[class*="Continue"]:hover {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Better focus states for accessibility */
+  /* Better focus states for accessibility - DYNAMIC */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: var(--color-focus);
+    --tw-ring-offset-color: var(--bg-primary);
+  }
+
+  /* Focus ring override for blue focus rings */
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--color-focus) !important;
+  }
+
+  .focus\:ring-blue-600:focus {
+    --tw-ring-color: var(--color-focus) !important;
+  }
+
+  .focus\:ring-blue-700:focus {
+    --tw-ring-color: var(--color-focus) !important;
   }
 
   /* Mobile-optimized shadows */
@@ -519,8 +614,8 @@ button,
   }
   
   .form-input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary)20;
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
   }
   
   .btn-primary {
@@ -653,11 +748,11 @@ button,
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
-/* Enhanced focus states for library elements */
+/* Enhanced focus states for library elements - DYNAMIC */
 .library-focus {
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
-  --tw-ring-color: var(--color-primary);
-  --tw-ring-offset-color: var(--color-background);
+  --tw-ring-color: var(--color-focus);
+  --tw-ring-offset-color: var(--bg-primary);
 }
 
 /* Video hover overlay animations */
@@ -714,4 +809,196 @@ button,
 
 .click-feedback:active {
   transform: scale(0.98);
+}
+
+/* ENHANCED TEXT CONTRAST - Perfect readability */
+.text-secondary {
+  color: var(--text-secondary); /* Enhanced contrast in all themes */
+}
+
+.text-muted {
+  color: var(--text-muted); /* Better visibility than default gray */
+}
+
+.text-primary {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* COURSE METADATA - Enhanced contrast */
+.course-metadata {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-metadata .separator {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* DURATION AND XP LABELS */
+.duration-label,
+.xp-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* LESSON PROGRESS TEXT */
+.progress-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* HEADING HIERARCHY */
+.heading-primary {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.heading-secondary {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.heading-tertiary {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ENHANCED THEME CLASSES FOR SPECIFIC COMPONENTS */
+
+/* Send Feedback Button - Special styling */
+.send-feedback-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px var(--color-primary-light) !important;
+  transition: all 0.3s ease !important;
+}
+
+.send-feedback-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px var(--color-primary-light) !important;
+}
+
+/* Member Badge in Header - Enhanced styling */
+.member-badge {
+  background: linear-gradient(135deg, var(--color-success), var(--color-success-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 2px 8px var(--color-success-hover)40 !important;
+}
+
+/* Join Community Button - Special CTA styling */
+.join-community-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px var(--color-primary-light) !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-size: 14px !important;
+}
+
+.join-community-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px var(--color-primary-light) !important;
+}
+
+/* Expert Cards - Enhanced contrast */
+.expert-card {
+  background-color: var(--bg-card) !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px var(--color-shadow) !important;
+}
+
+.expert-card:hover {
+  border-color: var(--color-primary) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 40px var(--color-shadow) !important;
+}
+
+.expert-name {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+}
+
+.expert-title {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.expert-rating {
+  color: var(--color-warning) !important;
+  font-weight: 600 !important;
+}
+
+/* Book Call Button - Special styling */
+.book-call-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+  transition: all 0.3s ease !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.book-call-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px var(--color-primary-light) !important;
+}
+
+/* Library Course Cards - Netflix-style with enhanced contrast */
+.library-card {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px var(--color-shadow) !important;
+}
+
+.library-card:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 12px 40px var(--color-shadow) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.library-card-title {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+.library-card-meta {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
 }
