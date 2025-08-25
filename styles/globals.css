@@ -2,6 +2,419 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Theme Variables - Updated with full contrast support */
+:root {
+  /* Background Colors */
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F8FAFC;
+  --color-card-background: #FFFFFF;
+  --color-sidebar-background: #F8FAFC;
+  --color-header-background: #FFFFFF;
+  
+  /* Text Colors - High Contrast */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748B;
+  --color-text-inverse: #FFFFFF;
+  
+  /* Text on Colored Backgrounds - MAXIMUM CONTRAST */
+  --text-on-primary: #FFFFFF;
+  --text-on-secondary: #FFFFFF;
+  --text-on-success: #FFFFFF;
+  --text-on-warning: #FFFFFF;
+  --text-on-error: #FFFFFF;
+  --text-on-info: #FFFFFF;
+  
+  /* Interactive Colors */
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-secondary: #64748B;
+  --color-secondary-hover: #475569;
+  
+  /* Status Colors */
+  --color-success: #059669;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+  --color-info: #0EA5E9;
+  
+  /* UI Colors */
+  --color-hover: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-divider: #F1F5F9;
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Apply theme to body */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* High contrast, readable theme classes */
+.theme-bg {
+  background-color: var(--color-background);
+  transition: background-color 0.3s ease;
+}
+
+.theme-bg-secondary {
+  background-color: var(--color-background-secondary);
+  transition: background-color 0.3s ease;
+}
+
+.theme-card {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-sidebar {
+  background-color: var(--color-sidebar-background);
+  border-color: var(--color-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.theme-header {
+  background-color: var(--color-header-background);
+  border-color: var(--color-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Text with proper contrast */
+.theme-text-primary {
+  color: var(--color-text-primary);
+  transition: color 0.3s ease;
+}
+
+.theme-text-secondary {
+  color: var(--color-text-secondary);
+  transition: color 0.3s ease;
+}
+
+.theme-text-muted {
+  color: var(--color-text-muted);
+  transition: color 0.3s ease;
+}
+
+.theme-text-inverse {
+  color: var(--color-text-inverse);
+  transition: color 0.3s ease;
+}
+
+/* Buttons using theme colors (NOT fixed blue) */
+.theme-button-primary {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.theme-button-primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--color-shadow);
+}
+
+.theme-button-secondary {
+  background-color: var(--color-card-background);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.theme-button-secondary:hover {
+  background-color: var(--color-hover);
+  border-color: var(--color-primary);
+}
+
+.theme-button-outline {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  transition: all 0.2s ease;
+}
+
+.theme-button-outline:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+}
+
+/* Status buttons */
+.theme-button-success {
+  background-color: var(--color-success);
+  color: var(--text-on-success);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.theme-button-success:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.theme-button-warning {
+  background-color: var(--color-warning);
+  color: var(--text-on-warning);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.theme-button-warning:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.theme-button-error {
+  background-color: var(--color-error);
+  color: var(--text-on-error);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.theme-button-error:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Form inputs with high contrast */
+.theme-input {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-input:focus {
+  border-color: var(--color-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.theme-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Interactive elements */
+.theme-hover {
+  transition: background-color 0.2s ease;
+}
+
+.theme-hover:hover {
+  background-color: var(--color-hover);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+  transition: border-color 0.3s ease;
+}
+
+/* Progress bars and indicators */
+.theme-progress-bg {
+  background-color: var(--color-border);
+}
+
+.theme-progress-fill {
+  background-color: var(--color-primary);
+  transition: background-color 0.3s ease;
+}
+
+/* Navigation active states */
+.theme-nav-active {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+  font-weight: 600;
+}
+
+.theme-nav-inactive {
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.theme-nav-inactive:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-hover);
+}
+
+/* Badges and tags */
+.theme-badge-primary {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.theme-badge-success {
+  background-color: var(--color-success);
+  color: var(--text-on-success);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.theme-badge-warning {
+  background-color: var(--color-warning);
+  color: var(--text-on-warning);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.theme-badge-error {
+  background-color: var(--color-error);
+  color: var(--text-on-error);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Dropdowns and modals */
+.theme-dropdown {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 25px var(--color-shadow);
+}
+
+.theme-modal-overlay {
+  background-color: var(--color-overlay);
+}
+
+/* Legacy support - map old classes to new variables */
+.theme-card {
+  background-color: var(--color-card-background);
+  border: 1px solid var(--color-border);
+}
+
+/* Override fixed blue buttons throughout the platform */
+button[class*="bg-blue"], 
+.bg-blue-600, 
+.bg-blue-500,
+a[class*="bg-blue"] {
+  background-color: var(--color-primary) !important;
+}
+
+button[class*="bg-blue"]:hover, 
+.bg-blue-600:hover, 
+.bg-blue-500:hover,
+a[class*="bg-blue"]:hover {
+  background-color: var(--color-primary-hover) !important;
+}
+
+/* COMPREHENSIVE OVERRIDE SYSTEM - ELIMINATES ALL HARDCODED BLUES */
+
+/* Override ALL blue variants in Tailwind */
+.bg-blue-50 { background-color: var(--color-primary-light) !important; }
+.bg-blue-100 { background-color: var(--color-primary-light) !important; }
+.bg-blue-200 { background-color: var(--color-primary-light) !important; }
+.bg-blue-300 { background-color: var(--color-primary) !important; opacity: 0.7; }
+.bg-blue-400 { background-color: var(--color-primary) !important; opacity: 0.8; }
+.bg-blue-500 { background-color: var(--color-primary) !important; }
+.bg-blue-600 { background-color: var(--color-primary) !important; }
+.bg-blue-700 { background-color: var(--color-primary-hover) !important; }
+.bg-blue-800 { background-color: var(--color-primary-dark) !important; }
+.bg-blue-900 { background-color: var(--color-primary-dark) !important; }
+
+/* Override blue text colors */
+.text-blue-50 { color: var(--color-primary-light) !important; }
+.text-blue-100 { color: var(--color-primary-light) !important; }
+.text-blue-200 { color: var(--color-primary-light) !important; }
+.text-blue-300 { color: var(--color-primary) !important; opacity: 0.7; }
+.text-blue-400 { color: var(--color-primary) !important; opacity: 0.8; }
+.text-blue-500 { color: var(--color-primary) !important; }
+.text-blue-600 { color: var(--color-primary) !important; }
+.text-blue-700 { color: var(--color-primary-hover) !important; }
+.text-blue-800 { color: var(--color-primary-dark) !important; }
+.text-blue-900 { color: var(--color-primary-dark) !important; }
+
+/* Override blue borders */
+.border-blue-50 { border-color: var(--color-primary-light) !important; }
+.border-blue-100 { border-color: var(--color-primary-light) !important; }
+.border-blue-200 { border-color: var(--color-primary-light) !important; }
+.border-blue-300 { border-color: var(--color-primary) !important; opacity: 0.7; }
+.border-blue-400 { border-color: var(--color-primary) !important; opacity: 0.8; }
+.border-blue-500 { border-color: var(--color-primary) !important; }
+.border-blue-600 { border-color: var(--color-primary) !important; }
+.border-blue-700 { border-color: var(--color-primary-hover) !important; }
+.border-blue-800 { border-color: var(--color-primary-dark) !important; }
+.border-blue-900 { border-color: var(--color-primary-dark) !important; }
+
+/* Override hover states for blue backgrounds */
+.hover\:bg-blue-50:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-100:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-200:hover { background-color: var(--color-primary-light) !important; }
+.hover\:bg-blue-300:hover { background-color: var(--color-primary) !important; opacity: 0.7; }
+.hover\:bg-blue-400:hover { background-color: var(--color-primary) !important; opacity: 0.8; }
+.hover\:bg-blue-500:hover { background-color: var(--color-primary-hover) !important; }
+.hover\:bg-blue-600:hover { background-color: var(--color-primary-hover) !important; }
+.hover\:bg-blue-700:hover { background-color: var(--color-primary-dark) !important; }
+
+/* Continue Learning and ALL primary action buttons */
+.continue-button,
+.primary-action-button,
+button[class*="Continue"],
+a[class*="Continue"],
+button[class*="Start"],
+a[class*="Start"],
+button[class*="Join"],
+a[class*="Join"],
+.btn-primary,
+.button-primary {
+  background-color: var(--color-primary) !important;
+  color: var(--text-inverse) !important;
+  border: none !important;
+  transition: all 0.2s ease;
+}
+
+.continue-button:hover,
+.primary-action-button:hover,
+button[class*="Continue"]:hover,
+a[class*="Continue"]:hover,
+button[class*="Start"]:hover,
+a[class*="Start"]:hover,
+button[class*="Join"]:hover,
+a[class*="Join"]:hover,
+.btn-primary:hover,
+.button-primary:hover {
+  background-color: var(--color-primary-hover) !important;
+  transform: translateY(-1px);
+}
+
+/* Override any remaining hardcoded blue values */
+[style*="background: blue"],
+[style*="background-color: blue"],
+[style*="background: #0000FF"],
+[style*="background-color: #0000FF"],
+[style*="background: #2563EB"],
+[style*="background-color: #2563EB"],
+[style*="background: #1D4ED8"],
+[style*="background-color: #1D4ED8"] {
+  background-color: var(--color-primary) !important;
+}
+
+[style*="color: blue"],
+[style*="color: #0000FF"],
+[style*="color: #2563EB"],
+[style*="color: #1D4ED8"] {
+  color: var(--color-primary) !important;
+}
+
+/* Smooth transitions for all theme changes */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
 /* Mobile-First Optimizations */
 @layer utilities {
   /* Line Clamping for better text overflow */
@@ -26,6 +439,31 @@
     -webkit-line-clamp: 3;
   }
 
+  /* Netflix-style scrollbar hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Smooth fade in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
   /* Enhanced Touch Targets for Mobile */
   .touch-target {
     min-height: 44px;
@@ -38,9 +476,24 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Better focus states for accessibility */
+  /* Better focus states for accessibility - DYNAMIC */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    --tw-ring-color: var(--color-focus);
+    --tw-ring-offset-color: var(--bg-primary);
+  }
+
+  /* Focus ring override for blue focus rings */
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: var(--color-focus) !important;
+  }
+
+  .focus\:ring-blue-600:focus {
+    --tw-ring-color: var(--color-focus) !important;
+  }
+
+  .focus\:ring-blue-700:focus {
+    --tw-ring-color: var(--color-focus) !important;
   }
 
   /* Mobile-optimized shadows */
@@ -54,10 +507,6 @@
 }
 
 /* Performance Optimizations */
-* {
-  box-sizing: border-box;
-}
-
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
@@ -69,6 +518,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Improve image loading performance */
@@ -88,11 +540,15 @@ button,
 /* Expert Directory Specific Styles */
 @layer components {
   .expert-card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 transition-all duration-300 overflow-hidden;
+    @apply rounded-xl shadow-sm border transition-all duration-300 overflow-hidden;
+    background-color: var(--color-card-background);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
   }
   
   .expert-card:hover {
-    @apply shadow-lg border-gray-300 -translate-y-1;
+    @apply shadow-lg -translate-y-1;
+    border-color: var(--color-primary);
   }
   
   .expert-avatar {
@@ -105,26 +561,35 @@ button,
   
   .level-badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border;
+    background-color: var(--color-card-background);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
   }
   
   .specialty-tag {
-    @apply px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-100;
+    @apply px-2 py-1 text-xs rounded-md border;
+    background-color: var(--color-background-secondary);
+    color: var(--color-primary);
+    border-color: var(--color-border);
   }
   
   .book-call-btn {
-    @apply w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center;
+    @apply w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center;
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
   }
   
   .book-call-btn:hover {
-    @apply bg-blue-700;
+    background-color: var(--color-primary-hover);
   }
   
   .expert-card:hover .book-call-btn {
-    @apply bg-blue-700;
+    background-color: var(--color-primary-hover);
   }
   
   .hover-overlay {
-    @apply absolute inset-0 bg-gradient-to-t from-blue-600/10 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none rounded-xl;
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none rounded-xl;
+    background: linear-gradient(to top, var(--color-primary)10, transparent);
   }
   
   .expert-card:hover .hover-overlay {
@@ -135,15 +600,18 @@ button,
 /* Booking Modal Styles */
 @layer components {
   .modal-backdrop {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+    @apply fixed inset-0 flex items-center justify-center z-50;
+    background-color: var(--color-overlay);
   }
   
   .modal-content {
-    @apply bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto;
+    @apply rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto;
+    background-color: var(--color-card-background);
   }
   
   .modal-header {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-2xl;
+    @apply text-white p-6 rounded-t-2xl;
+    background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
   }
   
   .step-indicator {
@@ -151,31 +619,61 @@ button,
   }
   
   .step-active {
-    @apply bg-blue-600 border-blue-600 text-white;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-inverse);
   }
   
   .step-completed {
-    @apply bg-green-500 border-green-500 text-white;
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    color: var(--color-text-inverse);
   }
   
   .step-inactive {
-    @apply border-gray-300 text-gray-400;
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
   }
   
   .form-input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply w-full px-3 py-2 rounded-lg focus:outline-none;
+    background-color: var(--color-card-background);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+  }
+  
+  .form-input:focus {
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
   }
   
   .btn-primary {
-    @apply bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors;
+    @apply px-6 py-2 rounded-lg font-medium transition-colors;
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--color-primary-hover);
   }
   
   .btn-success {
-    @apply bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors;
+    @apply px-6 py-2 rounded-lg font-medium transition-colors;
+    background-color: var(--color-success);
+    color: var(--color-text-inverse);
+  }
+  
+  .btn-success:hover {
+    opacity: 0.9;
   }
   
   .btn-secondary {
-    @apply px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors;
+    @apply px-4 py-2 font-medium transition-colors;
+    color: var(--color-text-secondary);
+  }
+  
+  .btn-secondary:hover {
+    color: var(--color-text-primary);
   }
 }
 
@@ -209,3 +707,973 @@ button,
     scroll-behavior: auto !important;
   }
 }
+
+/* Netflix-style hover scaling for library cards */
+.scale-125 {
+  transform: scale(1.25);
+}
+
+/* Digital Era Library Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* GPU-accelerated transforms for smooth video hover */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Smooth video scaling */
+.video-hover-scale {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Enhanced shadow effects for cards */
+.card-shadow {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow-hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Digital Era Library Animations */
+@keyframes videoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-videoFadeIn {
+  animation: videoFadeIn 0.5s ease-out;
+}
+
+/* Enhanced backdrop blur effects */
+.backdrop-blur-enhanced {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* Smooth theme transitions */
+.theme-transition {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Enhanced focus states for library elements - DYNAMIC */
+.library-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  --tw-ring-color: var(--color-focus);
+  --tw-ring-offset-color: var(--bg-primary);
+}
+
+/* Video hover overlay animations */
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  }
+  to {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5), transparent);
+  }
+}
+
+.animate-overlayFadeIn {
+  animation: overlayFadeIn 0.4s ease-out;
+}
+
+/* Optimized instant hover performance */
+.instant-hover-transform {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
+  will-change: transform, opacity;
+}
+
+.instant-hover-scale {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* GPU-accelerated video hover effects */
+@media (prefers-reduced-motion: no-preference) {
+  .video-hover-element {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease-out;
+  }
+
+  .video-hover-element.hidden {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+
+  .video-hover-element.visible {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Instant click feedback */
+.click-feedback {
+  transition: transform 0.1s ease-out;
+}
+
+.click-feedback:active {
+  transform: scale(0.98);
+}
+
+/* ENHANCED TEXT CONTRAST - Perfect readability */
+.text-secondary {
+  color: var(--text-secondary); /* Enhanced contrast in all themes */
+}
+
+.text-muted {
+  color: var(--text-muted); /* Better visibility than default gray */
+}
+
+.text-primary {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* COURSE METADATA - Enhanced contrast */
+.course-metadata {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-metadata .separator {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+/* DURATION AND XP LABELS */
+.duration-label,
+.xp-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* LESSON PROGRESS TEXT */
+.progress-text {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* HEADING HIERARCHY */
+.heading-primary {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.heading-secondary {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.heading-tertiary {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* ENHANCED THEME CLASSES FOR SPECIFIC COMPONENTS */
+
+/* Send Feedback Button - Special styling */
+.send-feedback-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px var(--color-primary-light) !important;
+  transition: all 0.3s ease !important;
+}
+
+.send-feedback-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px var(--color-primary-light) !important;
+}
+
+/* Member Badge in Header - Enhanced styling */
+.member-badge {
+  background: linear-gradient(135deg, var(--color-success), var(--color-success-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  box-shadow: 0 2px 8px var(--color-success-hover)40 !important;
+}
+
+/* Join Community Button - Special CTA styling */
+.join-community-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px var(--color-primary-light) !important;
+  transition: all 0.3s ease !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  font-size: 14px !important;
+}
+
+.join-community-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px var(--color-primary-light) !important;
+}
+
+/* Expert Cards - Enhanced contrast */
+.expert-card {
+  background-color: var(--bg-card) !important;
+  border: 2px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px var(--color-shadow) !important;
+}
+
+.expert-card:hover {
+  border-color: var(--color-primary) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 40px var(--color-shadow) !important;
+}
+
+.expert-name {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+}
+
+.expert-title {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+.expert-rating {
+  color: var(--color-warning) !important;
+  font-weight: 600 !important;
+}
+
+/* Book Call Button - Special styling */
+.book-call-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
+  color: var(--text-inverse) !important;
+  font-weight: 700 !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+  transition: all 0.3s ease !important;
+  font-size: 14px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.book-call-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px var(--color-primary-light) !important;
+}
+
+/* Library Course Cards - Netflix-style with enhanced contrast */
+.library-card {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 8px var(--color-shadow) !important;
+}
+
+.library-card:hover {
+  transform: scale(1.05) !important;
+  box-shadow: 0 12px 40px var(--color-shadow) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.library-card-title {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+.library-card-meta {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+}
+
+/* ========================================
+   COMPREHENSIVE TEXT VISIBILITY FIXES
+   ======================================== */
+
+/* Section Headers - MAXIMUM CONTRAST */
+.section-header {
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 24px !important;
+  line-height: 1.2 !important;
+  margin-bottom: 8px !important;
+}
+
+.section-header-large {
+  color: var(--color-text-primary) !important;
+  font-weight: 800 !important;
+  font-size: 32px !important;
+  line-height: 1.1 !important;
+  margin-bottom: 12px !important;
+}
+
+/* Section Descriptions - ENHANCED CONTRAST */
+.section-description {
+  color: var(--color-text-secondary) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  margin-bottom: 16px !important;
+}
+
+.section-description-small {
+  color: var(--color-text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+/* Tab Navigation - HIGH CONTRAST SYSTEM */
+.tab-button {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+
+.tab-button:hover {
+  background-color: var(--color-primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px var(--color-primary-light) !important;
+}
+
+.tab-button.inactive {
+  background-color: var(--color-card-background) !important;
+  color: var(--color-text-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.tab-button.inactive:hover {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Statistics Cards - CLEAR TEXT HIERARCHY */
+.stat-card {
+  background-color: var(--color-card-background) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  transition: all 0.2s ease !important;
+}
+
+.stat-card:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 4px 12px var(--color-shadow) !important;
+}
+
+.stat-value {
+  color: var(--color-text-primary) !important;
+  font-size: 32px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  margin-bottom: 4px !important;
+}
+
+.stat-label {
+  color: var(--color-text-secondary) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.stat-change {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.stat-change.positive {
+  color: var(--color-success) !important;
+}
+
+.stat-change.negative {
+  color: var(--color-error) !important;
+}
+
+.stat-change.neutral {
+  color: var(--color-text-muted) !important;
+}
+
+/* Foundation Training Section - MAXIMUM VISIBILITY */
+.foundation-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.foundation-header .icon-container {
+  width: 48px !important;
+  height: 48px !important;
+  background-color: var(--color-success) !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.foundation-header .icon-container svg {
+  width: 24px !important;
+  height: 24px !important;
+  color: var(--text-on-success) !important;
+}
+
+.foundation-title {
+  color: var(--color-text-primary) !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+}
+
+.foundation-description {
+  color: var(--color-text-secondary) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  margin: 4px 0 0 0 !important;
+}
+
+/* Section Cards - COLORED BACKGROUNDS WITH PERFECT TEXT CONTRAST */
+.section-card {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+}
+
+.section-card:hover {
+  background-color: var(--color-primary-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px var(--color-primary-light) !important;
+}
+
+.section-card.secondary {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+}
+
+.section-card.secondary:hover {
+  background-color: var(--color-secondary-hover) !important;
+}
+
+.section-card.info {
+  background-color: var(--color-info) !important;
+  color: var(--text-on-info) !important;
+}
+
+.section-card.info:hover {
+  background-color: var(--color-info-hover) !important;
+}
+
+.section-card-title {
+  color: inherit !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  line-height: 1.3 !important;
+}
+
+.section-card-description {
+  color: inherit !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  opacity: 0.95 !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+}
+
+/* Icon + Text Combinations - ENHANCED VISIBILITY */
+.icon-text-combo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.icon-text-combo .icon {
+  width: 24px !important;
+  height: 24px !important;
+  color: var(--color-primary) !important;
+  flex-shrink: 0 !important;
+}
+
+.icon-text-combo .text {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  line-height: 1.3 !important;
+}
+
+/* Chip/Badge System - MAXIMUM VISIBILITY */
+.chip-foundation {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+.chip-advanced {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+.chip-masterclass {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 6px 12px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+/* Button Overrides - COMPREHENSIVE TEXT CONTRAST */
+.btn-primary,
+.button-primary,
+.primary-button {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.btn-primary:hover,
+.button-primary:hover,
+.primary-button:hover {
+  background-color: var(--color-primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px var(--color-primary-light) !important;
+  color: var(--text-on-primary) !important;
+  text-decoration: none !important;
+}
+
+/* Success Buttons */
+.btn-success,
+.button-success {
+  background-color: var(--color-success) !important;
+  color: var(--text-on-success) !important;
+  font-weight: 600 !important;
+}
+
+.btn-success:hover,
+.button-success:hover {
+  background-color: var(--color-success-hover) !important;
+  color: var(--text-on-success) !important;
+}
+
+/* Warning Buttons */
+.btn-warning,
+.button-warning {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+  font-weight: 600 !important;
+}
+
+.btn-warning:hover,
+.button-warning:hover {
+  background-color: var(--color-warning-hover) !important;
+  color: var(--text-on-warning) !important;
+}
+
+/* Dropdown Menu - ENHANCED VISIBILITY */
+.dropdown-menu {
+  background-color: var(--color-card-background) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px var(--color-shadow) !important;
+  padding: 8px 0 !important;
+  min-width: 200px !important;
+}
+
+.dropdown-item {
+  color: var(--color-text-primary) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: none !important;
+  width: 100% !important;
+  text-align: left !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.dropdown-item.active {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+}
+
+/* Modal/Dialog Theming */
+.modal-header {
+  background-color: var(--color-card-background) !important;
+  color: var(--color-text-primary) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  padding: 20px 24px !important;
+}
+
+.modal-title {
+  color: var(--color-text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  margin: 0 !important;
+}
+
+.modal-body {
+  background-color: var(--color-card-background) !important;
+  color: var(--color-text-primary) !important;
+  padding: 24px !important;
+}
+
+.modal-footer {
+  background-color: var(--color-card-background) !important;
+  border-top: 1px solid var(--color-border) !important;
+  padding: 16px 24px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+}
+
+/* Override ALL remaining blue button classes */
+button[class*="bg-blue"],
+.bg-blue-600,
+.bg-blue-500,
+.bg-blue-400,
+a[class*="bg-blue"],
+input[type="submit"][class*="bg-blue"] {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 600 !important;
+}
+
+button[class*="bg-blue"]:hover,
+.bg-blue-600:hover,
+.bg-blue-500:hover,
+.bg-blue-400:hover,
+a[class*="bg-blue"]:hover,
+input[type="submit"][class*="bg-blue"]:hover {
+  background-color: var(--color-primary-hover) !important;
+  color: var(--text-on-primary) !important;
+}
+
+/* Text color overrides for blue text */
+.text-blue-600,
+.text-blue-500,
+.text-blue-400,
+.text-blue-700 {
+  color: var(--color-primary) !important;
+}
+
+/* Focus ring overrides */
+.focus\:ring-blue-500:focus,
+.focus\:ring-blue-600:focus {
+  --tw-ring-color: var(--color-focus) !important;
+}
+
+/* ACCESSIBILITY IMPROVEMENTS */
+
+/* Ensure minimum touch target size */
+.touch-target,
+button,
+a[role="button"],
+.btn,
+.button {
+  min-height: 44px !important;
+  min-width: 44px !important;
+}
+
+/* Enhanced focus visibility */
+.focus-visible:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--color-primary-light) !important;
+}
+
+/* Text selection with theme colors */
+::selection {
+  background-color: var(--color-primary-light) !important;
+  color: var(--color-text-primary) !important;
+}
+
+::-moz-selection {
+  background-color: var(--color-primary-light) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ========================================
+   LIBRARY TAB SYSTEM - THEME COMPLIANT
+   ======================================== */
+
+/* Tab Container */
+.library-tab-container {
+  background-color: var(--color-card-background) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  width: fit-content !important;
+}
+
+/* Base Tab Styling */
+.library-tab {
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background-color: transparent !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* Active Tab - Uses Theme Colors for Proper Contrast */
+.library-tab.active {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px var(--color-primary)30 !important;
+}
+
+.library-tab.active.foundation {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.library-tab.active.advanced {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+  box-shadow: 0 2px 8px var(--color-secondary)30 !important;
+}
+
+.library-tab.active.masterclass {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+  box-shadow: 0 2px 8px var(--color-warning)30 !important;
+}
+
+/* Inactive Tab Hover */
+.library-tab:not(.active):hover {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Tab Count Badges */
+.library-tab-badge {
+  padding: 2px 8px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  min-width: 20px !important;
+}
+
+/* Active Tab Badges - Semi-transparent overlay */
+.library-tab.active .library-tab-badge {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: inherit !important;
+}
+
+/* Inactive Tab Badges - Use theme colors */
+.library-tab:not(.active) .library-tab-badge {
+  background-color: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+}
+
+.library-tab:not(.active).foundation .library-tab-badge {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.library-tab:not(.active).advanced .library-tab-badge {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+}
+
+.library-tab:not(.active).masterclass .library-tab-badge {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+}
+
+/* Focus States for Accessibility */
+.library-tab:focus-visible {
+  outline: 2px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--color-primary-light) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .library-tab-container {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+  
+  .library-tab {
+    flex: 1 !important;
+    justify-content: center !important;
+    min-width: 120px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .library-tab-badge {
+    margin-left: 4px !important;
+  }
+}
+
+/* Dark Theme Specific Overrides */
+[data-theme="dark"] .library-tab.active,
+[data-theme="skoolDark"] .library-tab.active,
+[data-theme="luxury"] .library-tab.active,
+[data-theme="neon"] .library-tab.active {
+  /* Ensure proper contrast in all dark themes */
+  color: var(--text-on-primary) !important;
+}
+
+/* Light Theme Specific Overrides */
+[data-theme="light"] .library-tab.active,
+[data-theme="ocean"] .library-tab.active,
+[data-theme="pastel"] .library-tab.active {
+  /* Ensure proper contrast in light themes */
+  color: var(--text-on-primary) !important;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .library-tab {
+    border: 1px solid var(--color-border) !important;
+  }
+  
+  .library-tab.active {
+    border: 2px solid var(--color-focus) !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .library-tab {
+    transition: none !important;
+  }
+}
+
+/* ========================================
+   END LIBRARY TAB SYSTEM
+   ======================================== */
+
+/* ========================================
+   END TEXT VISIBILITY FIXES
+   ======================================== */

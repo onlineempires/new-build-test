@@ -277,9 +277,9 @@ const DMOPage = () => {
               <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mr-3">
                 <span className="text-white font-bold">🎯</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Method of Operation (DMO)</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold theme-text-primary">Daily Method of Operation (DMO)</h1>
             </div>
-            <p className="text-gray-600">
+            <p className="theme-text-secondary">
               Choose your daily commitment level and complete structured tasks to build consistent business growth.
             </p>
           </div>
@@ -300,21 +300,21 @@ const DMOPage = () => {
 
           {/* Stats Cards - Simplified */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">{stats.currentStreak}</div>
-              <div className="text-sm text-gray-600">Current Streak</div>
+            <div className="theme-card rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold theme-text-primary">{stats.currentStreak}</div>
+              <div className="text-sm theme-text-secondary">Current Streak</div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">{progress?.completedTasks.length || 0}</div>
-              <div className="text-sm text-gray-600">Tasks Today</div>
+            <div className="theme-card rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold theme-text-primary">{progress?.completedTasks.length || 0}</div>
+              <div className="text-sm theme-text-secondary">Tasks Today</div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">{progress?.xpEarned || 0}</div>
-              <div className="text-sm text-gray-600">Daily XP</div>
+            <div className="theme-card rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold theme-text-primary">{progress?.xpEarned || 0}</div>
+              <div className="text-sm theme-text-secondary">Daily XP</div>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-gray-900">#{stats.totalDaysCompleted + 1}</div>
-              <div className="text-sm text-gray-600">Rank</div>
+            <div className="theme-card rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold theme-text-primary">#{stats.totalDaysCompleted + 1}</div>
+              <div className="text-sm theme-text-secondary">Rank</div>
             </div>
           </div>
 
@@ -333,12 +333,12 @@ const DMOPage = () => {
                       <div className="p-6 text-center border-b border-gray-100">
                         <div className={`text-4xl mb-3 ${pathColors.icon}`}>{path.icon}</div>
                         <h3 className={`text-xl font-bold mb-2 ${pathColors.accent}`}>{path.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3">{path.description}</p>
+                        <p className="text-sm theme-text-secondary mb-3">{path.description}</p>
                         <div className={`text-lg font-semibold ${pathColors.accent}`}>{path.title}</div>
                       </div>
                       
                       <div className="p-6 bg-white">
-                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm theme-text-secondary mb-4">
                           <div className="text-center">
                             <div className={`font-semibold text-lg ${pathColors.accent}`}>{path.tasks.length}</div>
                             <div>Tasks</div>
@@ -369,11 +369,11 @@ const DMOPage = () => {
           ) : !selectedPath && hasPathSelected ? (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
               <div className="text-6xl mb-4">🔒</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading Your Selected Path...</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-xl font-semibold theme-text-primary mb-2">Loading Your Selected Path...</h3>
+              <p className="theme-text-secondary mb-4">
                 You have already selected a DMO path today. Loading your progress...
               </p>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm theme-text-muted">
                 Resets in {timeUntilReset}
               </div>
             </div>

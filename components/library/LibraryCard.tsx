@@ -1,6 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/router';
+import { Play, Clock, CheckCircle, Star, Plus } from 'lucide-react';
 import { LibraryItem } from '../../types/library';
 import { generateThumbnail } from '../../lib/api/thumbnails';
+import { getCourseRoute, getCTAText, getUserProgressPercentage, trackCourseAction } from '../../utils/courseRouting';
+import { MobilePreviewModal } from './MobilePreviewModal';
+import { toCourseSummary } from './HoverPreviewProvider';
 
 interface LibraryCardProps {
   item: LibraryItem;
@@ -8,9 +13,42 @@ interface LibraryCardProps {
 }
 
 export default function LibraryCard({ item, onClick }: LibraryCardProps) {
+  const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout>();
+  
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>(item.heroImage);
+  const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const playButtonRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const expandedCardRef = useRef<HTMLDivElement>(null);
+
+  // Convert LibraryItem to CourseSummary for components that need it
+  const course = useMemo(() => toCourseSummary(item), [item]);
+
+  // Get course progress and routing info
+  const progressPercent = getUserProgressPercentage(item.slug);
+  const ctaText = getCTAText(item);
+  const courseRoute = getCourseRoute(item);
+  
+  // Detect device capabilities
+  const isPointerDevice = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(pointer: fine)').matches;
+  }, []);
+
+  const isLargeScreen = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(min-width: 1024px)').matches;
+  }, []);
+
+  const shouldUseHover = isPointerDevice && isLargeScreen;
 
   // Generate realistic thumbnail if needed
   useEffect(() => {
@@ -54,158 +92,434 @@ export default function LibraryCard({ item, onClick }: LibraryCardProps) {
     }
   };
 
-  const handleCardClick = () => {
-    onClick(item);
+  // Handle course navigation
+  const handleWatchNow = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    const action = progressPercent > 0 ? 'continue' : 'start';
+    trackCourseAction(action, item, courseRoute);
+    router.push(courseRoute);
+  };
+
+  // Optimized instant hover handlers for smooth performance
+  const handleMouseEnter = useCallback(() => {
+    if (!shouldUseHover) return;
+    
+    // Cancel any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    // Immediate visual feedback - no delays
+    setIsHovered(true);
+    
+    // Instant DOM updates for smooth performance
+    if (playButtonRef.current) {
+      playButtonRef.current.style.transform = 'translateY(0) scale(1)';
+      playButtonRef.current.style.opacity = '1';
+    }
+    
+    if (overlayRef.current) {
+      overlayRef.current.style.transform = 'translateY(0)';
+      overlayRef.current.style.opacity = '1';
+    }
+    
+    if (expandedCardRef.current) {
+      expandedCardRef.current.style.transform = 'translateY(0) scale(1)';
+      expandedCardRef.current.style.opacity = '1';
+    }
+    
+    // Start video after minimal delay for better UX
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (videoRef.current && !imageError) {
+        setShowVideoPreview(true);
+        const video = videoRef.current;
+        video.currentTime = 0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.log('Video autoplay prevented:', error);
+          });
+        }
+      }
+    }, 200); // Much shorter delay for video
+  }, [shouldUseHover, imageError]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    // Immediate visual feedback
+    setIsHovered(false);
+    setShowVideoPreview(false);
+    
+    // Instant DOM updates for smooth performance
+    if (playButtonRef.current) {
+      playButtonRef.current.style.transform = 'translateY(20px) scale(0.9)';
+      playButtonRef.current.style.opacity = '0';
+    }
+    
+    if (overlayRef.current) {
+      overlayRef.current.style.transform = 'translateY(10px)';
+      overlayRef.current.style.opacity = '0';
+    }
+    
+    if (expandedCardRef.current) {
+      expandedCardRef.current.style.transform = 'translateY(20px) scale(0.95)';
+      expandedCardRef.current.style.opacity = '0';
+    }
+    
+    // Clean up video
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, []);
+
+  const handleFocus = useCallback(() => {
+    if (shouldUseHover) {
+      handleMouseEnter();
+    }
+  }, [shouldUseHover, handleMouseEnter]);
+
+  const handleBlur = useCallback(() => {
+    handleMouseLeave();
+  }, [handleMouseLeave]);
+
+  // Optimized click handlers with visual feedback
+  const handleCardClick = useCallback(() => {
+    if (!shouldUseHover) {
+      // Mobile/touch - show modal
+      setMobileModalOpen(true);
+    } else {
+      // Desktop - navigate directly
+      handleWatchNow();
+    }
+  }, [shouldUseHover, handleWatchNow]);
+  
+  // Single-click navigation handler with proper event handling
+  const handleVideoClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log(`Navigating to course: ${item.slug}`);
+    
+    // Track action and navigate immediately
+    const action = progressPercent > 0 ? 'continue' : 'start';
+    trackCourseAction(action, item, courseRoute);
+    
+    // Immediate navigation
+    router.push(courseRoute);
+  }, [progressPercent, item, courseRoute, router]);
+
+  // SIMPLE navigation function - no complex event handling
+  const goToCourse = () => {
+    console.log('=== SIMPLE CLICK DEBUG ===');
+    console.log('Course Title:', item.title);
+    console.log('Course Slug:', item.slug);
+    console.log('Course Route:', courseRoute);
+    console.log('Current URL:', window.location.href);
+    console.log('Attempting navigation...');
+    
+    // Track action
+    const action = progressPercent > 0 ? 'continue' : 'start';
+    trackCourseAction(action, item, courseRoute);
+    
+    // Direct navigation - simplest method
+    window.location.href = courseRoute;
+    console.log('Navigation command sent');
+  };
+
+  const hidePreview = () => {
+    setIsHovered(false);
+    setShowVideoPreview(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onClick(item);
+      if (!shouldUseHover) {
+        setMobileModalOpen(true);
+      }
+      // On hover devices, focus already shows the preview
+    } else if (e.key === 'Escape') {
+      if (shouldUseHover) {
+        hidePreview();
+      }
     }
   };
 
   return (
-    <div
-      className="group relative bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 transform hover:-translate-y-1 hover:scale-[1.02]"
-      onClick={handleCardClick}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="button"
-      aria-label={`View ${item.title}`}
-    >
-      {/* Hero Image Container */}
-      <div className="relative aspect-video bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden">
-        {/* Loading State */}
-        {!isImageLoaded && !imageError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-700 animate-pulse">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+    <>
+      <div
+        ref={cardRef}
+        className={`
+          relative cursor-pointer transition-transform duration-200 ease-out rounded-2xl overflow-hidden
+          ${isHovered ? 'scale-105 shadow-2xl z-50' : 'scale-100 shadow-lg z-10'}
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
+          transform-gpu will-change-transform
+        `}
+        onClick={handleCardClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={`${ctaText} ${item.title}`}
+        style={{
+          transformOrigin: 'center center',
+          zIndex: isHovered ? 999 : 1,
+          willChange: 'transform'
+        }}
+      >
+        {/* Themed Card Container */}
+        <div className="library-card rounded-xl overflow-hidden">
+          {/* Simple Video Area - Direct Click */}
+          <div 
+            className="relative aspect-video bg-gradient-to-br from-slate-700 to-slate-800 overflow-hidden cursor-pointer"
+            onClick={goToCourse}
+          >
+            {/* Loading State */}
+            {!isImageLoaded && !imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-700 animate-pulse">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
 
-        {/* Hero Image */}
-        {!imageError && (
-          <img
-            src={thumbnailUrl}
-            alt={item.title}
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
-              isImageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => setIsImageLoaded(true)}
-            onError={() => setImageError(true)}
-            loading="lazy"
-          />
-        )}
+            {/* Hero Image */}
+            {!imageError && (
+              <img
+                src={thumbnailUrl}
+                alt={item.title}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  isImageLoaded ? 'opacity-100' : 'opacity-0'
+                } ${showVideoPreview ? 'opacity-0' : 'opacity-100'}`}
+                onLoad={() => setIsImageLoaded(true)}
+                onError={() => setImageError(true)}
+                loading="lazy"
+              />
+            )}
 
-        {/* Fallback Gradient */}
-        {imageError && (
-          <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
-            <span className="text-white text-sm font-semibold opacity-60">
-              {getTypeLabel(item.type)}
-            </span>
-          </div>
-        )}
+            {/* Digital Era Video Preview */}
+            {!imageError && shouldUseHover && (
+              <video
+                ref={videoRef}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  showVideoPreview ? 'opacity-100' : 'opacity-0'
+                }`}
+                muted
+                loop
+                playsInline
+                preload="none"
+                onLoadedData={() => setVideoLoaded(true)}
+                onError={() => console.log('Video preview failed to load')}
+                style={{ pointerEvents: 'none' }}
+              >
+                <source src={`/api/placeholder/video/400/225`} type="video/mp4" />
+                <source src={`https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`} type="video/mp4" />
+              </video>
+            )}
 
-        {/* Dark Overlay for Text Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/10"></div>
-
-        {/* Type Badge */}
-        <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-bold text-white ${getTypeColor(item.type)} shadow-lg`}>
-            {getTypeLabel(item.type)}
-          </span>
-        </div>
-
-        {/* Lock Icon for Gated Content */}
-        {item.isLocked && (
-          <div className="absolute top-3 right-3">
-            <div className="w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
-              <i className="fas fa-lock text-white text-sm"></i>
-            </div>
-          </div>
-        )}
-
-        {/* Progress Ring for Started Content */}
-        {!item.isLocked && item.progressPct !== undefined && item.progressPct > 0 && (
-          <div className="absolute top-3 right-3">
-            <div className="relative w-8 h-8">
-              {/* Background Circle */}
-              <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
-                <circle
-                  cx="16"
-                  cy="16"
-                  r="14"
-                  stroke="rgba(255,255,255,0.3)"
-                  strokeWidth="3"
-                  fill="transparent"
-                />
-                <circle
-                  cx="16"
-                  cy="16"
-                  r="14"
-                  stroke="#22c55e"
-                  strokeWidth="3"
-                  fill="transparent"
-                  strokeDasharray={87.96}
-                  strokeDashoffset={87.96 * (1 - item.progressPct / 100)}
-                  className="transition-all duration-500"
-                />
-              </svg>
-              {/* Progress Percentage */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white text-xs font-bold">
-                  {item.progressPct === 100 ? '✓' : `${item.progressPct}%`}
+            {/* Fallback Gradient */}
+            {imageError && (
+              <div className="w-full h-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                <span className="text-white text-sm font-semibold opacity-60">
+                  {getTypeLabel(item.type)}
                 </span>
               </div>
+            )}
+
+            {/* Type Badge */}
+            <div className="absolute top-3 left-3">
+              <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-bold text-white ${getTypeColor(item.type)} shadow-lg`}>
+                {getTypeLabel(item.type)}
+              </span>
+            </div>
+
+            {/* Progress Badge */}
+            {progressPercent > 0 && (
+              <div className="absolute top-3 right-3">
+                <div className={`
+                  w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold
+                  ${progressPercent === 100 ? 'bg-green-500 text-white' : 'bg-white/20 backdrop-blur text-white'}
+                `}>
+                  {progressPercent === 100 ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    `${progressPercent}%`
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Progress Bar */}
+            {progressPercent > 0 && progressPercent < 100 && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-600">
+                <div 
+                  className="h-full bg-red-600 transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            )}
+
+            {/* Enhanced Play Button Overlay with Digital Era styling */}
+            {isHovered && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-center">
+                <div className="text-center space-y-4">
+                  <button
+                    onClick={goToCourse}
+                    className="bg-white/90 backdrop-blur-sm rounded-full p-3 hover:scale-110 transition-all duration-300 shadow-xl border border-white/20"
+                  >
+                    <Play className="w-6 h-6 text-black fill-black" />
+                  </button>
+                  <div className="text-white text-sm font-medium opacity-90">
+                    {ctaText}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Balanced Card Content with Optimal Spacing */}
+          <div className="p-5 space-y-3">
+            {/* Title - Clickable Navigation */}
+            <h3 
+              className="text-primary font-semibold text-xl leading-tight line-clamp-2 cursor-pointer hover:text-accent transition-colors duration-300"
+              onClick={goToCourse}
+            >
+              {item.title}
+            </h3>
+
+            {/* Course Description - Engaging content */}
+            {item.shortDescription && (
+              <p className="text-secondary text-sm leading-relaxed line-clamp-2">
+                {item.shortDescription}
+              </p>
+            )}
+
+            {/* Clean Bottom Layout - No Overlap */}
+            <div className="flex items-center justify-between pt-2 gap-4">
+              {/* Duration - Prevented from shrinking */}
+              <span className="text-muted text-sm flex items-center flex-shrink-0">
+                <span className="w-1 h-1 bg-current rounded-full mr-2 opacity-50"></span>
+                {formatDuration(item.durationMin)}
+              </span>
+
+              {/* Action Button - Prevent text wrapping */}
+              <button 
+                className="btn-primary px-4 py-2 rounded-lg transition-colors text-sm font-medium flex-shrink-0 whitespace-nowrap"
+                onClick={goToCourse}
+              >
+                {ctaText}
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Hover Gradient Bloom Effect */}
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-600/0 via-blue-600/0 to-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      </div>
-
-      {/* Card Content */}
-      <div className="p-4">
-        {/* Title */}
-        <h3 className="text-white font-bold text-lg leading-tight mb-2 line-clamp-2 group-hover:text-blue-100 transition-colors">
-          {item.title}
-        </h3>
-
-        {/* Footer Row */}
-        <div className="flex items-center justify-between">
-          {/* Duration Badge */}
-          <span className="inline-flex items-center px-2 py-1 bg-slate-700 text-slate-300 text-xs font-medium rounded-md">
-            <i className="fas fa-clock mr-1 text-xs"></i>
-            {formatDuration(item.durationMin)}
-          </span>
-
-          {/* Action Indicator */}
-          <div className="flex items-center space-x-2">
-            {item.isLocked ? (
-              <span className="text-xs text-orange-400 font-medium">
-                Unlock
-              </span>
-            ) : item.progressPct === 100 ? (
-              <span className="text-xs text-green-400 font-medium">
-                Completed
-              </span>
-            ) : item.progressPct && item.progressPct > 0 ? (
-              <span className="text-xs text-blue-400 font-medium">
-                Continue
-              </span>
-            ) : (
-              <span className="text-xs text-slate-400 font-medium">
-                Start
-              </span>
-            )}
-            <i className="fas fa-chevron-right text-xs text-slate-500 group-hover:text-blue-400 transition-colors"></i>
-          </div>
         </div>
+
+        {/* Netflix-style Expanded Card - Always rendered for instant performance */}
+        <div 
+          ref={expandedCardRef}
+          className="absolute top-full left-0 right-0 mt-2 bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden z-50 transition-all duration-200 ease-out"
+          style={{
+            transform: 'translateY(20px) scale(0.95)',
+            opacity: 0,
+            willChange: 'transform, opacity'
+          }}
+        >
+            {/* Video Preview Area */}
+            <div className="relative aspect-video bg-black overflow-hidden">
+              {/* Video background */}
+              {showVideoPreview && videoLoaded ? (
+                <video
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                  playsInline
+                  autoPlay
+                >
+                  <source src={`/api/placeholder/video/400/225`} type="video/mp4" />
+                  <source src={`https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`} type="video/mp4" />
+                </video>
+              ) : (
+                <img 
+                  src={thumbnailUrl} 
+                  alt={item.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              
+              {/* Play Button Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
+                <button
+                  onClick={goToCourse}
+                  className="bg-white rounded-full p-3 hover:scale-110 transition-transform shadow-lg"
+                >
+                  <Play className="w-5 h-5 text-black fill-black" />
+                </button>
+              </div>
+
+              {/* Progress Bar at Bottom */}
+              {progressPercent > 0 && progressPercent < 100 && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-600">
+                  <div 
+                    className="h-full bg-blue-500 transition-all"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Course Details Section */}
+            <div className="p-4">
+              {/* Title */}
+              <h3 className="text-white font-bold text-lg mb-3">{item.title}</h3>
+              
+              {/* Course Meta Info */}
+              <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{formatDuration(item.durationMin)}</span>
+                </div>
+                {progressPercent > 0 && (
+                  <span style={{color: 'var(--color-primary)'}}>{progressPercent}% complete</span>
+                )}
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-300 text-sm mb-4 line-clamp-2 leading-relaxed">
+                {item.shortDescription}
+              </p>
+
+              {/* Action Button */}
+              <button
+                onClick={goToCourse}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <Play className="w-4 h-4" />
+                {ctaText}
+              </button>
+            </div>
+          </div>
+
       </div>
 
-      {/* Ripple Effect for Touch */}
-      <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-active:opacity-100 transition-opacity duration-150 pointer-events-none"></div>
-    </div>
+      {/* Mobile Modal - Temporarily commented out for debugging */}
+      {/* <MobilePreviewModal
+        open={mobileModalOpen}
+        onOpenChange={setMobileModalOpen}
+        course={course}
+      /> */}
+    </>
   );
 }

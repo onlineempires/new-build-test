@@ -1,0 +1,168 @@
+/* components/library/library-theme.module.css */
+/* Comprehensive Digital Era Theme System */
+
+/* Light Theme */
+.themeScope[data-theme="light"] {
+  --lib-bg: #f8fafc;
+  --lib-bg-secondary: #f1f5f9;
+  --lib-panel: #ffffff;
+  --lib-panel-hover: #f8fafc;
+  --lib-border: #e2e8f0;
+  --lib-border-light: #f1f5f9;
+  --lib-text-primary: #1e293b;
+  --lib-text-secondary: #475569;
+  --lib-text-muted: #64748b;
+  --lib-text-accent: #3b82f6;
+  --lib-accent: #3b82f6;
+  --lib-accent-hover: #2563eb;
+  --lib-shadow: rgba(0, 0, 0, 0.1);
+  --lib-shadow-hover: rgba(0, 0, 0, 0.15);
+  --lib-gradient-from: #f8fafc;
+  --lib-gradient-to: #e2e8f0;
+}
+
+/* Dark Theme */
+.themeScope[data-theme="dark"] {
+  --lib-bg: #0f172a;
+  --lib-bg-secondary: #1e293b;
+  --lib-panel: #1e293b;
+  --lib-panel-hover: #334155;
+  --lib-border: #334155;
+  --lib-border-light: #475569;
+  --lib-text-primary: #f8fafc;
+  --lib-text-secondary: #cbd5e1;
+  --lib-text-muted: #94a3b8;
+  --lib-text-accent: #60a5fa;
+  --lib-accent: #3b82f6;
+  --lib-accent-hover: #2563eb;
+  --lib-shadow: rgba(0, 0, 0, 0.3);
+  --lib-shadow-hover: rgba(0, 0, 0, 0.4);
+  --lib-gradient-from: #1e293b;
+  --lib-gradient-to: #0f172a;
+}
+
+/* Pink Theme */
+.themeScope[data-theme="pink"] {
+  --lib-bg: #4c0519;
+  --lib-bg-secondary: #701a75;
+  --lib-panel: #701a75;
+  --lib-panel-hover: #86198f;
+  --lib-border: #a21caf;
+  --lib-border-light: #c026d3;
+  --lib-text-primary: #fdf2f8;
+  --lib-text-secondary: #f3e8ff;
+  --lib-text-muted: #d8b4fe;
+  --lib-text-accent: #f472b6;
+  --lib-accent: #ec4899;
+  --lib-accent-hover: #db2777;
+  --lib-shadow: rgba(236, 72, 153, 0.2);
+  --lib-shadow-hover: rgba(236, 72, 153, 0.3);
+  --lib-gradient-from: #701a75;
+  --lib-gradient-to: #4c0519;
+}
+
+/* Blue Theme */
+.themeScope[data-theme="blue"] {
+  --lib-bg: #0c1844;
+  --lib-bg-secondary: #1e3a8a;
+  --lib-panel: #1e3a8a;
+  --lib-panel-hover: #1d4ed8;
+  --lib-border: #2563eb;
+  --lib-border-light: #3b82f6;
+  --lib-text-primary: #dbeafe;
+  --lib-text-secondary: #bfdbfe;
+  --lib-text-muted: #93c5fd;
+  --lib-text-accent: #60a5fa;
+  --lib-accent: #3b82f6;
+  --lib-accent-hover: #2563eb;
+  --lib-shadow: rgba(59, 130, 246, 0.2);
+  --lib-shadow-hover: rgba(59, 130, 246, 0.3);
+  --lib-gradient-from: #1e3a8a;
+  --lib-gradient-to: #0c1844;
+}
+
+/* Apply theme variables throughout components */
+.themeScope {
+  background-color: var(--lib-bg);
+  color: var(--lib-text-primary);
+  transition: all 300ms ease-in-out;
+}
+
+/* Card styling with theme variables */
+.themeScope .library-card {
+  background-color: var(--lib-panel);
+  border: 1px solid var(--lib-border);
+  color: var(--lib-text-primary);
+  box-shadow: 0 4px 6px -1px var(--lib-shadow);
+  transition: all 300ms ease-in-out;
+}
+
+.themeScope .library-card:hover {
+  background-color: var(--lib-panel-hover);
+  box-shadow: 0 10px 15px -3px var(--lib-shadow-hover);
+  transform: scale(1.02);
+}
+
+/* Header styling */
+.themeScope .library-header {
+  color: var(--lib-text-primary);
+}
+
+.themeScope .library-header h1 {
+  color: var(--lib-text-primary);
+}
+
+.themeScope .library-header p {
+  color: var(--lib-text-secondary);
+}
+
+/* Text colors */
+.themeScope .text-primary {
+  color: var(--lib-text-primary);
+}
+
+.themeScope .text-secondary {
+  color: var(--lib-text-secondary);
+}
+
+.themeScope .text-muted {
+  color: var(--lib-text-muted);
+}
+
+.themeScope .text-accent {
+  color: var(--lib-text-accent);
+}
+
+/* Button styling */
+.themeScope .btn-primary {
+  background-color: var(--lib-accent);
+  color: var(--lib-text-primary);
+  border: 1px solid var(--lib-accent);
+}
+
+.themeScope .btn-primary:hover {
+  background-color: var(--lib-accent-hover);
+}
+
+/* Input styling */
+.themeScope .form-input {
+  background-color: var(--lib-panel);
+  border: 1px solid var(--lib-border);
+  color: var(--lib-text-primary);
+}
+
+.themeScope .form-input:focus {
+  border-color: var(--lib-accent);
+  box-shadow: 0 0 0 3px rgba(var(--lib-accent), 0.1);
+}
+
+/* Dropdown styling */
+.themeScope .dropdown {
+  background-color: var(--lib-panel);
+  border: 1px solid var(--lib-border);
+  box-shadow: 0 10px 15px -3px var(--lib-shadow-hover);
+}
+
+.themeScope .dropdown-item:hover {
+  background-color: var(--lib-panel-hover);
+}

@@ -179,16 +179,19 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
       )}
 
       {/* Sidebar drawer */}
-      <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] bg-white lg:bg-slate-900 shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
+      <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] theme-sidebar shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       } overflow-hidden flex flex-col`}>
         
         {/* Brand row */}
-        <div className="flex items-center p-4 border-b border-slate-200 lg:border-slate-700 bg-white lg:bg-slate-900">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-2 text-lg">
+        <div className="flex items-center p-4 border-b theme-border theme-sidebar">
+          <div 
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold mr-2 text-lg"
+            style={{ backgroundColor: 'var(--color-primary)' }}
+          >
             ⚡
           </div>
-          <span className="text-slate-900 lg:text-white font-bold text-lg">DIGITAL ERA</span>
+          <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
         </div>
 
         {/* Nav items */}
@@ -196,15 +199,16 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           {visibleMenuItems.map((item, index) => (
             <Link key={item.href} href={item.href}>
               <a
-                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl ${
                   isActive(item.href) 
-                    ? 'bg-blue-600 text-white mx-2 rounded-xl shadow-md lg:mx-0 lg:rounded-none lg:bg-blue-600' 
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50 lg:text-slate-300 lg:hover:text-white lg:hover:bg-slate-800'
+                    ? 'text-white shadow-md' 
+                    : 'theme-text-primary theme-hover'
                 }`}
+                style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
                 onClick={closeMobileMenu}
               >
                 <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-white' : 'text-slate-500 lg:text-slate-300'
+                  isActive(item.href) ? 'text-white' : 'theme-text-secondary'
                 }`}></i>
                 <span className="font-medium">{item.name}</span>
               </a>
@@ -213,16 +217,16 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         </nav>
 
         {/* Feedback Button - Only visible on mobile */}
-        <div className="lg:hidden border-t border-slate-200 bg-white">
+        <div className="lg:hidden border-t theme-border theme-sidebar">
           {onFeedbackClick && (
             <button
               onClick={() => {
                 onFeedbackClick();
                 closeMobileMenu();
               }}
-              className="w-full flex items-center px-4 py-3 text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors min-h-[48px]"
+              className="w-full flex items-center px-4 py-3 text-sm theme-text-primary theme-hover transition-colors min-h-[48px]"
             >
-              <i className="fas fa-comment text-base mr-4 w-5 flex-shrink-0 text-slate-500"></i>
+              <i className="fas fa-comment text-base mr-4 w-5 flex-shrink-0 theme-text-secondary"></i>
               <span className="font-medium">Send Feedback</span>
             </button>
           )}
@@ -232,15 +236,18 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         </div>
 
         {/* User Profile */}
-        <div className="border-t border-slate-200 lg:border-slate-700 bg-white lg:bg-slate-900">
+        <div className="border-t theme-border theme-sidebar">
           <Link href="/profile">
-            <a className="flex items-center p-4 hover:bg-slate-50 lg:hover:bg-slate-800 transition-colors">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg">
+            <a className="flex items-center p-4 theme-hover transition-colors">
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
+                style={{ backgroundColor: 'var(--color-primary)' }}
+              >
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className="flex-1">
-                <div className="text-slate-700 lg:text-white text-sm font-medium">{user.name}</div>
-                <div className="text-slate-500 lg:text-slate-300 text-xs">View Profile</div>
+                <div className="theme-text-primary text-sm font-medium">{user.name}</div>
+                <div className="theme-text-secondary text-xs">View Profile</div>
               </div>
             </a>
           </Link>

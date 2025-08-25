@@ -156,15 +156,18 @@ export default function Dashboard() {
           <div className="p-3 sm:p-4 lg:p-6">
             {/* Welcome Banner - Smaller and More Discreet */}
             {data.stats.coursesCompleted > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 mb-4 hover:shadow-md transition-shadow">
+              <div className="theme-card rounded-xl shadow-sm p-3 sm:p-4 mb-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm font-bold mr-3">
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold mr-3"
+                      style={{ background: 'linear-gradient(to bottom right, var(--color-primary), var(--color-secondary))' }}
+                    >
                       {data.user.name ? data.user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : 'AK'}
                     </div>
                     <div>
-                      <h1 className="text-lg font-semibold text-gray-900">Hello, {data.user.name.split(' ')[0]}!</h1>
-                      <p className="text-gray-600 text-sm">Welcome back to The Digital Era</p>
+                      <h1 className="text-lg font-semibold theme-text-primary">Hello, {data.user.name.split(' ')[0]}!</h1>
+                      <p className="theme-text-secondary text-sm">Welcome back to The Digital Era</p>
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -176,25 +179,31 @@ export default function Dashboard() {
 
             {/* Stats Cards - Enhanced Visibility */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 mb-6">
-              <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="theme-card rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-shadow">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-3">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mr-3"
+                    style={{ backgroundColor: 'var(--color-primary)' }}
+                  >
                     <i className="fas fa-graduation-cap text-white text-lg"></i>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{data.stats.coursesCompleted}</div>
-                    <div className="text-sm font-medium text-gray-600">Completed</div>
+                    <div className="text-2xl font-bold theme-text-primary">{data.stats.coursesCompleted}</div>
+                    <div className="text-sm font-medium theme-text-secondary">Completed</div>
                   </div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-5 hover:shadow-lg transition-shadow">
+              <div className="theme-card rounded-xl shadow-md p-4 sm:p-5 hover:shadow-lg transition-shadow">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-3">
+                  <div 
+                    className="w-10 h-10 rounded-xl flex items-center justify-center mr-3"
+                    style={{ backgroundColor: 'var(--color-success)' }}
+                  >
                     <i className="fas fa-fire text-white text-lg"></i>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{data.stats.learningStreakDays}</div>
-                    <div className="text-sm font-medium text-gray-600">Day Streak</div>
+                    <div className="text-2xl font-bold theme-text-primary">{data.stats.learningStreakDays}</div>
+                    <div className="text-sm font-medium theme-text-secondary">Day Streak</div>
                   </div>
                 </div>
               </div>

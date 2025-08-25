@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 import { useUserRole } from '../contexts/UserRoleContext';
+import { ThemeSelector } from '../components/ThemeSelector';
+import { useTheme } from '../contexts/ThemeContext';
 
 const ProfilePage = () => {
   // Early return if not mounted to prevent hydration issues
@@ -46,6 +48,9 @@ const ProfilePage = () => {
 
   // Get actual user role from context
   const { currentRole, roleDetails } = useUserRole();
+  
+  // Get theme context
+  const { currentTheme, themeId } = useTheme();
   
   // Convert role to membership type for display logic
   const membershipType = currentRole === 'annual' ? 'annual' : 'monthly';
@@ -94,7 +99,8 @@ const ProfilePage = () => {
     { id: 'billing', label: 'Billing Info', icon: '💳' },
     { id: 'membership', label: 'Membership', icon: '🏢' },
     { id: 'tax', label: 'Tax Details', icon: '📄' },
-    { id: 'payout', label: 'Payout Info', icon: '💰' }
+    { id: 'payout', label: 'Payout Info', icon: '💰' },
+    { id: 'theme', label: 'Theme Settings', icon: '🎨' }
   ];
 
   // Handle client-side mounting to prevent hydration mismatch
@@ -210,15 +216,22 @@ const ProfilePage = () => {
           />
         </div>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-gray-900">{profileData.name}</h2>
-          <p className="text-gray-600">@{profileData.username}</p>
-          <p className="text-blue-600 text-sm mt-1">{profileData.email}</p>
+          <h2 className="text-3xl font-bold transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>{profileData.name}</h2>
+          <p className="transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>@{profileData.username}</p>
+          <p className="text-sm mt-1 transition-colors duration-300" style={{ color: 'var(--color-primary)' }}>{profileData.email}</p>
         </div>
         <div>
           {!isEditing ? (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-300"
+              style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
             >
               <i className="fas fa-edit"></i>
               Edit Profile
@@ -227,7 +240,14 @@ const ProfilePage = () => {
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-300"
+                style={{ backgroundColor: 'var(--color-success)', color: 'white' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
               >
                 <i className="fas fa-save"></i>
                 Save
@@ -237,7 +257,14 @@ const ProfilePage = () => {
                   setIsEditing(false);
                   setErrors({});
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors duration-300"
+                style={{ backgroundColor: 'var(--color-text-muted)', color: 'white' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
               >
                 <i className="fas fa-times"></i>
                 Cancel
@@ -1192,6 +1219,142 @@ const ProfilePage = () => {
     </div>
   );
 
+  const renderThemeTab = () => (
+    <div className="space-y-8">
+      <div className="border-b pb-4 transition-colors duration-300" style={{ borderColor: 'var(--color-divider)' }}>
+        <h3 className="text-xl font-semibold transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+          Dashboard Theme Settings
+        </h3>
+        <p className="mt-1 transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+          Customize your dashboard appearance with professionally designed themes
+        </p>
+      </div>
+
+      {/* Current Theme Display */}
+      <div className="rounded-lg border p-6 transition-colors duration-300" style={{ backgroundColor: 'var(--color-background)', borderColor: 'var(--color-border)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-lg font-medium transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+            Current Theme
+          </h4>
+          <div className="flex items-center space-x-2">
+            <div 
+              className="w-4 h-4 rounded-full border"
+              style={{ backgroundColor: currentTheme.colors.background, borderColor: 'var(--color-border)' }}
+            />
+            <div 
+              className="w-4 h-4 rounded-full border"
+              style={{ backgroundColor: currentTheme.colors.primary, borderColor: 'var(--color-border)' }}
+            />
+            <div 
+              className="w-4 h-4 rounded-full border"
+              style={{ backgroundColor: currentTheme.colors.cardBackground, borderColor: 'var(--color-border)' }}
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h5 className="font-semibold transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+              {currentTheme.name}
+            </h5>
+            <p className="text-sm transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+              {currentTheme.description}
+            </p>
+          </div>
+          <div className="text-xs px-3 py-1 rounded-full transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+            Active
+          </div>
+        </div>
+      </div>
+
+      {/* Theme Selection Grid */}
+      <div>
+        <h4 className="text-lg font-medium mb-4 transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+          Choose Your Theme
+        </h4>
+        <ThemeSelector variant="grid" />
+      </div>
+
+      {/* Theme Features */}
+      <div className="rounded-lg border p-6 transition-colors duration-300" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
+        <h4 className="text-lg font-medium mb-4 flex items-center transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+          <span className="mr-2">✨</span>
+          Theme Features
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)20' }}>
+              <span className="text-sm">🎨</span>
+            </div>
+            <div>
+              <h5 className="font-medium transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+                Professional Design
+              </h5>
+              <p className="text-sm transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+                7 expertly crafted themes for different preferences and use cases
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)20' }}>
+              <span className="text-sm">⚡</span>
+            </div>
+            <div>
+              <h5 className="font-medium transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+                Instant Switching
+              </h5>
+              <p className="text-sm transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+                Change themes instantly with smooth transitions and automatic saving
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)20' }}>
+              <span className="text-sm">💾</span>
+            </div>
+            <div>
+              <h5 className="font-medium transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+                Persistent Settings
+              </h5>
+              <p className="text-sm transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+                Your theme preference is saved across sessions and devices
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)20' }}>
+              <span className="text-sm">📱</span>
+            </div>
+            <div>
+              <h5 className="font-medium transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>
+                Responsive Design
+              </h5>
+              <p className="text-sm transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>
+                All themes are optimized for desktop, tablet, and mobile devices
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Access Info */}
+      <div className="rounded-lg border p-4 transition-colors duration-300" style={{ backgroundColor: 'var(--color-primary)10', borderColor: 'var(--color-primary)30' }}>
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>
+            <span className="text-sm">💡</span>
+          </div>
+          <div>
+            <h5 className="font-medium" style={{ color: 'var(--color-primary)' }}>
+              Quick Theme Access
+            </h5>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              You can also change themes quickly from the header dropdown or your profile menu
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   // Modal Components
   const renderBillingCardModal = () => {
     if (!showBillingCardModal) return null;
@@ -1999,12 +2162,12 @@ const ProfilePage = () => {
         onClearNotifications={() => {}}
         onFeedbackClick={() => alert('Feedback feature coming soon!')}
       >
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen transition-colors duration-300" style={{ backgroundColor: 'var(--color-background)' }}>
           {/* Header */}
-          <div className="bg-white border-b border-gray-200">
+          <div className="border-b transition-colors duration-300" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
             <div className="max-w-7xl mx-auto px-4 py-6">
-              <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+              <h1 className="text-3xl font-bold transition-colors duration-300" style={{ color: 'var(--color-text-primary)' }}>Profile Settings</h1>
+              <p className="mt-1 transition-colors duration-300" style={{ color: 'var(--color-text-secondary)' }}>Manage your account settings and preferences</p>
             </div>
           </div>
 
@@ -2017,11 +2180,21 @@ const ProfilePage = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-200 ${
-                        activeTab === tab.id
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'text-gray-700 hover:bg-gray-100 hover:shadow-sm'
-                      }`}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all duration-300"
+                      style={{
+                        backgroundColor: activeTab === tab.id ? 'var(--color-primary)' : 'transparent',
+                        color: activeTab === tab.id ? 'white' : 'var(--color-text-primary)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeTab !== tab.id) {
+                          e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeTab !== tab.id) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
                     >
                       <span className="text-lg">{tab.icon}</span>
                       <span className="font-medium">{tab.label}</span>
@@ -2032,12 +2205,13 @@ const ProfilePage = () => {
 
               {/* Main Content */}
               <div className="flex-1">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <div className="rounded-lg shadow-sm border p-8 transition-colors duration-300" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
                   {activeTab === 'profile' && renderProfileTab()}
                   {activeTab === 'billing' && renderBillingTab()}
                   {activeTab === 'membership' && renderMembershipTab()}
                   {activeTab === 'tax' && renderTaxTab()}
                   {activeTab === 'payout' && renderPayoutTab()}
+                  {activeTab === 'theme' && renderThemeTab()}
                 </div>
               </div>
             </div>
