@@ -411,40 +411,58 @@ export default function LibraryPage() {
             </button>
             <button
               onClick={() => setActiveFilter('foundation')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'foundation'
                   ? 'bg-white theme-text-primary shadow-sm'
                   : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Foundation
-              <span className="ml-2 theme-badge-primary px-2 py-0.5 rounded-full text-xs">
+              <span 
+                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'var(--text-on-primary)'
+                }}
+              >
                 {filterCounts.foundation}
               </span>
             </button>
             <button
               onClick={() => setActiveFilter('advanced')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'advanced'
                   ? 'bg-white theme-text-primary shadow-sm'
                   : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Advanced Training
-              <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
+              <span 
+                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: 'var(--color-secondary)',
+                  color: 'var(--text-on-secondary)'
+                }}
+              >
                 {filterCounts.advanced}
               </span>
             </button>
             <button
               onClick={() => setActiveFilter('masterclass')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 activeFilter === 'masterclass'
                   ? 'bg-white theme-text-primary shadow-sm'
                   : 'theme-text-secondary hover:theme-text-primary'
               }`}
             >
               Masterclass Training
-              <span className="ml-2 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs">
+              <span 
+                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: 'var(--color-warning)',
+                  color: 'var(--text-on-warning)'
+                }}
+              >
                 {filterCounts.masterclass}
               </span>
             </button>
@@ -456,13 +474,29 @@ export default function LibraryPage() {
             {/* Foundation Courses */}
             {filteredCourses.startHereCourses.length > 0 && (
               <div>
-                <div className="foundation-header">
-                  <div className="icon-container">
-                    <i className="fas fa-play text-sm"></i>
+                <div className="flex items-center space-x-4 mb-8">
+                  <div 
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    style={{
+                      backgroundColor: 'var(--color-primary)',
+                      boxShadow: '0 4px 20px var(--color-primary)40',
+                    }}
+                  >
+                    <Play className="w-8 h-8" style={{ color: 'var(--text-on-primary)' }} />
                   </div>
-                  <div>
-                    <h2 className="foundation-title">Foundation Training</h2>
-                    <p className="foundation-description">Essential courses to build your online business foundation</p>
+                  <div className="flex-1">
+                    <h2 
+                      className="text-3xl font-bold mb-2 transition-colors"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      Foundation Training
+                    </h2>
+                    <p 
+                      className="text-lg leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      Essential courses to build your online business foundation
+                    </p>
                   </div>
                 </div>
                 
@@ -482,13 +516,29 @@ export default function LibraryPage() {
             {/* Advanced Courses */}
             {filteredCourses.socialMediaCourses.length > 0 && (
               <div>
-                <div className="foundation-header">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-4" style={{ backgroundColor: 'var(--color-secondary)' }}>
-                    <i className="fas fa-graduation-cap text-lg" style={{ color: 'var(--text-on-secondary)' }}></i>
+                <div className="flex items-center space-x-4 mb-8">
+                  <div 
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    style={{
+                      backgroundColor: 'var(--color-secondary)',
+                      boxShadow: '0 4px 20px var(--color-secondary)40',
+                    }}
+                  >
+                    <BookOpen className="w-8 h-8" style={{ color: 'var(--text-on-secondary)' }} />
                   </div>
-                  <div>
-                    <h2 className="section-header">Advanced Training</h2>
-                    <p className="section-description">Specialized courses for scaling your business</p>
+                  <div className="flex-1">
+                    <h2 
+                      className="text-3xl font-bold mb-2 transition-colors"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      Advanced Training
+                    </h2>
+                    <p 
+                      className="text-lg leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      Specialized courses for scaling your business
+                    </p>
                   </div>
                 </div>
                 
@@ -508,13 +558,29 @@ export default function LibraryPage() {
             {/* Masterclass Courses */}
             {filteredCourses.masterclassCourses.length > 0 && (
               <div>
-                <div className="foundation-header">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 text-white rounded-xl flex items-center justify-center mr-4">
-                    <i className="fas fa-crown text-lg"></i>
+                <div className="flex items-center space-x-4 mb-8">
+                  <div 
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                    style={{
+                      backgroundColor: 'var(--color-warning)',
+                      boxShadow: '0 4px 20px var(--color-warning)40',
+                    }}
+                  >
+                    <Trophy className="w-8 h-8" style={{ color: 'var(--text-on-warning)' }} />
                   </div>
-                  <div>
-                    <h2 className="section-header">Masterclass Training</h2>
-                    <p className="section-description">Premium courses for advanced business growth</p>
+                  <div className="flex-1">
+                    <h2 
+                      className="text-3xl font-bold mb-2 transition-colors"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      Masterclass Training
+                    </h2>
+                    <p 
+                      className="text-lg leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      Premium courses for advanced business growth
+                    </p>
                   </div>
                 </div>
                 
