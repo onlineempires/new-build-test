@@ -1509,5 +1509,171 @@ textarea:focus-visible {
 }
 
 /* ========================================
+   LIBRARY TAB SYSTEM - THEME COMPLIANT
+   ======================================== */
+
+/* Tab Container */
+.library-tab-container {
+  background-color: var(--color-card-background) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  width: fit-content !important;
+}
+
+/* Base Tab Styling */
+.library-tab {
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background-color: transparent !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* Active Tab - Uses Theme Colors for Proper Contrast */
+.library-tab.active {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px var(--color-primary)30 !important;
+}
+
+.library-tab.active.foundation {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.library-tab.active.advanced {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+  box-shadow: 0 2px 8px var(--color-secondary)30 !important;
+}
+
+.library-tab.active.masterclass {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+  box-shadow: 0 2px 8px var(--color-warning)30 !important;
+}
+
+/* Inactive Tab Hover */
+.library-tab:not(.active):hover {
+  background-color: var(--color-hover) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Tab Count Badges */
+.library-tab-badge {
+  padding: 2px 8px !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  min-width: 20px !important;
+}
+
+/* Active Tab Badges - Semi-transparent overlay */
+.library-tab.active .library-tab-badge {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  color: inherit !important;
+}
+
+/* Inactive Tab Badges - Use theme colors */
+.library-tab:not(.active) .library-tab-badge {
+  background-color: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+}
+
+.library-tab:not(.active).foundation .library-tab-badge {
+  background-color: var(--color-primary) !important;
+  color: var(--text-on-primary) !important;
+}
+
+.library-tab:not(.active).advanced .library-tab-badge {
+  background-color: var(--color-secondary) !important;
+  color: var(--text-on-secondary) !important;
+}
+
+.library-tab:not(.active).masterclass .library-tab-badge {
+  background-color: var(--color-warning) !important;
+  color: var(--text-on-warning) !important;
+}
+
+/* Focus States for Accessibility */
+.library-tab:focus-visible {
+  outline: 2px solid var(--color-focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--color-primary-light) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .library-tab-container {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+  
+  .library-tab {
+    flex: 1 !important;
+    justify-content: center !important;
+    min-width: 120px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .library-tab-badge {
+    margin-left: 4px !important;
+  }
+}
+
+/* Dark Theme Specific Overrides */
+[data-theme="dark"] .library-tab.active,
+[data-theme="skoolDark"] .library-tab.active,
+[data-theme="luxury"] .library-tab.active,
+[data-theme="neon"] .library-tab.active {
+  /* Ensure proper contrast in all dark themes */
+  color: var(--text-on-primary) !important;
+}
+
+/* Light Theme Specific Overrides */
+[data-theme="light"] .library-tab.active,
+[data-theme="ocean"] .library-tab.active,
+[data-theme="pastel"] .library-tab.active {
+  /* Ensure proper contrast in light themes */
+  color: var(--text-on-primary) !important;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .library-tab {
+    border: 1px solid var(--color-border) !important;
+  }
+  
+  .library-tab.active {
+    border: 2px solid var(--color-focus) !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .library-tab {
+    transition: none !important;
+  }
+}
+
+/* ========================================
+   END LIBRARY TAB SYSTEM
+   ======================================== */
+
+/* ========================================
    END TEXT VISIBILITY FIXES
    ======================================== */

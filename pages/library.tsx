@@ -394,35 +394,72 @@ export default function LibraryPage() {
             </p>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex items-center space-x-1 mb-8 theme-hover rounded-lg p-1 w-fit" style={{ backgroundColor: 'var(--color-hover)' }}>
+          {/* Filter Tabs - FIXED: Proper theme contrast */}
+          <div 
+            className="flex items-center space-x-1 mb-8 rounded-lg p-1 w-fit"
+            style={{ backgroundColor: 'var(--color-card-background)', border: '1px solid var(--color-border)' }}
+          >
             <button
               onClick={() => setActiveFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeFilter === 'all'
-                  ? 'bg-white theme-text-primary shadow-sm'
-                  : 'theme-text-secondary hover:theme-text-primary'
-              }`}
+              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 relative"
+              style={{
+                backgroundColor: activeFilter === 'all' ? 'var(--color-primary)' : 'transparent',
+                color: activeFilter === 'all' ? 'var(--text-on-primary)' : 'var(--color-text-secondary)',
+                fontWeight: activeFilter === 'all' ? '600' : '500',
+                boxShadow: activeFilter === 'all' ? '0 2px 8px var(--color-primary)30' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeFilter !== 'all') {
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeFilter !== 'all') {
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               All Courses
-              <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+              <span 
+                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: activeFilter === 'all' ? 'rgba(255,255,255,0.2)' : 'var(--color-border)',
+                  color: activeFilter === 'all' ? 'var(--text-on-primary)' : 'var(--color-text-muted)'
+                }}
+              >
                 {filterCounts.all}
               </span>
             </button>
             <button
               onClick={() => setActiveFilter('foundation')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeFilter === 'foundation'
-                  ? 'bg-white theme-text-primary shadow-sm'
-                  : 'theme-text-secondary hover:theme-text-primary'
-              }`}
+              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+              style={{
+                backgroundColor: activeFilter === 'foundation' ? 'var(--color-primary)' : 'transparent',
+                color: activeFilter === 'foundation' ? 'var(--text-on-primary)' : 'var(--color-text-secondary)',
+                fontWeight: activeFilter === 'foundation' ? '600' : '500',
+                boxShadow: activeFilter === 'foundation' ? '0 2px 8px var(--color-primary)30' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeFilter !== 'foundation') {
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeFilter !== 'foundation') {
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Foundation
               <span 
                 className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
                 style={{
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'var(--text-on-primary)'
+                  backgroundColor: activeFilter === 'foundation' ? 'rgba(255,255,255,0.2)' : 'var(--color-primary)',
+                  color: activeFilter === 'foundation' ? 'var(--text-on-primary)' : 'var(--text-on-primary)'
                 }}
               >
                 {filterCounts.foundation}
@@ -430,18 +467,32 @@ export default function LibraryPage() {
             </button>
             <button
               onClick={() => setActiveFilter('advanced')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeFilter === 'advanced'
-                  ? 'bg-white theme-text-primary shadow-sm'
-                  : 'theme-text-secondary hover:theme-text-primary'
-              }`}
+              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+              style={{
+                backgroundColor: activeFilter === 'advanced' ? 'var(--color-secondary)' : 'transparent',
+                color: activeFilter === 'advanced' ? 'var(--text-on-secondary)' : 'var(--color-text-secondary)',
+                fontWeight: activeFilter === 'advanced' ? '600' : '500',
+                boxShadow: activeFilter === 'advanced' ? '0 2px 8px var(--color-secondary)30' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeFilter !== 'advanced') {
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeFilter !== 'advanced') {
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Advanced Training
               <span 
                 className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
                 style={{
-                  backgroundColor: 'var(--color-secondary)',
-                  color: 'var(--text-on-secondary)'
+                  backgroundColor: activeFilter === 'advanced' ? 'rgba(255,255,255,0.2)' : 'var(--color-secondary)',
+                  color: activeFilter === 'advanced' ? 'var(--text-on-secondary)' : 'var(--text-on-secondary)'
                 }}
               >
                 {filterCounts.advanced}
@@ -449,18 +500,32 @@ export default function LibraryPage() {
             </button>
             <button
               onClick={() => setActiveFilter('masterclass')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeFilter === 'masterclass'
-                  ? 'bg-white theme-text-primary shadow-sm'
-                  : 'theme-text-secondary hover:theme-text-primary'
-              }`}
+              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
+              style={{
+                backgroundColor: activeFilter === 'masterclass' ? 'var(--color-warning)' : 'transparent',
+                color: activeFilter === 'masterclass' ? 'var(--text-on-warning)' : 'var(--color-text-secondary)',
+                fontWeight: activeFilter === 'masterclass' ? '600' : '500',
+                boxShadow: activeFilter === 'masterclass' ? '0 2px 8px var(--color-warning)30' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeFilter !== 'masterclass') {
+                  e.currentTarget.style.color = 'var(--color-text-primary)';
+                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeFilter !== 'masterclass') {
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
             >
               Masterclass Training
               <span 
                 className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
                 style={{
-                  backgroundColor: 'var(--color-warning)',
-                  color: 'var(--text-on-warning)'
+                  backgroundColor: activeFilter === 'masterclass' ? 'rgba(255,255,255,0.2)' : 'var(--color-warning)',
+                  color: activeFilter === 'masterclass' ? 'var(--text-on-warning)' : 'var(--text-on-warning)'
                 }}
               >
                 {filterCounts.masterclass}
