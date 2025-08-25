@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { hasAccess, getTierDisplayName } from '../../utils/accessControl';
 import type { UserTier } from '../../utils/accessControl';
+import { useUserRole } from '../../contexts/UserRoleContext';
 
 interface User {
   id: number;
@@ -21,21 +22,36 @@ interface SidebarProps {
 
 export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }: SidebarProps) {
   const router = useRouter();
+  const { currentRole, roleDetails } = useUserRole();
+  
+  // Convert UserRole to UserTier for access control compatibility
+  const roleToTier = (role: string): UserTier => {
+    switch (role) {
+      case 'monthly': return 'monthly_99';
+      case 'annual': return 'annual_799';
+      case 'downsell': return 'downsell_37';
+      case 'admin': return 'admin';
+      case 'trial':
+      case 'free':
+      case 'guest':
+      default: return 'trial';
+    }
+  };
+
   const [safeUser, setSafeUser] = useState<User>({ 
     id: 1, 
-    name: 'User', 
-    tier: 'monthly_99' // Default for testing - in real app, get from auth context
+    name: roleDetails?.name || 'User', 
+    tier: roleToTier(currentRole)
   });
 
-  // Set safe user defaults
+  // Sync with user role context changes
   useEffect(() => {
-    if (user) {
-      setSafeUser({
-        ...user,
-        tier: user.tier || 'trial' // Default to trial if no tier specified
-      });
-    }
-  }, [user]);
+    setSafeUser(prev => ({
+      ...prev,
+      name: roleDetails?.name || user?.name || 'User',
+      tier: roleToTier(currentRole)
+    }));
+  }, [currentRole, roleDetails, user]);
 
   const navItems = [
     { href: '/', label: 'Dashboard', icon: '🏠', alwaysVisible: true },
@@ -87,11 +103,21 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
           </div>
         </div>
 
-        {/* User Tier Display */}
+        {/* User Tier Display - SYNCHRONIZED WITH HEADER */}
         <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
-          <div className="text-xs text-gray-500">Current Plan</div>
-          <div className="font-semibold text-sm">
-            {getTierDisplayName(safeUser?.tier)}
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-xs text-gray-500">Current Plan</div>
+              <div className="font-semibold text-sm">
+                {roleDetails?.name || getTierDisplayName(safeUser?.tier)}
+              </div>
+            </div>
+            {/* Debug indicator in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs text-gray-400">
+                {currentRole}
+              </div>
+            )}
           </div>
         </div>
 

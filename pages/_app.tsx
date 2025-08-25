@@ -13,6 +13,7 @@ import { DevProvider } from '../contexts/DevContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { DevInitializer } from '../components/dev/DevInitializer';
 import { DevToolsToggle } from '../components/dev/DevToolsToggle';
+import UserDebugPanel from '../components/UserDebugPanel';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
 import { queryClient } from '../lib/queryClient';
 import { useEffect } from 'react';
@@ -108,6 +109,7 @@ export default function App({ Component, pageProps }: AppProps) {
                         <LoadingIndicator />
                         <DevInitializer />
                         <Component {...pageProps} />
+                        <UserDebugPanel />
                       </UpgradeProvider>
                     </AdminAuthProvider>
                   </CourseAccessProvider>
