@@ -11,6 +11,7 @@ import { getCourseMapping } from '../../../lib/sections';
 import { useUserFlags } from '../../../lib/userFlags';
 import { canStartCourse, isLessonUnlocked as isLessonUnlockedAccess, requiresUpgradeCTA } from '../../../lib/access';
 import FeedbackModal from '../../../components/dashboard/FeedbackModal';
+import Breadcrumbs from '../../../components/Breadcrumbs';
 import { 
   Play, 
   Check, 
@@ -426,21 +427,14 @@ export default function LessonPage() {
         <div className="min-h-screen bg-white">
           {/* Breadcrumb Navigation */}
           <div className="border-b border-black/5 px-6 py-4 bg-white">
-            <nav className="text-sm text-gray-500">
-              <button onClick={() => router.push('/')} className="hover:text-gray-700 transition-colors">
-                Dashboard
-              </button>
-              <span className="mx-2">{'>'}</span>
-              <button onClick={() => router.push('/courses')} className="hover:text-gray-700 transition-colors">
-                All Courses
-              </button>
-              <span className="mx-2">{'>'}</span>
-              <button onClick={() => router.push(`/courses/${courseId}`)} className="hover:text-gray-700 transition-colors">
-                {course.title}
-              </button>
-              <span className="mx-2">{'>'}</span>
-              <span className="font-medium text-gray-900">{currentLesson.title}</span>
-            </nav>
+            <Breadcrumbs 
+              items={[
+                { label: 'Dashboard', href: '/' },
+                { label: 'All Courses', href: '/courses' },
+                { label: course.title, href: `/courses/${courseId}` },
+                { label: currentLesson.title, current: true }
+              ]}
+            />
           </div>
 
           {/* Main Content */}
