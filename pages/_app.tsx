@@ -11,7 +11,6 @@ import { AffiliateProvider } from '../contexts/AffiliateContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { UserProvider } from '../contexts/UserContext';
 import { DevProvider } from '../contexts/DevContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
 import { DevInitializer } from '../components/dev/DevInitializer';
 import { DevToolsToggle } from '../components/dev/DevToolsToggle';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
