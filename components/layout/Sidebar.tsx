@@ -33,7 +33,7 @@ interface SidebarProps {
 const menuItems: MenuItem[] = [
   { 
     name: 'Dashboard', 
-    href: '/dashboard', 
+    href: '/', 
     icon: 'fas fa-home', 
     section: 'dashboard', 
     requiredPermission: null // Always visible
@@ -54,28 +54,28 @@ const menuItems: MenuItem[] = [
   },
   { 
     name: 'Expert Directory', 
-    href: '/expert-directory', 
+    href: '/experts', 
     icon: 'fas fa-users', 
     section: 'experts', 
     requiredPermission: 'canAccessExpertDirectory' // Only for paid members
   },
   { 
     name: 'Daily Method (DMO)', 
-    href: '/daily-method', 
+    href: '/dmo', 
     icon: 'fas fa-tasks', 
     section: 'dmo', 
     requiredPermission: 'canAccessDMO' // Only for paid members
   },
   { 
     name: 'Affiliate Portal', 
-    href: '/affiliate-portal', 
+    href: '/affiliate', 
     icon: 'fas fa-link', 
     section: 'affiliate', 
     requiredPermission: 'canAccessAffiliate' // Only for paid members and downsell
   },
   { 
     name: 'Statistics', 
-    href: '/statistics', 
+    href: '/stats', 
     icon: 'fas fa-chart-bar', 
     section: 'statistics', 
     requiredPermission: 'canAccessStats' // Only for paid members
