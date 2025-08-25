@@ -154,21 +154,20 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
               </a>
             </Link>
             
-            <Link href="/settings">
-              <a 
-                className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
-                style={{ color: 'var(--color-text-primary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-                onClick={() => setIsOpen(false)}
-              >
-                <span className="mr-3">⚙️</span>
-                Settings
-              </a>
+            <Link 
+              href="/settings"
+              className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
+              style={{ color: 'var(--color-text-primary)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="mr-3">⚙️</span>
+              Settings
             </Link>
             
             {/* Theme Selector Divider */}
