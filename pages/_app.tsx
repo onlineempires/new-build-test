@@ -13,6 +13,8 @@ import { DevProvider } from '../contexts/DevContext';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { DevInitializer } from '../components/dev/DevInitializer';
 import { DevToolsToggle } from '../components/dev/DevToolsToggle';
+import { NavigationDebugger } from '../components/debug/NavigationDebugger';
+import { NavigationErrorBoundary } from '../components/debug/NavigationErrorBoundary';
 import LoadingIndicator from '../components/ui/LoadingIndicator';
 import { queryClient } from '../lib/queryClient';
 import { useEffect } from 'react';
@@ -76,28 +78,31 @@ export default function App({ Component, pageProps }: AppProps) {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <NotificationProvider>
-          <DevProvider>
-            <UserProvider>
-              <UserRoleProvider>
-                <AffiliateProvider>
-                  <CourseAccessProvider>
-                    <AdminAuthProvider>
-                      <UpgradeProvider>
-                        <LoadingIndicator />
-                        <DevInitializer />
-                        <Component {...pageProps} />
-                      </UpgradeProvider>
-                    </AdminAuthProvider>
-                  </CourseAccessProvider>
-                </AffiliateProvider>
-              </UserRoleProvider>
-            </UserProvider>
-          </DevProvider>
-        </NotificationProvider>
-        <DevToolsToggle />
-      </ThemeProvider>
+      <NavigationErrorBoundary>
+        <ThemeProvider>
+          <NotificationProvider>
+            <DevProvider>
+              <UserProvider>
+                <UserRoleProvider>
+                  <AffiliateProvider>
+                    <CourseAccessProvider>
+                      <AdminAuthProvider>
+                        <UpgradeProvider>
+                          <LoadingIndicator />
+                          <DevInitializer />
+                          <NavigationDebugger />
+                          <Component {...pageProps} />
+                        </UpgradeProvider>
+                      </AdminAuthProvider>
+                    </CourseAccessProvider>
+                  </AffiliateProvider>
+                </UserRoleProvider>
+              </UserProvider>
+            </DevProvider>
+          </NotificationProvider>
+          <DevToolsToggle />
+        </ThemeProvider>
+      </NavigationErrorBoundary>
     </QueryClientProvider>
   );
 }

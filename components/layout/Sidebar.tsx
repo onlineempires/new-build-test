@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import { useNavigationHelper } from '../../utils/navigationHelpers';
 import { useUserRole } from '../../contexts/UserRoleContext';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
@@ -104,12 +105,43 @@ const menuItems: MenuItem[] = [
 
 export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
   const router = useRouter();
+  const { navigate, preload, isNavigating } = useNavigationHelper(router);
   const { permissions, hasPermission, currentRole, setUserRole } = useUserRole();
   const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
   
   const closeMobileMenu = () => {
     if (setIsMobileOpen) {
       setIsMobileOpen(false);
+    }
+  };
+
+  // Handle navigation with enhanced error handling and logging
+  const handleNavigation = async (href: string, itemName: string) => {
+    // Prevent navigation if already in progress
+    if (isNavigating()) {
+      console.log('⚠️ Navigation already in progress, ignoring click');
+      return;
+    }
+
+    // Close mobile menu first
+    closeMobileMenu();
+    
+    // Use enhanced navigation helper
+    const success = await navigate(href, {
+      delay: 50, // Small delay for mobile menu to close
+      fallbackToWindowLocation: true,
+      retries: 2,
+      onError: (error, url) => {
+        console.error(`❌ Navigation failed to ${itemName} (${url}):`, error);
+        // Could show user notification here
+      },
+      onSuccess: (url) => {
+        console.log(`✅ Successfully navigated to ${itemName} (${url})`);
+      }
+    });
+    
+    if (!success) {
+      console.error(`❌ All navigation attempts failed for ${itemName} (${href})`);
     }
   };
 
@@ -149,17 +181,48 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     }
   });
   
-  // Debug logging - ALWAYS log to see what's happening
+  // Navigation debugging and preloading
   useEffect(() => {
     console.log('=== SIDEBAR DEBUG ===');
     console.log('Current role:', currentRole);
-    console.log('Permissions object:', permissions);
-    console.log('All menu items:', menuItems.map(i => i.name));
-    console.log('Filtered menu items:', visibleMenuItems.map(i => i.name));
-    console.log('Should see DMO?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('Should see Expert Directory?', currentRole === 'monthly' || currentRole === 'annual');
+    console.log('Router pathname:', router.pathname);
+    console.log('Router ready:', router.isReady);
+    console.log('Navigation in progress:', isNavigating());
+    console.log('Filtered menu items:', visibleMenuItems.map(i => ({ name: i.name, href: i.href })));
     console.log('===================');
-  }, [currentRole, permissions, visibleMenuItems]);
+    
+    // Preload visible menu items for better performance
+    visibleMenuItems.forEach(item => {
+      preload(item.href).catch(err => 
+        console.warn(`Failed to preload ${item.name}:`, err)
+      );
+    });
+  }, [currentRole, router.pathname, router.isReady, visibleMenuItems, isNavigating, preload]);
+
+  // Navigation event tracking
+  useEffect(() => {
+    const handleRouteChangeStart = (url: string) => {
+      console.log('🚀 Navigation started to:', url);
+    };
+    
+    const handleRouteChangeComplete = (url: string) => {
+      console.log('✅ Navigation completed to:', url);
+    };
+    
+    const handleRouteChangeError = (err: Error, url: string) => {
+      console.error('❌ Navigation failed to:', url, err);
+    };
+    
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', handleRouteChangeError);
+    
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', handleRouteChangeError);
+    };
+  }, [router]);
 
   const isActive = (href: string) => {
     if (href === '/courses') {
@@ -194,24 +257,27 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
         </div>
 
-        {/* Nav items */}
+        {/* Nav items - FIXED: Modern Next.js Link usage */}
         <nav className="flex-1 py-4">
-          {visibleMenuItems.map((item, index) => (
-            <Link key={item.href} href={item.href}>
-              <a
-                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl ${
-                  isActive(item.href) 
-                    ? 'text-white shadow-md' 
-                    : 'theme-text-primary theme-hover'
-                }`}
-                style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
-                onClick={closeMobileMenu}
-              >
-                <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-white' : 'theme-text-secondary'
-                }`}></i>
-                <span className="font-medium">{item.name}</span>
-              </a>
+          {visibleMenuItems.map((item) => (
+            <Link 
+              key={item.href} 
+              href={item.href}
+              className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl cursor-pointer ${
+                isActive(item.href) 
+                  ? 'text-white shadow-md' 
+                  : 'theme-text-primary theme-hover'
+              }`}
+              style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href, item.name);
+              }}
+            >
+              <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
+                isActive(item.href) ? 'text-white' : 'theme-text-secondary'
+              }`}></i>
+              <span className="font-medium">{item.name}</span>
             </Link>
           ))}
         </nav>
@@ -235,21 +301,26 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <MobileRoleSwitcher onSelect={closeMobileMenu} />
         </div>
 
-        {/* User Profile */}
+        {/* User Profile - FIXED: Modern Next.js Link usage */}
         <div className="border-t theme-border theme-sidebar">
-          <Link href="/profile">
-            <a className="flex items-center p-4 theme-hover transition-colors">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
-                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-              </div>
-              <div className="flex-1">
-                <div className="theme-text-primary text-sm font-medium">{user.name}</div>
-                <div className="theme-text-secondary text-xs">View Profile</div>
-              </div>
-            </a>
+          <Link 
+            href="/profile"
+            className="flex items-center p-4 theme-hover transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavigation('/profile', 'Profile');
+            }}
+          >
+            <div 
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
+              style={{ backgroundColor: 'var(--color-primary)' }}
+            >
+              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="flex-1">
+              <div className="theme-text-primary text-sm font-medium">{user.name}</div>
+              <div className="theme-text-secondary text-xs">View Profile</div>
+            </div>
           </Link>
         </div>
       </div>
