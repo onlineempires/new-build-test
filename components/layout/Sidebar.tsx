@@ -117,6 +117,8 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
 
   // Handle navigation with enhanced error handling and logging
   const handleNavigation = async (href: string, itemName: string) => {
+    console.log(`🚀 Navigation requested: ${itemName} -> ${href}`);
+    
     // Prevent navigation if already in progress
     if (isNavigating()) {
       console.log('⚠️ Navigation already in progress, ignoring click');
@@ -126,22 +128,35 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     // Close mobile menu first
     closeMobileMenu();
     
-    // Use enhanced navigation helper
-    const success = await navigate(href, {
-      delay: 50, // Small delay for mobile menu to close
-      fallbackToWindowLocation: true,
-      retries: 2,
-      onError: (error, url) => {
-        console.error(`❌ Navigation failed to ${itemName} (${url}):`, error);
-        // Could show user notification here
-      },
-      onSuccess: (url) => {
-        console.log(`✅ Successfully navigated to ${itemName} (${url})`);
+    // For debugging route cancellations, try simple router.push first
+    try {
+      console.log(`📍 Attempting direct router.push to ${href}`);
+      await router.push(href);
+      console.log(`✅ Direct navigation successful to ${itemName} (${href})`);
+      return;
+    } catch (directError) {
+      console.warn(`⚠️ Direct router.push failed for ${itemName}:`, directError);
+      
+      // Fallback to enhanced navigation helper
+      console.log(`🔄 Falling back to navigation helper for ${href}`);
+      const success = await navigate(href, {
+        delay: 50,
+        fallbackToWindowLocation: true,
+        retries: 3, // Increased retries
+        onError: (error, url) => {
+          console.error(`❌ Navigation helper failed to ${itemName} (${url}):`, error);
+        },
+        onSuccess: (url) => {
+          console.log(`✅ Navigation helper successful to ${itemName} (${url})`);
+        }
+      });
+      
+      if (!success) {
+        console.error(`❌ All navigation attempts failed for ${itemName} (${href})`);
+        // Emergency fallback
+        console.log(`🚨 Using window.location as emergency fallback for ${href}`);
+        window.location.href = href;
       }
-    });
-    
-    if (!success) {
-      console.error(`❌ All navigation attempts failed for ${itemName} (${href})`);
     }
   };
 
@@ -263,22 +278,24 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         {/* Nav items - FIXED: Using SafeLink to prevent multiple children error */}
         <nav className="flex-1 py-4">
           {visibleMenuItems.map((item) => (
-            <SafeLink 
-              key={item.href} 
-              href={item.href}
-              className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl cursor-pointer ${
+            <button
+              key={item.href}
+              onClick={(e) => {
+                e.preventDefault();
+                handleNavigation(item.href, item.name);
+              }}
+              className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl cursor-pointer w-full text-left ${
                 isActive(item.href) 
                   ? 'text-white shadow-md' 
                   : 'theme-text-primary theme-hover'
               }`}
               style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
-              onClick={closeMobileMenu}
             >
               <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
                 isActive(item.href) ? 'text-white' : 'theme-text-secondary'
               }`}></i>
               <span className="font-medium">{item.name}</span>
-            </SafeLink>
+            </button>
           ))}
         </nav>
 
