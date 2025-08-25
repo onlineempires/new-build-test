@@ -45,48 +45,29 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
   title,
   ...props
 }) => {
-  // If onClick is provided, we need to use the new Link pattern without legacyBehavior
-  // and handle the click directly on the Link component
-  if (onClick) {
-    return (
-      <Link
-        href={href}
-        onClick={onClick}
-        {...props}
-      >
-        <div
-          className={className}
-          style={style}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          aria-label={ariaLabel}
-          title={title}
-          role="link"
-          tabIndex={0}
-        >
-          {/* React Fragment ensures all children are wrapped in a single element */}
-          <>{children}</>
-        </div>
-      </Link>
-    );
-  }
-
-  // For simple links without onClick, use the standard pattern
+  // For modern Next.js 13+, we always use the new Link pattern
+  // If onClick is provided, we handle it properly without warnings
   return (
     <Link
       href={href}
-      className={className}
-      style={style}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       target={target}
       rel={rel}
-      aria-label={ariaLabel}
-      title={title}
       {...props}
     >
-      {/* React Fragment ensures all children are wrapped in a single element */}
-      <>{children}</>
+      <span
+        className={className}
+        style={style}
+        onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        aria-label={ariaLabel}
+        title={title}
+        role="link"
+        tabIndex={0}
+      >
+        {/* React Fragment ensures all children are wrapped in a single element */}
+        <>{children}</>
+      </span>
     </Link>
   );
 };

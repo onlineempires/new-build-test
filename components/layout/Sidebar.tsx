@@ -33,7 +33,7 @@ interface SidebarProps {
 const menuItems: MenuItem[] = [
   { 
     name: 'Dashboard', 
-    href: '/', 
+    href: '/dashboard', 
     icon: 'fas fa-home', 
     section: 'dashboard', 
     requiredPermission: null // Always visible
@@ -54,28 +54,28 @@ const menuItems: MenuItem[] = [
   },
   { 
     name: 'Expert Directory', 
-    href: '/experts', 
+    href: '/expert-directory', 
     icon: 'fas fa-users', 
     section: 'experts', 
     requiredPermission: 'canAccessExpertDirectory' // Only for paid members
   },
   { 
     name: 'Daily Method (DMO)', 
-    href: '/dmo', 
+    href: '/daily-method', 
     icon: 'fas fa-tasks', 
     section: 'dmo', 
     requiredPermission: 'canAccessDMO' // Only for paid members
   },
   { 
     name: 'Affiliate Portal', 
-    href: '/affiliate', 
+    href: '/affiliate-portal', 
     icon: 'fas fa-link', 
     section: 'affiliate', 
     requiredPermission: 'canAccessAffiliate' // Only for paid members and downsell
   },
   { 
     name: 'Statistics', 
-    href: '/stats', 
+    href: '/statistics', 
     icon: 'fas fa-chart-bar', 
     section: 'statistics', 
     requiredPermission: 'canAccessStats' // Only for paid members
@@ -228,6 +228,9 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     if (href === '/courses') {
       return router.pathname === '/courses' || router.pathname.startsWith('/courses/');
     }
+    if (href === '/dashboard') {
+      return router.pathname === '/' || router.pathname === '/dashboard';
+    }
     return router.pathname === href;
   };
 
@@ -269,10 +272,7 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
                   : 'theme-text-primary theme-hover'
               }`}
               style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
-              onClick={(e) => {
-                e.preventDefault();
-                handleNavigation(item.href, item.name);
-              }}
+              onClick={closeMobileMenu}
             >
               <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
                 isActive(item.href) ? 'text-white' : 'theme-text-secondary'
@@ -306,10 +306,7 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           <SafeLink 
             href="/profile"
             className="flex items-center p-4 theme-hover transition-colors cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavigation('/profile', 'Profile');
-            }}
+            onClick={closeMobileMenu}
           >
             <div 
               className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
