@@ -11,12 +11,21 @@ interface User {
 }
 
 interface ProfileDropdownProps {
-  user: User;
-  onLogout: () => void;
-  onFeedbackClick: () => void;
+  user?: User;
+  onLogout?: () => void;
+  onFeedbackClick?: () => void;
 }
 
 export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: ProfileDropdownProps) {
+  // Provide default user object if none is provided
+  const defaultUser: User = {
+    id: 0,
+    name: 'Guest User',
+    avatarUrl: ''
+  };
+  
+  const currentUser = user || defaultUser;
+  
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
@@ -46,7 +55,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
   }, [isOpen]);
 
   const handleFeedbackClick = () => {
-    onFeedbackClick();
+    onFeedbackClick?.();
     setIsOpen(false);
   };
 
@@ -57,7 +66,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
       setUserRole('free'); // Reset to free user after admin logout
     } else {
       // Regular user logout
-      onLogout();
+      onLogout?.();
     }
     setIsOpen(false);
   };
@@ -84,13 +93,13 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
           className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
           style={{ backgroundColor: 'var(--color-primary)' }}
         >
-          {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+          {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <span 
           className="text-sm font-medium hidden sm:block transition-colors duration-300"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          {user.name}
+          {currentUser?.name || 'Guest User'}
         </span>
         <span 
           className="text-xs hidden sm:block transition-colors duration-300"
@@ -117,14 +126,14 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
                 style={{ backgroundColor: 'var(--color-primary)' }}
               >
-                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
                 <div 
                   className="font-medium transition-colors duration-300"
                   style={{ color: 'var(--color-text-primary)' }}
                 >
-                  {isAdminAuthenticated && currentRole === 'admin' ? adminUser?.username : user.name}
+                  {isAdminAuthenticated && currentRole === 'admin' ? adminUser?.username : currentUser?.name || 'Guest User'}
                 </div>
                 <div 
                   className="text-sm transition-colors duration-300"

@@ -5,7 +5,7 @@ import { getAllThemes } from '../lib/themes';
 import { ChevronDown, User, Settings, LogOut, Palette, Check } from 'lucide-react';
 
 interface UserDropdownProps {
-  user: {
+  user?: {
     id: number;
     name: string;
     email?: string;
@@ -15,6 +15,15 @@ interface UserDropdownProps {
 }
 
 export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) => {
+  // Provide default user object if none is provided
+  const defaultUser = {
+    id: 0,
+    name: 'Guest User',
+    email: 'guest@example.com'
+  };
+  
+  const currentUser = user || defaultUser;
+  
   const [isOpen, setIsOpen] = useState(false);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,10 +80,10 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
           className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm"
           style={{ backgroundColor: 'var(--color-primary)' }}
         >
-          {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+          {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
         </div>
         <span className="theme-text-primary text-sm font-medium hidden sm:inline">
-          {user.name}
+          {currentUser?.name || 'Guest User'}
         </span>
         <ChevronDown className="w-4 h-4 theme-text-secondary transition-transform duration-200" 
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
@@ -94,11 +103,11 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({ user, onLogout }) =>
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium"
                   style={{ backgroundColor: 'var(--color-primary)' }}
                 >
-                  {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <div>
-                  <div className="theme-text-primary font-medium">{user.name}</div>
-                  <div className="theme-text-secondary text-sm">{user.email || 'user@example.com'}</div>
+                  <div className="theme-text-primary font-medium">{currentUser?.name || 'Guest User'}</div>
+                  <div className="theme-text-secondary text-sm">{currentUser?.email || 'guest@example.com'}</div>
                 </div>
               </div>
             </div>
