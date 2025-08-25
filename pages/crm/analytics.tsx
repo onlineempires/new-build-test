@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/layout/AppLayout';
 import { useTheme } from '../../contexts/ThemeContext';
 import { 
   Lead, 
@@ -733,27 +733,22 @@ const AnalyticsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Sidebar />
+      <AppLayout>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 dark:border-blue-400"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading analytics...</p>
           </div>
-        </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <>
+    <AppLayout>
       <Head>
         <title>CRM Analytics - Digital Era CRM</title>
         <meta name="description" content="Advanced analytics and performance insights for Digital Era CRM" />
       </Head>
-
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Sidebar />
         
         <div className="flex-1 overflow-hidden">
           <div className="p-6">
@@ -824,9 +819,7 @@ const AnalyticsPage: React.FC = () => {
               {state.activeTab === 'forecasting' && renderForecasting()}
             </div>
           </div>
-        </div>
-      </div>
-    </>
+    </AppLayout>
   );
 };
 

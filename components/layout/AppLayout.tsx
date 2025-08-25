@@ -20,7 +20,7 @@ interface User {
 
 interface AppLayoutProps {
   children: ReactNode;
-  user: User;
+  user?: User;
   title?: string;
   onFeedbackClick?: () => void;
   notifications?: Array<{
@@ -41,6 +41,15 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { setNotifications } = useNotifications();
   const { currentTheme } = useTheme();
+  
+  // Provide default user object if none is provided
+  const defaultUser: User = {
+    id: 0,
+    name: 'Guest User',
+    avatarUrl: ''
+  };
+  
+  const currentUser = user || defaultUser;
   
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -94,7 +103,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
     <div className="flex h-screen theme-bg">
       <EnvironmentIndicator />
       <Sidebar 
-        user={user} 
+        user={currentUser} 
         onLogout={handleLogout} 
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}

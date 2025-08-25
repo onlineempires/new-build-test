@@ -22,8 +22,8 @@ interface MenuItem {
 }
 
 interface SidebarProps {
-  user: User;
-  onLogout: () => void;
+  user?: User;
+  onLogout?: () => void;
   isMobileOpen?: boolean;
   setIsMobileOpen?: (open: boolean) => void;
   onFeedbackClick?: () => void;
@@ -312,10 +312,10 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
               className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
               style={{ backgroundColor: 'var(--color-primary)' }}
             >
-              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="flex-1">
-              <div className="theme-text-primary text-sm font-medium">{user.name}</div>
+              <div className="theme-text-primary text-sm font-medium">{user?.name || 'Guest User'}</div>
               <div className="theme-text-secondary text-xs">View Profile</div>
             </div>
           </SafeLink>

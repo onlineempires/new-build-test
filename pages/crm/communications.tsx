@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Sidebar from '../../components/Sidebar';
+import AppLayout from '../../components/layout/AppLayout';
 import { useTheme } from '../../contexts/ThemeContext';
 import { 
   Lead, 
@@ -702,29 +702,24 @@ const CommunicationsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Sidebar />
+      <AppLayout>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 dark:border-blue-400"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading communications...</p>
           </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <>
+    <AppLayout>
       <Head>
         <title>Communications Hub - Digital Era CRM</title>
         <meta name="description" content="Multi-channel communication management for Digital Era CRM" />
       </Head>
-
-      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Sidebar />
         
-        <div className="flex-1 overflow-hidden">
           <div className="p-6">
             {/* Header */}
             <div className="mb-8">
@@ -837,9 +832,7 @@ const CommunicationsPage: React.FC = () => {
               {state.activeTab === 'analytics' && renderAnalytics()}
             </div>
           </div>
-        </div>
-      </div>
-    </>
+    </AppLayout>
   );
 };
 
