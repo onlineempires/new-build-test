@@ -5,6 +5,7 @@ import Head from 'next/head';
 import AppLayout from '../components/layout/AppLayout';
 import { getAllCourses, CourseData, Course } from '../lib/api/courses';
 import { Play, Clock, BookOpen, Trophy, Lock } from 'lucide-react';
+import { useThemeCanvasV1, useThemeCanvasClass } from '../contexts/ThemeContext';
 
 // Mock user data - same as existing courses page
 const mockUser = {
@@ -14,32 +15,21 @@ const mockUser = {
 };
 
 interface CourseCardProps {
-  course: Course | MasterclassCourse;
-  section: 'start' | 'advanced' | 'masterclass';
+  course: Course;
+  section: 'start' | 'advanced';
   onClick: () => void;
+  canvasEnabled?: boolean;
 }
 
-interface MasterclassCourse {
-  id: string;
-  title: string;
-  description: string;
-  lessonCount: number;
-  price: number;
-  progress?: number;
-  isCompleted?: boolean;
-}
-
-const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => {
+const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick, canvasEnabled = false }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const getLevelBadgeColor = (sectionType: string) => {
     switch (sectionType) {
       case 'start':
-        return 'theme-bg-secondary theme-text-primary theme-border';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'advanced':
         return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'masterclass':
-        return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -59,23 +49,25 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
 
   const getProgressColor = () => {
     if (course.progress === 100) return 'bg-green-500';
-    if (course.progress && course.progress > 0) return 'theme-progress-fill';
+    if (course.progress && course.progress > 0) return 'bg-blue-500';
     return 'bg-gray-300';
   };
 
   const getSectionBadge = () => {
-    if (section === 'start') return { text: 'Foundation', color: 'chip-foundation' };
-    if (section === 'advanced') return { text: 'Advanced', color: 'chip-advanced' };
-    if (section === 'masterclass') return { text: 'Premium', color: 'chip-masterclass' };
-    return { text: 'Course', color: 'theme-badge-primary' };
+    if (section === 'start') return { text: 'Foundation', color: 'bg-blue-500' };
+    if (section === 'advanced') return { text: 'Advanced', color: 'bg-purple-500' };
+    return { text: 'Course', color: 'bg-gray-500' };
   };
 
   const sectionBadge = getSectionBadge();
 
   return (
     <div 
-      className={`
-        theme-card rounded-xl overflow-hidden
+      className={canvasEnabled ? `
+        card-item hover-overlay overflow-hidden cursor-pointer group
+        ${isHovered ? 'shadow-lg' : ''}
+      ` : `
+        bg-white border border-gray-200 rounded-xl overflow-hidden
         transition-all duration-300 ease-out cursor-pointer group
         hover:shadow-lg hover:border-gray-300 hover:-translate-y-1
         ${isHovered ? 'shadow-lg' : 'shadow-sm'}
@@ -90,7 +82,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         
         {/* Section Badge */}
         <div className="absolute top-3 left-3 z-10">
-          <span className={`${sectionBadge.color} px-3 py-1 rounded-full text-xs font-bold uppercase letter-spacing-wide`}>
+          <span className={`${sectionBadge.color} text-white px-2 py-1 rounded-full text-xs font-medium`}>
             {sectionBadge.text}
           </span>
         </div>
@@ -98,7 +90,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {/* Progress Badge */}
         {course.progress !== undefined && course.progress > 0 && (
           <div className="absolute top-3 right-3 z-10 flex items-center space-x-2">
-            <span className="bg-white/90 backdrop-blur-sm theme-text-primary text-xs font-medium px-2 py-1 rounded-full">
+            <span className="bg-white/90 backdrop-blur-sm text-gray-700 text-xs font-medium px-2 py-1 rounded-full">
               {course.progress}%
             </span>
           </div>
@@ -106,7 +98,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
 
         {/* Course Icon/Visual */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-6xl opacity-20 theme-text-muted">
+          <div className="text-6xl opacity-20 text-gray-400">
             {course.id === 'business-blueprint' ? '🏢' : 
              course.id === 'discovery-process' ? '🔍' : 
              course.id === 'next-steps' ? '📈' : 
@@ -141,33 +133,33 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {/* Level Badge */}
         <div className="flex items-center justify-between">
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getLevelBadgeColor(section)}`}>
-            {section === 'start' ? 'Beginner' : section === 'advanced' ? 'Advanced' : 'Expert'}
+            {section === 'start' ? 'Beginner' : 'Advanced'}
           </span>
-          <div className="flex items-center text-xs theme-text-muted">
+          <div className="flex items-center text-xs text-gray-500">
             <Trophy className="w-3 h-3 mr-1" />
-            +{course.lessonCount * (section === 'start' ? 15 : section === 'advanced' ? 20 : 25)} XP
+            +{course.lessonCount * (section === 'start' ? 15 : 20)} XP
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="text-lg font-semibold theme-text-primary leading-tight transition-colors" style={{color: isHovered ? 'var(--color-primary)' : undefined}}>
+        <h3 className="text-lg font-semibold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
           {course.title}
         </h3>
 
         {/* Description */}
-        <p className="text-sm theme-text-secondary leading-relaxed line-clamp-2">
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
           {course.description}
         </p>
 
         {/* Course Stats */}
-        <div className="flex items-center justify-between text-xs theme-text-muted">
+        <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center">
             <BookOpen className="w-3 h-3 mr-1" />
             <span>{course.lessonCount} lessons</span>
           </div>
           <div className="flex items-center">
             <Clock className="w-3 h-3 mr-1" />
-            <span>{Math.round(course.lessonCount * (section === 'start' ? 0.17 : section === 'advanced' ? 0.2 : 0.5))}h</span>
+            <span>{Math.round(course.lessonCount * (section === 'start' ? 0.17 : 0.2))}h</span>
           </div>
         </div>
 
@@ -175,8 +167,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
         {course.progress !== undefined && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="theme-text-secondary font-medium">Progress</span>
-              <span className="theme-text-primary font-semibold">
+              <span className="text-gray-600 font-medium">Progress</span>
+              <span className="text-gray-900 font-semibold">
                 {course.progress === 100 ? 'Completed!' : `${course.progress}%`}
               </span>
             </div>
@@ -189,49 +181,25 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, section, onClick }) => 
           </div>
         )}
 
-        {/* Action Button - FIXED: Use theme colors instead of gray */}
+        {/* Action Button */}
         <button 
-          className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 hover:scale-105 hover:shadow-md"
-          style={{
-            backgroundColor: section === 'masterclass' 
-              ? '#FF5722' // Orange for masterclass
-              : course.progress === 100 
-              ? 'var(--color-success)' // Green for completed
-              : 'var(--color-primary)', // Use theme primary color
-            color: section === 'masterclass'
-              ? '#FFFFFF'
-              : course.progress === 100
-              ? 'var(--text-on-success)'
-              : 'var(--text-on-primary)', // Use proper text contrast
-            fontWeight: '600'
-          }}
+          className={`
+            w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-lg 
+            font-medium text-sm transition-all duration-200
+            ${course.progress === 100 
+              ? 'bg-green-500 hover:bg-green-600 text-white' 
+              : course.progress && course.progress > 0
+              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+              : 'bg-gray-600 hover:bg-gray-700 text-white'
+            }
+          `}
           onClick={(e) => {
             e.stopPropagation();
             onClick();
           }}
-          onMouseEnter={(e) => {
-            const target = e.target as HTMLElement;
-            if (section === 'masterclass') {
-              target.style.backgroundColor = '#E64A19'; // Darker orange on hover
-            } else if (course.progress === 100) {
-              target.style.backgroundColor = 'var(--color-success-hover)';
-            } else {
-              target.style.backgroundColor = 'var(--color-primary-hover)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            const target = e.target as HTMLElement;
-            if (section === 'masterclass') {
-              target.style.backgroundColor = '#FF5722';
-            } else if (course.progress === 100) {
-              target.style.backgroundColor = 'var(--color-success)';
-            } else {
-              target.style.backgroundColor = 'var(--color-primary)';
-            }
-          }}
         >
-          <i className={`${section === 'masterclass' ? 'fas fa-shopping-cart' : getButtonIcon()} text-sm`}></i>
-          <span>{section === 'masterclass' ? `Buy Masterclass - $${(course as MasterclassCourse).price}` : getButtonText()}</span>
+          <i className={`${getButtonIcon()} text-sm`}></i>
+          <span>{getButtonText()}</span>
         </button>
       </div>
     </div>
@@ -242,7 +210,11 @@ export default function LibraryPage() {
   const router = useRouter();
   const [data, setData] = useState<CourseData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'foundation' | 'advanced' | 'masterclass'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'foundation' | 'advanced'>('all');
+
+  // Theme canvas integration
+  const canvasEnabled = useThemeCanvasV1();
+  const pageCanvasClass = useThemeCanvasClass('page-canvas', 'min-h-screen bg-gray-50');
 
   // Load course data - same as All Courses page
   useEffect(() => {
@@ -268,56 +240,19 @@ export default function LibraryPage() {
     router.push(`/courses/${course.id}`);
   };
 
-  // Masterclass courses data (same as All Courses page)
-  const masterclassCourses: MasterclassCourse[] = [
-    {
-      id: 'email-marketing-secrets',
-      title: 'Email Marketing Secrets',
-      description: 'Build profitable email sequences and automated funnels that convert',
-      lessonCount: 16,
-      price: 49,
-      progress: 0,
-      isCompleted: false
-    },
-    {
-      id: 'advanced-copywriting-masterclass',
-      title: 'Advanced Copywriting Masterclass',
-      description: 'Master the art of persuasive writing that sells and converts at scale',
-      lessonCount: 20,
-      price: 97,
-      progress: 0,
-      isCompleted: false
-    },
-    {
-      id: 'scaling-systems-masterclass',
-      title: 'Scaling Systems Masterclass',
-      description: 'Build automated systems and processes to scale your business to 7-figures',
-      lessonCount: 24,
-      price: 197,
-      progress: 0,
-      isCompleted: false
-    }
-  ];
-
   // Filter courses based on active filter
   const filteredCourses = useMemo(() => {
-    if (!data) return { startHereCourses: [], socialMediaCourses: [], masterclassCourses: [] };
+    if (!data) return { startHereCourses: [], socialMediaCourses: [] };
     
     const result = {
       startHereCourses: data.startHereCourses,
-      socialMediaCourses: data.socialMediaCourses,
-      masterclassCourses: masterclassCourses
+      socialMediaCourses: data.socialMediaCourses
     };
 
     if (activeFilter === 'foundation') {
       result.socialMediaCourses = [];
-      result.masterclassCourses = [];
     } else if (activeFilter === 'advanced') {
       result.startHereCourses = [];
-      result.masterclassCourses = [];
-    } else if (activeFilter === 'masterclass') {
-      result.startHereCourses = [];
-      result.socialMediaCourses = [];
     }
 
     return result;
@@ -325,16 +260,15 @@ export default function LibraryPage() {
 
   const getTotalCourses = () => {
     if (!data) return 0;
-    return data.startHereCourses.length + data.socialMediaCourses.length + masterclassCourses.length;
+    return data.startHereCourses.length + data.socialMediaCourses.length;
   };
 
   const getFilterCounts = () => {
-    if (!data) return { all: 0, foundation: 0, advanced: 0, masterclass: 0 };
+    if (!data) return { all: 0, foundation: 0, advanced: 0 };
     return {
-      all: data.startHereCourses.length + data.socialMediaCourses.length + masterclassCourses.length,
+      all: data.startHereCourses.length + data.socialMediaCourses.length,
       foundation: data.startHereCourses.length,
-      advanced: data.socialMediaCourses.length,
-      masterclass: masterclassCourses.length
+      advanced: data.socialMediaCourses.length
     };
   };
 
@@ -343,18 +277,18 @@ export default function LibraryPage() {
   if (isLoading) {
     return (
       <AppLayout user={mockUser}>
-        <div className="min-h-screen theme-bg">
+        <div className={pageCanvasClass}>
           <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Loading Header */}
             <div className="mb-8 animate-pulse">
-              <div className="h-8 theme-card rounded w-64 mb-2"></div>
-              <div className="h-4 theme-card rounded w-96"></div>
+              <div className="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-96"></div>
             </div>
             
             {/* Loading Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, index) => (
-                <div key={index} className="theme-card rounded-xl overflow-hidden animate-pulse">
+                <div key={index} className="bg-white border border-gray-200 rounded-xl overflow-hidden animate-pulse">
                   <div className="aspect-video bg-gray-200"></div>
                   <div className="p-6 space-y-3">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -378,157 +312,61 @@ export default function LibraryPage() {
         <meta name="description" content="Explore our course library with the same courses as All Courses, featuring our new sleek design" />
       </Head>
 
-      <div className="min-h-screen theme-bg">
+      <div className={pageCanvasClass}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold theme-text-primary mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Explore the Library
             </h1>
-            <p className="theme-text-secondary mb-2">
+            <p className="text-gray-600 mb-2">
               Deep dives, step by step trainings, and replays
             </p>
-            <p className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+            <p className="text-sm text-blue-600 font-medium">
               Same courses as "All Courses" with new design • {getTotalCourses()} courses available
             </p>
           </div>
 
-          {/* Filter Tabs - FIXED: Proper theme contrast */}
-          <div 
-            className="flex items-center space-x-1 mb-8 rounded-lg p-1 w-fit"
-            style={{ backgroundColor: 'var(--color-card-background)', border: '1px solid var(--color-border)' }}
-          >
+          {/* Filter Tabs */}
+          <div className="flex items-center space-x-1 mb-8 bg-gray-100 rounded-lg p-1 w-fit">
             <button
               onClick={() => setActiveFilter('all')}
-              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 relative"
-              style={{
-                backgroundColor: activeFilter === 'all' ? 'var(--color-primary)' : 'transparent',
-                color: activeFilter === 'all' ? 'var(--text-on-primary)' : 'var(--color-text-secondary)',
-                fontWeight: activeFilter === 'all' ? '600' : '500',
-                boxShadow: activeFilter === 'all' ? '0 2px 8px var(--color-primary)30' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (activeFilter !== 'all') {
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeFilter !== 'all') {
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'all'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
               All Courses
-              <span 
-                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: activeFilter === 'all' ? 'rgba(255,255,255,0.2)' : 'var(--color-border)',
-                  color: activeFilter === 'all' ? 'var(--text-on-primary)' : 'var(--color-text-muted)'
-                }}
-              >
+              <span className="ml-2 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
                 {filterCounts.all}
               </span>
             </button>
             <button
               onClick={() => setActiveFilter('foundation')}
-              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
-              style={{
-                backgroundColor: activeFilter === 'foundation' ? 'var(--color-primary)' : 'transparent',
-                color: activeFilter === 'foundation' ? 'var(--text-on-primary)' : 'var(--color-text-secondary)',
-                fontWeight: activeFilter === 'foundation' ? '600' : '500',
-                boxShadow: activeFilter === 'foundation' ? '0 2px 8px var(--color-primary)30' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (activeFilter !== 'foundation') {
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeFilter !== 'foundation') {
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'foundation'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
               Foundation
-              <span 
-                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: activeFilter === 'foundation' ? 'rgba(255,255,255,0.2)' : 'var(--color-primary)',
-                  color: activeFilter === 'foundation' ? 'var(--text-on-primary)' : 'var(--text-on-primary)'
-                }}
-              >
+              <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
                 {filterCounts.foundation}
               </span>
             </button>
             <button
               onClick={() => setActiveFilter('advanced')}
-              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
-              style={{
-                backgroundColor: activeFilter === 'advanced' ? 'var(--color-secondary)' : 'transparent',
-                color: activeFilter === 'advanced' ? 'var(--text-on-secondary)' : 'var(--color-text-secondary)',
-                fontWeight: activeFilter === 'advanced' ? '600' : '500',
-                boxShadow: activeFilter === 'advanced' ? '0 2px 8px var(--color-secondary)30' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (activeFilter !== 'advanced') {
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeFilter !== 'advanced') {
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeFilter === 'advanced'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
             >
               Advanced Training
-              <span 
-                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: activeFilter === 'advanced' ? 'rgba(255,255,255,0.2)' : 'var(--color-secondary)',
-                  color: activeFilter === 'advanced' ? 'var(--text-on-secondary)' : 'var(--text-on-secondary)'
-                }}
-              >
+              <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
                 {filterCounts.advanced}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveFilter('masterclass')}
-              className="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200"
-              style={{
-                backgroundColor: activeFilter === 'masterclass' ? 'var(--color-warning)' : 'transparent',
-                color: activeFilter === 'masterclass' ? 'var(--text-on-warning)' : 'var(--color-text-secondary)',
-                fontWeight: activeFilter === 'masterclass' ? '600' : '500',
-                boxShadow: activeFilter === 'masterclass' ? '0 2px 8px var(--color-warning)30' : 'none'
-              }}
-              onMouseEnter={(e) => {
-                if (activeFilter !== 'masterclass') {
-                  e.currentTarget.style.color = 'var(--color-text-primary)';
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeFilter !== 'masterclass') {
-                  e.currentTarget.style.color = 'var(--color-text-secondary)';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
-            >
-              Masterclass Training
-              <span 
-                className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: activeFilter === 'masterclass' ? 'rgba(255,255,255,0.2)' : 'var(--color-warning)',
-                  color: activeFilter === 'masterclass' ? 'var(--text-on-warning)' : 'var(--text-on-warning)'
-                }}
-              >
-                {filterCounts.masterclass}
               </span>
             </button>
           </div>
@@ -539,29 +377,13 @@ export default function LibraryPage() {
             {/* Foundation Courses */}
             {filteredCourses.startHereCourses.length > 0 && (
               <div>
-                <div className="flex items-center space-x-4 mb-8">
-                  <div 
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                    style={{
-                      backgroundColor: 'var(--color-primary)',
-                      boxShadow: '0 4px 20px var(--color-primary)40',
-                    }}
-                  >
-                    <Play className="w-8 h-8" style={{ color: 'var(--text-on-primary)' }} />
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                    <i className="fas fa-play text-sm"></i>
                   </div>
-                  <div className="flex-1">
-                    <h2 
-                      className="text-3xl font-bold mb-2 transition-colors"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      Foundation Training
-                    </h2>
-                    <p 
-                      className="text-lg leading-relaxed"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      Essential courses to build your online business foundation
-                    </p>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Foundation Training</h2>
+                    <p className="text-sm text-gray-600">Essential courses to build your online business foundation</p>
                   </div>
                 </div>
                 
@@ -572,6 +394,7 @@ export default function LibraryPage() {
                       course={course}
                       section="start"
                       onClick={() => goToCourse(course)}
+                      canvasEnabled={canvasEnabled}
                     />
                   ))}
                 </div>
@@ -581,29 +404,13 @@ export default function LibraryPage() {
             {/* Advanced Courses */}
             {filteredCourses.socialMediaCourses.length > 0 && (
               <div>
-                <div className="flex items-center space-x-4 mb-8">
-                  <div 
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                    style={{
-                      backgroundColor: 'var(--color-secondary)',
-                      boxShadow: '0 4px 20px var(--color-secondary)40',
-                    }}
-                  >
-                    <BookOpen className="w-8 h-8" style={{ color: 'var(--text-on-secondary)' }} />
+                <div className="flex items-center mb-6">
+                  <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mr-3">
+                    <i className="fas fa-graduation-cap text-sm"></i>
                   </div>
-                  <div className="flex-1">
-                    <h2 
-                      className="text-3xl font-bold mb-2 transition-colors"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      Advanced Training
-                    </h2>
-                    <p 
-                      className="text-lg leading-relaxed"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      Specialized courses for scaling your business
-                    </p>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Advanced Training</h2>
+                    <p className="text-sm text-gray-600">Specialized courses for scaling your business</p>
                   </div>
                 </div>
                 
@@ -614,52 +421,7 @@ export default function LibraryPage() {
                       course={course}
                       section="advanced"
                       onClick={() => goToCourse(course)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Masterclass Courses */}
-            {filteredCourses.masterclassCourses.length > 0 && (
-              <div>
-                <div className="flex items-center space-x-4 mb-8">
-                  <div 
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                    style={{
-                      backgroundColor: 'var(--color-warning)',
-                      boxShadow: '0 4px 20px var(--color-warning)40',
-                    }}
-                  >
-                    <Trophy className="w-8 h-8" style={{ color: 'var(--text-on-warning)' }} />
-                  </div>
-                  <div className="flex-1">
-                    <h2 
-                      className="text-3xl font-bold mb-2 transition-colors"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      Masterclass Training
-                    </h2>
-                    <p 
-                      className="text-lg leading-relaxed"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      Premium courses for advanced business growth
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredCourses.masterclassCourses.map((course) => (
-                    <CourseCard 
-                      key={course.id}
-                      course={course}
-                      section="masterclass"
-                      onClick={() => {
-                        console.log('Masterclass purchase clicked:', course.title);
-                        // Handle masterclass purchase logic here
-                        alert(`Purchasing ${course.title} for $${course.price}`);
-                      }}
+                      canvasEnabled={canvasEnabled}
                     />
                   ))}
                 </div>
@@ -669,15 +431,15 @@ export default function LibraryPage() {
           </div>
 
           {/* Empty State */}
-          {!isLoading && filteredCourses.startHereCourses.length === 0 && filteredCourses.socialMediaCourses.length === 0 && filteredCourses.masterclassCourses.length === 0 && (
+          {!isLoading && filteredCourses.startHereCourses.length === 0 && filteredCourses.socialMediaCourses.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="w-6 h-6 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold theme-text-primary mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No courses found
               </h3>
-              <p className="theme-text-secondary mb-4">
+              <p className="text-gray-600 mb-4">
                 Try adjusting your filter to see more courses.
               </p>
               <button

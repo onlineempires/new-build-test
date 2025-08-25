@@ -2,6 +2,7 @@ import type { AppProps } from 'next/app';
 import { QueryClientProvider } from '@tanstack/react-query';
 import '../styles/globals.css';
 import '../components/library/library-theme.module.css';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { UpgradeProvider } from '../contexts/UpgradeContext';
 import { UserRoleProvider } from '../contexts/UserRoleContext';
 import { AdminAuthProvider } from '../contexts/AdminAuthContext';
