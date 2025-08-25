@@ -20,7 +20,7 @@ interface User {
 
 interface AppLayoutProps {
   children: ReactNode;
-  user: User;
+  user?: User;
   title?: string;
   onFeedbackClick?: () => void;
   notifications?: Array<{
@@ -35,7 +35,7 @@ interface AppLayoutProps {
   onRemoveNotification?: (id: number) => void;
 }
 
-export default function AppLayout({ children, user, title, onFeedbackClick, notifications = [], onClearNotifications, onRemoveNotification }: AppLayoutProps) {
+export default function AppLayout({ children, user = { id: 1, name: 'Guest User', avatarUrl: '' }, title, onFeedbackClick, notifications = [], onClearNotifications, onRemoveNotification }: AppLayoutProps) {
   const router = useRouter();
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

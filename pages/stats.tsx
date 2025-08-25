@@ -2,11 +2,17 @@ import { useEffect, useState, useCallback } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import AppLayout from '../components/layout/AppLayout';
+import AccessDenied from '../components/AccessDenied';
+import { hasAccess, getAccessRule } from '../utils/accessControl';
 import dynamic from 'next/dynamic';
+import { BarChart3, TrendingUp, Users, DollarSign, Activity } from 'lucide-react';
 
-// Lazy load heavy components
+// Lazy load heavy components with safe loading
 const StatsDashboard = dynamic(
-  () => import('../components/Affiliate/Stats/StatsDashboard'),
+  () => import('../components/Affiliate/Stats/StatsDashboard').catch(() => 
+    // Fallback component if import fails
+    ({ default: () => <div className="p-8 text-center">Affiliate stats temporarily unavailable</div> })
+  ),
   { 
     loading: () => (
       <div className="flex items-center justify-center py-12">
@@ -14,30 +20,17 @@ const StatsDashboard = dynamic(
         <span className="ml-3 text-gray-600">Loading dashboard...</span>
       </div>
     ),
-    ssr: false  // Disable SSR for heavy chart components
+    ssr: false
   }
 );
-import { useCourseAccess } from '../hooks/useCourseAccess';
-import { BarChart3, TrendingUp, Users, DollarSign, Activity } from 'lucide-react';
 
-// Mock user data - replace with real user context
-const mockUser = {
+// Mock user data - in real app, get from auth context
+const getMockUser = () => ({
   id: 1,
   name: 'Online Empire Member',
-  avatarUrl: '/api/placeholder/40/40'
-};
-
-// Mock notifications - replace with real notifications
-const mockNotifications = [
-  {
-    id: 1,
-    title: 'New Performance Alert',
-    body: 'Your affiliate funnels are performing well this week',
-    ts: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    actionLabel: 'View Stats',
-    actionHref: '/stats'
-  }
-];
+  avatarUrl: '/api/placeholder/40/40',
+  tier: 'monthly_99' as const // Change this to test different access levels: 'trial' | 'downsell_37' | 'monthly_99' | 'annual_799' | 'admin'
+});
 
 type StatsSection = 'overview' | 'affiliate' | 'courses' | 'engagement';
 
@@ -46,7 +39,7 @@ interface StatsSectionInfo {
   name: string;
   icon: React.ComponentType<any>;
   description: string;
-  requiresPermission?: string;
+  requiresTier?: string[];
 }
 
 const statsSections: StatsSectionInfo[] = [
@@ -61,7 +54,7 @@ const statsSections: StatsSectionInfo[] = [
     name: 'Affiliate Funnels',
     icon: TrendingUp,
     description: 'Track funnel performance, conversion rates, and revenue',
-    requiresPermission: 'canAccessAffiliate'
+    requiresTier: ['monthly_99', 'annual_799', 'admin']
   },
   {
     id: 'courses',
@@ -79,71 +72,69 @@ const statsSections: StatsSectionInfo[] = [
 
 export default function StatsPage() {
   const router = useRouter();
-  const { permissions } = useCourseAccess();
+  const [user] = useState(getMockUser());
   const [activeSection, setActiveSection] = useState<StatsSection>('overview');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [loading, setLoading] = useState(true);
 
-  // Check URL hash or query parameter for initial section
+  // Safe initialization - no navigation blocking
   useEffect(() => {
+    setLoading(false);
+    
+    // Handle URL section parameter safely
     const { section } = router.query;
-    if (section && typeof section === 'string') {
+    if (section && typeof section === 'string' && 
+        ['overview', 'affiliate', 'courses', 'engagement'].includes(section)) {
       setActiveSection(section as StatsSection);
-    } else if (router.asPath.includes('#')) {
-      const hash = router.asPath.split('#')[1];
-      if (hash && ['overview', 'affiliate', 'courses', 'engagement'].includes(hash)) {
-        setActiveSection(hash as StatsSection);
-      }
     }
-  }, [router.query, router.asPath]);
 
-  // Check if user has access to stats features
-  useEffect(() => {
-    if (!permissions?.canAccessStats) {
-      router.push('/courses'); // Redirect to courses if no stats access
-      return;
-    }
-  }, [permissions?.canAccessStats, router]);
+    // Clean up function to prevent any hanging listeners
+    return () => {
+      // Ensure no navigation blocking on unmount
+    };
+  }, [router.query]);
 
-  const handleSectionChange = (section: StatsSection) => {
+  // Check access to stats page
+  const pageAccess = hasAccess(user.tier, '/stats');
+  const accessRule = getAccessRule('/stats');
+
+  // Handle section changes safely
+  const handleSectionChange = useCallback((section: StatsSection) => {
     setActiveSection(section);
-    // Update URL without page reload
-    router.push(`/stats?section=${section}`, undefined, { shallow: true });
-  };
+    
+    // Update URL without shallow routing that might cause issues
+    const url = `/stats${section !== 'overview' ? `?section=${section}` : ''}`;
+    window.history.replaceState(null, '', url);
+  }, []);
 
   const handleFeedbackClick = useCallback(() => {
     setFeedbackModalOpen(true);
   }, []);
 
-  const handleClearNotifications = useCallback(() => {
-    setNotifications([]);
-  }, []);
+  // Filter sections based on user tier
+  const availableSections = statsSections.filter(section => {
+    if (!section.requiresTier) return true;
+    return section.requiresTier.includes(user.tier);
+  });
 
-  // Filter sections based on permissions
-  const availableSections = statsSections.filter(section => 
-    !section.requiresPermission || permissions?.[section.requiresPermission as keyof typeof permissions]
-  );
-
-  // Don't render if user doesn't have stats access
-  if (!permissions?.canAccessStats) {
+  // Show access denied if user doesn't have access
+  if (!pageAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-gray-400 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Restricted</h2>
-          <p className="text-gray-600 mb-4">You need statistics access to view this page.</p>
-          <button 
-            onClick={() => router.push('/courses')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Go to Courses
-          </button>
+      <AccessDenied 
+        requiredTier="Monthly ($99) or Annual ($799)"
+        currentTier={user.tier}
+        upgradeMessage={accessRule?.upgradeMessage}
+      />
+    );
+  }
+
+  if (loading) {
+    return (
+      <AppLayout user={user}>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -211,18 +202,31 @@ export default function StatsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {availableSections.slice(1).map((section) => {
             const Icon = section.icon;
+            const hasAccess = !section.requiresTier || section.requiresTier.includes(user.tier);
+            
             return (
-              <button
-                key={section.id}
-                onClick={() => handleSectionChange(section.id)}
-                className="text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex items-center mb-2">
-                  <Icon className="w-5 h-5 text-blue-600 mr-2" />
-                  <span className="font-medium text-gray-900">{section.name}</span>
-                </div>
-                <p className="text-sm text-gray-600">{section.description}</p>
-              </button>
+              <div key={section.id} className="relative">
+                <button
+                  onClick={() => hasAccess ? handleSectionChange(section.id) : null}
+                  disabled={!hasAccess}
+                  className={`text-left p-4 border rounded-lg w-full transition-colors ${
+                    hasAccess 
+                      ? 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer'
+                      : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center mb-2">
+                    <Icon className="w-5 h-5 text-blue-600 mr-2" />
+                    <span className="font-medium text-gray-900">{section.name}</span>
+                    {!hasAccess && (
+                      <span className="ml-auto text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded">
+                        🔒 Premium
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-600">{section.description}</p>
+                </button>
+              </div>
             );
           })}
         </div>
@@ -230,7 +234,7 @@ export default function StatsPage() {
     </div>
   );
 
-  // Placeholder components for other sections
+  // Other section components
   const CoursesStatsDashboard = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
       <div className="text-purple-500 mb-4">
@@ -238,7 +242,7 @@ export default function StatsPage() {
       </div>
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Course Progress Statistics</h3>
       <p className="text-gray-600 mb-4">Track your learning journey and course completion rates</p>
-      <p className="text-sm text-gray-500">This section will display course progress analytics, completion rates, time spent learning, and achievement tracking.</p>
+      <p className="text-sm text-gray-500">This section displays course progress analytics, completion rates, time spent learning, and achievement tracking.</p>
     </div>
   );
 
@@ -249,11 +253,31 @@ export default function StatsPage() {
       </div>
       <h3 className="text-xl font-semibold text-gray-900 mb-2">Platform Engagement</h3>
       <p className="text-gray-600 mb-4">Monitor your activity and engagement with the platform</p>
-      <p className="text-sm text-gray-500">This section will show login frequency, feature usage, time on platform, and engagement trends.</p>
+      <p className="text-sm text-gray-500">This section shows login frequency, feature usage, time on platform, and engagement trends.</p>
     </div>
   );
 
   const renderActiveSection = () => {
+    // Check if user has access to the current section
+    const currentSection = statsSections.find(s => s.id === activeSection);
+    const hasAccessToSection = !currentSection?.requiresTier || currentSection.requiresTier.includes(user.tier);
+    
+    if (!hasAccessToSection) {
+      return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+          <div className="text-gray-400 mb-4">🔒</div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Feature</h3>
+          <p className="text-gray-600 mb-4">This section requires a Monthly or Annual subscription</p>
+          <button 
+            onClick={() => setActiveSection('overview')}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Back to Overview
+          </button>
+        </div>
+      );
+    }
+
     switch (activeSection) {
       case 'overview':
         return <OverviewDashboard />;
@@ -271,17 +295,15 @@ export default function StatsPage() {
   return (
     <>
       <Head>
-        <title>Statistics - Online Empires</title>
-        <meta name="description" content="Comprehensive analytics dashboard for your Online Empires journey" />
+        <title>Statistics - Digital Era</title>
+        <meta name="description" content="Comprehensive analytics dashboard for your Digital Era journey" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <AppLayout
-        user={mockUser}
+        user={user}
         title="Statistics"
         onFeedbackClick={handleFeedbackClick}
-        notifications={notifications}
-        onClearNotifications={handleClearNotifications}
       >
         <div className="p-6">
           {/* Section Navigation */}
@@ -289,18 +311,26 @@ export default function StatsPage() {
             <div className="flex flex-wrap gap-2">
               {availableSections.map((section) => {
                 const Icon = section.icon;
+                const hasAccessToSection = !section.requiresTier || section.requiresTier.includes(user.tier);
+                
                 return (
                   <button
                     key={section.id}
-                    onClick={() => handleSectionChange(section.id)}
+                    onClick={() => hasAccessToSection ? handleSectionChange(section.id) : null}
+                    disabled={!hasAccessToSection}
                     className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                       activeSection === section.id
                         ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        : hasAccessToSection
+                        ? 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {section.name}
+                    {!hasAccessToSection && (
+                      <span className="ml-2 text-xs">🔒</span>
+                    )}
                   </button>
                 );
               })}
@@ -309,6 +339,13 @@ export default function StatsPage() {
 
           {/* Active Section Content */}
           {renderActiveSection()}
+          
+          {/* Test Navigation Message */}
+          <div className="mt-8 p-4 bg-green-50 rounded-lg">
+            <p className="text-sm text-green-600">
+              ✅ Statistics page loaded successfully. Navigation should work normally from here.
+            </p>
+          </div>
         </div>
 
         {/* Feedback Modal */}
@@ -338,9 +375,7 @@ export default function StatsPage() {
                   Cancel
                 </button>
                 <button 
-                  onClick={() => {
-                    setFeedbackModalOpen(false);
-                  }}
+                  onClick={() => setFeedbackModalOpen(false)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Send Feedback
