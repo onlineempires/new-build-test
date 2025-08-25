@@ -76,21 +76,21 @@ export default function Dashboard() {
         <div className="p-3 sm:p-4 lg:p-6">
           <div className="animate-pulse">
             {/* Welcome Banner Skeleton */}
-            <div className="h-20 sm:h-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-2xl mb-6"></div>
+            <div className="h-20 sm:h-24 theme-bg-secondary rounded-2xl mb-6"></div>
             
             {/* Stats Cards Skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-gray-200 h-24 sm:h-32 rounded-xl"></div>
+                <div key={i} className="theme-bg-secondary h-24 sm:h-32 rounded-xl"></div>
               ))}
             </div>
             
             {/* Content Skeletons */}
             <div className="space-y-4">
-              <div className="bg-gray-200 h-40 sm:h-48 rounded-xl"></div>
+              <div className="theme-bg-secondary h-40 sm:h-48 rounded-xl"></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-gray-200 h-48 sm:h-64 rounded-xl"></div>
+                  <div key={i} className="theme-bg-secondary h-48 sm:h-64 rounded-xl"></div>
                 ))}
               </div>
             </div>

@@ -89,32 +89,32 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] bg-white shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
+      <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] theme-sidebar shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } overflow-hidden flex flex-col`}>
+      } overflow-hidden flex flex-col theme-border border-r`}>
         
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 theme-border border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">⚡</span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">DIGITAL ERA</h1>
+            <h1 className="text-xl font-bold theme-text-primary">DIGITAL ERA</h1>
           </div>
         </div>
 
         {/* User Tier Display - SYNCHRONIZED WITH HEADER */}
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+        <div className="px-6 py-3 theme-bg-secondary theme-border border-b">
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-xs text-gray-500">Current Plan</div>
-              <div className="font-semibold text-sm">
+              <div className="text-xs theme-text-tertiary">Current Plan</div>
+              <div className="font-semibold text-sm theme-text-primary">
                 {roleDetails?.name || getTierDisplayName(safeUser?.tier)}
               </div>
             </div>
             {/* Debug indicator in development */}
             {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-gray-400">
+              <div className="text-xs theme-text-muted">
                 {currentRole}
               </div>
             )}
@@ -132,10 +132,10 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
                   <a 
                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 transition-colors ${ 
                       isActive(item.href) 
-                        ? 'bg-blue-50 text-blue-600 font-medium' 
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white font-medium shadow-lg' 
                         : userHasAccess
-                        ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        : 'text-gray-400 cursor-not-allowed opacity-60'
+                        ? 'theme-text-secondary theme-hover'
+                        : 'theme-text-muted cursor-not-allowed opacity-60'
                     }`}
                     onClick={(e) => {
                       if (!userHasAccess) {
@@ -149,7 +149,7 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
                     <span className="text-lg">{item.icon}</span>
                     <span className="flex-1">{item.label}</span>
                     {!userHasAccess && (
-                      <span className="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded">
+                      <span className="text-xs bg-yellow-500 text-white px-2 py-1 rounded font-medium">
                         🔒
                       </span>
                     )}
@@ -161,20 +161,20 @@ export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }:
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 theme-border border-t">
           <Link href="/profile">
             <a 
-              className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg p-2 transition-colors"
+              className="flex items-center space-x-3 theme-hover rounded-lg p-2 transition-colors"
               onClick={closeMobileMenu}
             >
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
                 {safeUser?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
               <div className="flex-1">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium theme-text-primary">
                   {safeUser?.name || 'Guest User'}
                 </div>
-                <div className="text-xs text-gray-500">View Profile</div>
+                <div className="text-xs theme-text-secondary">View Profile</div>
               </div>
             </a>
           </Link>
