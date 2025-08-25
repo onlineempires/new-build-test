@@ -17,6 +17,14 @@ export interface Theme {
     textMuted: string;        // Low contrast - labels, metadata
     textInverse: string;      // For dark backgrounds (buttons, etc.)
     
+    // Text on Colored Backgrounds (for buttons, cards, etc.)
+    textOnPrimary: string;    // Text color for primary background
+    textOnSecondary: string;  // Text color for secondary background
+    textOnSuccess: string;    // Text color for success background
+    textOnWarning: string;    // Text color for warning background
+    textOnError: string;      // Text color for error background
+    textOnInfo: string;       // Text color for info background
+    
     // Brand Colors (dynamic primary/secondary)
     primary: string;          // Main brand color - replaces ALL blue
     primaryHover: string;     // Hover state for primary
@@ -71,6 +79,14 @@ export const themes: Record<string, Theme> = {
       textSecondary: '#475569',
       textMuted: '#64748B',
       textInverse: '#FFFFFF',
+      
+      // Text on Colored Backgrounds
+      textOnPrimary: '#FFFFFF',     // White text on blue primary
+      textOnSecondary: '#FFFFFF',   // White text on purple secondary
+      textOnSuccess: '#FFFFFF',     // White text on green success
+      textOnWarning: '#FFFFFF',     // White text on orange warning
+      textOnError: '#FFFFFF',       // White text on red error
+      textOnInfo: '#FFFFFF',        // White text on cyan info
       
       // Brand Colors
       primary: '#2563EB',        // Blue for light theme
@@ -127,6 +143,14 @@ export const themes: Record<string, Theme> = {
       textMuted: '#CFCFCF',          // Medium light gray - 8.2:1 contrast ratio
       textInverse: '#000000',        // Pure black for light backgrounds
       
+      // Text on Colored Backgrounds - MAXIMUM CONTRAST
+      textOnPrimary: '#FFFFFF',      // White text on orange primary
+      textOnSecondary: '#FFFFFF',    // White text on purple secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#000000',      // Black text on yellow warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on cyan info
+      
       // Brand Colors - SATURATED for visibility
       primary: '#FF5A1F',            // Bright orange - highly visible
       primaryHover: '#E04A10',       // Darker orange for hover
@@ -180,6 +204,14 @@ export const themes: Record<string, Theme> = {
       textSecondary: '#E2E8F0',      // Light gray - better than #CBD5E1
       textMuted: '#CBD5E1',          // Medium light - better than #94A3B8
       textInverse: '#0F172A',
+      
+      // Text on Colored Backgrounds
+      textOnPrimary: '#FFFFFF',      // White text on blue primary
+      textOnSecondary: '#FFFFFF',    // White text on purple secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#000000',      // Black text on yellow warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on cyan info
       
       // Brand Colors - Brighter blues
       primary: '#3B82F6',            // Keep blue but ensure good contrast
@@ -235,6 +267,14 @@ export const themes: Record<string, Theme> = {
       textMuted: '#64748B',
       textInverse: '#FFFFFF',
       
+      // Text on Colored Backgrounds
+      textOnPrimary: '#FFFFFF',      // White text on teal primary
+      textOnSecondary: '#FFFFFF',    // White text on blue secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#FFFFFF',      // White text on orange warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on blue info
+      
       // Brand Colors
       primary: '#14B8A6',
       primaryHover: '#0D9488',
@@ -288,6 +328,14 @@ export const themes: Record<string, Theme> = {
       textSecondary: '#374151',      // Darker secondary
       textMuted: '#4B5563',          // Darker muted text
       textInverse: '#FFFFFF',
+      
+      // Text on Colored Backgrounds
+      textOnPrimary: '#FFFFFF',      // White text on pink primary
+      textOnSecondary: '#FFFFFF',    // White text on purple secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#FFFFFF',      // White text on orange warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on blue info
       
       // Brand Colors - Slightly darker for better contrast
       primary: '#DB2777',            // Darker pink for better readability
@@ -343,6 +391,14 @@ export const themes: Record<string, Theme> = {
       textMuted: '#D6D3D1',          // Moved up from #A8A29E
       textInverse: '#0C0A09',
       
+      // Text on Colored Backgrounds
+      textOnPrimary: '#000000',      // Black text on gold primary
+      textOnSecondary: '#FFFFFF',    // White text on purple secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#000000',      // Black text on yellow warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on blue info
+      
       // Brand Colors - Brighter gold
       primary: '#FBBF24',            // Brighter gold - better contrast
       primaryHover: '#F59E0B',       // Hover state
@@ -397,6 +453,14 @@ export const themes: Record<string, Theme> = {
       textMuted: '#CBD5E1',          // Medium light
       textInverse: '#0F172A',
       
+      // Text on Colored Backgrounds - Neon theme
+      textOnPrimary: '#000000',      // Black text on bright cyan
+      textOnSecondary: '#FFFFFF',    // White text on magenta secondary
+      textOnSuccess: '#000000',      // Black text on neon green
+      textOnWarning: '#000000',      // Black text on neon yellow
+      textOnError: '#FFFFFF',        // White text on neon red
+      textOnInfo: '#000000',         // Black text on neon cyan
+      
       // Brand Colors - Bright neon
       primary: '#00E5FF',            // Bright cyan - neon effect
       primaryHover: '#00B8D4',       // Darker cyan
@@ -450,6 +514,14 @@ export const themes: Record<string, Theme> = {
       textSecondary: '#57534E',
       textMuted: '#78716C',
       textInverse: '#FFFFFF',
+      
+      // Text on Colored Backgrounds
+      textOnPrimary: '#FFFFFF',      // White text on orange primary
+      textOnSecondary: '#FFFFFF',    // White text on green secondary
+      textOnSuccess: '#FFFFFF',      // White text on green success
+      textOnWarning: '#FFFFFF',      // White text on orange warning
+      textOnError: '#FFFFFF',        // White text on red error
+      textOnInfo: '#FFFFFF',         // White text on blue info
       
       // Brand Colors
       primary: '#D97706',

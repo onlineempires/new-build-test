@@ -49,11 +49,27 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.style.setProperty('--text-muted', colors.textMuted);
     root.style.setProperty('--text-inverse', colors.textInverse);
     
+    // Text on Colored Backgrounds - CRITICAL FOR VISIBILITY
+    root.style.setProperty('--text-on-primary', colors.textOnPrimary);
+    root.style.setProperty('--text-on-secondary', colors.textOnSecondary);
+    root.style.setProperty('--text-on-success', colors.textOnSuccess);
+    root.style.setProperty('--text-on-warning', colors.textOnWarning);
+    root.style.setProperty('--text-on-error', colors.textOnError);
+    root.style.setProperty('--text-on-info', colors.textOnInfo);
+    
     // Legacy text support
     root.style.setProperty('--color-text-primary', colors.textPrimary);
     root.style.setProperty('--color-text-secondary', colors.textSecondary);
     root.style.setProperty('--color-text-muted', colors.textMuted);
     root.style.setProperty('--color-text-inverse', colors.textInverse);
+    
+    // Legacy text-on-color support
+    root.style.setProperty('--color-text-on-primary', colors.textOnPrimary);
+    root.style.setProperty('--color-text-on-secondary', colors.textOnSecondary);
+    root.style.setProperty('--color-text-on-success', colors.textOnSuccess);
+    root.style.setProperty('--color-text-on-warning', colors.textOnWarning);
+    root.style.setProperty('--color-text-on-error', colors.textOnError);
+    root.style.setProperty('--color-text-on-info', colors.textOnInfo);
     
     // Brand Variables (REPLACES ALL BLUE)
     root.style.setProperty('--color-primary', colors.primary);
