@@ -938,7 +938,7 @@ const LeadProfile: React.FC = () => {
           )}
 
           {/* Analytics Tab */}
-          {activeView === 'analytics' && (
+          {activeTab === 'analytics' && (
             <div className="space-y-6">
               <div 
                 className="text-center py-12 rounded-lg"
