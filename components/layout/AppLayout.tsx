@@ -20,7 +20,7 @@ interface User {
 
 interface AppLayoutProps {
   children: ReactNode;
-  user: User;
+  user?: User;
   title?: string;
   onFeedbackClick?: () => void;
   notifications?: Array<{
@@ -35,7 +35,7 @@ interface AppLayoutProps {
   onRemoveNotification?: (id: number) => void;
 }
 
-export default function AppLayout({ children, user, title, onFeedbackClick, notifications = [], onClearNotifications, onRemoveNotification }: AppLayoutProps) {
+export default function AppLayout({ children, user = { id: 1, name: 'Guest User', avatarUrl: '' }, title, onFeedbackClick, notifications = [], onClearNotifications, onRemoveNotification }: AppLayoutProps) {
   const router = useRouter();
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -91,7 +91,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
   };
 
   return (
-    <div className="flex h-screen theme-bg">
+    <div className="flex h-screen theme-bg-primary">
       <EnvironmentIndicator />
       <Sidebar 
         user={user} 
@@ -102,7 +102,7 @@ export default function AppLayout({ children, user, title, onFeedbackClick, noti
       />
       
       {/* Fixed Header */}
-      <div className="fixed top-0 right-0 left-0 lg:left-64 border-b z-[70] shadow-sm theme-header">
+      <div className="fixed top-0 right-0 left-0 lg:left-64 theme-border border-b shadow-sm theme-header" style={{ zIndex: 'var(--z-header)' }}>
           {/* Mobile Header */}
           <div className="lg:hidden px-4 h-14 flex items-center">
             <div className="flex items-center justify-between w-full">

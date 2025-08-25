@@ -11,6 +11,7 @@ import { canStartCourse, isLessonUnlocked as isLessonUnlockedAccess, UserFlags, 
 import { getCourseMapping } from '../../lib/sections';
 import { useUserFlags } from '../../lib/userFlags';
 import FeedbackModal from '../../components/dashboard/FeedbackModal';
+import Breadcrumbs from '../../components/Breadcrumbs';
 
 export default function CoursePage() {
   const router = useRouter();
@@ -220,23 +221,13 @@ export default function CoursePage() {
           
           {/* Breadcrumb Navigation */}
           <div className="theme-header theme-border border-b px-4 sm:px-6 py-3 sm:py-4">
-            <nav className="flex flex-wrap text-sm theme-text-muted">
-              <button 
-                onClick={() => router.push('/')}
-                className="theme-hover theme-text-secondary transition-colors"
-              >
-                Dashboard
-              </button>
-              <span className="mx-2">&gt;</span>
-              <button 
-                onClick={() => router.push('/courses')}
-                className="theme-hover theme-text-secondary transition-colors"
-              >
-                All Courses
-              </button>
-              <span className="mx-2">&gt;</span>
-              <span className="theme-text-primary font-medium">{course.title}</span>
-            </nav>
+            <Breadcrumbs 
+              items={[
+                { label: 'Dashboard', href: '/' },
+                { label: 'All Courses', href: '/courses' },
+                { label: course.title, current: true }
+              ]}
+            />
           </div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">

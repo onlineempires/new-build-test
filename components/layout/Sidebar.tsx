@@ -1,171 +1,81 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { hasAccess, getTierDisplayName } from '../../utils/accessControl';
+import type { UserTier } from '../../utils/accessControl';
 import { useUserRole } from '../../contexts/UserRoleContext';
-import { useAdminAuth } from '../../contexts/AdminAuthContext';
-import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
 
 interface User {
   id: number;
   name: string;
-  avatarUrl: string;
-}
-
-interface MenuItem {
-  name: string;
-  href: string;
-  icon: string;
-  section: string;
-  requiredPermission: keyof import('../../contexts/UserRoleContext').UserPermissions | null;
-  roles?: import('../../contexts/UserRoleContext').UserRole[]; // Optional: specific roles that can see this
+  avatarUrl?: string;
+  tier?: UserTier;
 }
 
 interface SidebarProps {
-  user: User;
-  onLogout: () => void;
+  user?: User;
+  onLogout?: () => void;
   isMobileOpen?: boolean;
   setIsMobileOpen?: (open: boolean) => void;
   onFeedbackClick?: () => void;
 }
 
-// Define menu items with their required permissions
-const menuItems: MenuItem[] = [
-  { 
-    name: 'Dashboard', 
-    href: '/', 
-    icon: 'fas fa-home', 
-    section: 'dashboard', 
-    requiredPermission: null // Always visible
-  },
-  { 
-    name: 'All Courses', 
-    href: '/courses', 
-    icon: 'fas fa-book', 
-    section: 'courses', 
-    requiredPermission: null // Always visible, but content filtered by role
-  },
-  { 
-    name: 'Library (Beta)', 
-    href: '/library', 
-    icon: 'fas fa-film', 
-    section: 'library', 
-    requiredPermission: null // Always visible when feature flag is enabled
-  },
-  { 
-    name: 'Expert Directory', 
-    href: '/experts', 
-    icon: 'fas fa-users', 
-    section: 'experts', 
-    requiredPermission: 'canAccessExpertDirectory' // Only for paid members
-  },
-  { 
-    name: 'Daily Method (DMO)', 
-    href: '/dmo', 
-    icon: 'fas fa-tasks', 
-    section: 'dmo', 
-    requiredPermission: 'canAccessDMO' // Only for paid members
-  },
-  { 
-    name: 'Affiliate Portal', 
-    href: '/affiliate', 
-    icon: 'fas fa-link', 
-    section: 'affiliate', 
-    requiredPermission: 'canAccessAffiliate' // Only for paid members and downsell
-  },
-  { 
-    name: 'Statistics', 
-    href: '/stats', 
-    icon: 'fas fa-chart-bar', 
-    section: 'statistics', 
-    requiredPermission: 'canAccessStats' // Only for paid members
-  },
-  { 
-    name: 'Leads', 
-    href: '/leads', 
-    icon: 'fas fa-user-plus', 
-    section: 'leads', 
-    requiredPermission: 'canAccessLeads' // Only for paid members
-  },
-  { 
-    name: 'Admin', 
-    href: '/admin', 
-    icon: 'fas fa-cog', 
-    section: 'admin', 
-    requiredPermission: 'isAdmin' // Only for admin role
-  },
-  { 
-    name: 'Profile', 
-    href: '/profile', 
-    icon: 'fas fa-user', 
-    section: 'profile', 
-    requiredPermission: null // Always visible
-  },
-];
-
-export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
+export default function Sidebar({ user, isMobileOpen = false, setIsMobileOpen }: SidebarProps) {
   const router = useRouter();
-  const { permissions, hasPermission, currentRole, setUserRole } = useUserRole();
-  const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
+  const { currentRole, roleDetails } = useUserRole();
   
+  // Convert UserRole to UserTier for access control compatibility
+  const roleToTier = (role: string): UserTier => {
+    switch (role) {
+      case 'monthly': return 'monthly_99';
+      case 'annual': return 'annual_799';
+      case 'downsell': return 'downsell_37';
+      case 'admin': return 'admin';
+      case 'trial':
+      case 'free':
+      case 'guest':
+      default: return 'trial';
+    }
+  };
+
+  const [safeUser, setSafeUser] = useState<User>({ 
+    id: 1, 
+    name: roleDetails?.name || 'User', 
+    tier: roleToTier(currentRole)
+  });
+
+  // Sync with user role context changes
+  useEffect(() => {
+    setSafeUser(prev => ({
+      ...prev,
+      name: roleDetails?.name || user?.name || 'User',
+      tier: roleToTier(currentRole)
+    }));
+  }, [currentRole, roleDetails, user]);
+
+  const navItems = [
+    { href: '/', label: 'Dashboard', icon: '🏠', alwaysVisible: true },
+    { href: '/courses', label: 'All Courses', icon: '📚' },
+    { href: '/library', label: 'Library (Beta)', icon: '📖' },
+    { href: '/experts', label: 'Expert Directory', icon: '👥' },
+    { href: '/dmo', label: 'Daily Method (DMO)', icon: '📋' },
+    { href: '/affiliate', label: 'Affiliate Portal', icon: '🔗' },
+    { href: '/stats', label: 'Statistics', icon: '📊' },
+    { href: '/leads', label: 'Leads', icon: '👤' },
+    { href: '/profile', label: 'Profile', icon: '⚙️', alwaysVisible: true }
+  ];
+
   const closeMobileMenu = () => {
     if (setIsMobileOpen) {
       setIsMobileOpen(false);
     }
   };
 
-  // Filter menu items based on role directly
-  const visibleMenuItems = menuItems.filter(item => {
-    // Admin sees everything
-    if (currentRole === 'admin') return true;
-    
-    // Check specific items by name for clarity
-    switch (item.name) {
-      case 'Dashboard':
-      case 'All Courses':  
-      case 'Profile':
-        return true; // Everyone sees these
-      
-      case 'Library (Beta)':
-        // Only show if feature flag is enabled
-        return process.env.NEXT_PUBLIC_LIBRARY_BETA === 'true';
-      
-      case 'Expert Directory':
-      case 'Daily Method (DMO)':
-      case 'Statistics':
-      case 'Leads':
-        // Only paid members (monthly/annual) can see these
-        return currentRole === 'monthly' || currentRole === 'annual';
-      
-      case 'Affiliate Portal':
-        // Paid members and downsell users can see this
-        return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
-      
-      case 'Admin':
-        // Only admin role
-        return currentRole === 'admin';
-      
-      default:
-        return false;
-    }
-  });
-  
-  // Debug logging - ALWAYS log to see what's happening
-  useEffect(() => {
-    console.log('=== SIDEBAR DEBUG ===');
-    console.log('Current role:', currentRole);
-    console.log('Permissions object:', permissions);
-    console.log('All menu items:', menuItems.map(i => i.name));
-    console.log('Filtered menu items:', visibleMenuItems.map(i => i.name));
-    console.log('Should see DMO?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('Should see Expert Directory?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('===================');
-  }, [currentRole, permissions, visibleMenuItems]);
-
   const isActive = (href: string) => {
-    if (href === '/courses') {
-      return router.pathname === '/courses' || router.pathname.startsWith('/courses/');
+    if (href === '/') {
+      return router.pathname === '/';
     }
-    return router.pathname === href;
+    return router.pathname.startsWith(href);
   };
 
   return (
@@ -178,83 +88,98 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         />
       )}
 
-      {/* Sidebar drawer */}
+      {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] theme-sidebar shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } overflow-hidden flex flex-col`}>
+      } overflow-hidden flex flex-col theme-border border-r`}>
         
-        {/* Brand row */}
-        <div className="flex items-center p-4 border-b theme-border theme-sidebar">
-          <div 
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold mr-2 text-lg"
-            style={{ backgroundColor: 'var(--color-primary)' }}
-          >
-            ⚡
+        {/* Header */}
+        <div className="p-6 theme-border border-b">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">⚡</span>
+            </div>
+            <h1 className="text-xl font-bold theme-text-primary">DIGITAL ERA</h1>
           </div>
-          <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
         </div>
 
-        {/* Nav items */}
-        <nav className="flex-1 py-4">
-          {visibleMenuItems.map((item, index) => (
-            <Link key={item.href} href={item.href}>
-              <a
-                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl ${
-                  isActive(item.href) 
-                    ? 'text-white shadow-md' 
-                    : 'theme-text-primary theme-hover'
-                }`}
-                style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
-                onClick={closeMobileMenu}
-              >
-                <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-white' : 'theme-text-secondary'
-                }`}></i>
-                <span className="font-medium">{item.name}</span>
-              </a>
-            </Link>
-          ))}
+        {/* User Tier Display - SYNCHRONIZED WITH HEADER */}
+        <div className="px-6 py-3 theme-bg-secondary theme-border border-b">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-xs theme-text-tertiary">Current Plan</div>
+              <div className="font-semibold text-sm theme-text-primary">
+                {roleDetails?.name || getTierDisplayName(safeUser?.tier)}
+              </div>
+            </div>
+            {/* Debug indicator in development */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="text-xs theme-text-muted">
+                {currentRole}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          {navItems.map((item) => {
+            const userHasAccess = item.alwaysVisible || hasAccess(safeUser?.tier, item.href);
+            
+            return (
+              <div key={item.href} className="relative">
+                <Link href={item.href}>
+                  <a 
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 sidebar-nav-item ${ 
+                      isActive(item.href) 
+                        ? 'active' 
+                        : userHasAccess
+                        ? 'theme-text-secondary'
+                        : 'restricted theme-text-muted'
+                    }`}
+                    onClick={(e) => {
+                      if (!userHasAccess) {
+                        e.preventDefault();
+                        console.log(`Access denied to ${item.href} for tier ${safeUser?.tier}`);
+                        return;
+                      }
+                      closeMobileMenu();
+                    }}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {!userHasAccess && (
+                      <span className="text-xs px-2 py-1 rounded font-medium" style={{ backgroundColor: 'var(--color-warning)', color: 'var(--text-on-warning)' }}>
+                        🔒
+                      </span>
+                    )}
+                  </a>
+                </Link>
+              </div>
+            );
+          })}
         </nav>
 
-        {/* Feedback Button - Only visible on mobile */}
-        <div className="lg:hidden border-t theme-border theme-sidebar">
-          {onFeedbackClick && (
-            <button
-              onClick={() => {
-                onFeedbackClick();
-                closeMobileMenu();
-              }}
-              className="w-full flex items-center px-4 py-3 text-sm theme-text-primary theme-hover transition-colors min-h-[48px]"
-            >
-              <i className="fas fa-comment text-base mr-4 w-5 flex-shrink-0 theme-text-secondary"></i>
-              <span className="font-medium">Send Feedback</span>
-            </button>
-          )}
-          
-          {/* Mobile Dev Tools */}
-          <MobileRoleSwitcher onSelect={closeMobileMenu} />
-        </div>
-
-        {/* User Profile */}
-        <div className="border-t theme-border theme-sidebar">
+        {/* User Section */}
+        <div className="p-4 theme-border border-t">
           <Link href="/profile">
-            <a className="flex items-center p-4 theme-hover transition-colors">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
-                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            <a 
+              className="flex items-center space-x-3 sidebar-nav-item rounded-lg p-2"
+              onClick={closeMobileMenu}
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                {safeUser?.name?.charAt(0)?.toUpperCase() || 'U'}
               </div>
               <div className="flex-1">
-                <div className="theme-text-primary text-sm font-medium">{user.name}</div>
-                <div className="theme-text-secondary text-xs">View Profile</div>
+                <div className="text-sm font-medium theme-text-primary">
+                  {safeUser?.name || 'Guest User'}
+                </div>
+                <div className="text-xs theme-text-secondary">View Profile</div>
               </div>
             </a>
           </Link>
         </div>
       </div>
-
-
     </>
   );
 }
