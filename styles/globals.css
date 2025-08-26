@@ -250,114 +250,61 @@
 }
 
 /* ==========================================================================
-   MINIMAL GREYSCALE THEME
+   LUXURY THEME
    ========================================================================== */
-[data-theme="minimal"] {
+[data-theme="luxury"] {
   /* Background & Surfaces */
-  --bg: 255 255 255;
-  --surface: 248 249 251;
-  --surface-2: 241 243 247;
-  --surface-3: 233 237 244;
-  --card: 255 255 255;
-  --popover: 255 255 255;
-  --border: 226 231 239;
-  --ring: 17 24 39;
-  --shadow-color: 16 24 40;
-
-  /* Text Colors */
-  --text-primary: 11 18 32;
-  --text-secondary: 59 68 83;
-  --text-tertiary: 95 107 122;
-  --text-inverse: 255 255 255;
-  --text-muted: 123 135 148;
-
-  /* Action Colors */
-  --primary: 17 24 39;
-  --primary-foreground: 255 255 255;
-  --secondary: 75 85 99;
-  --secondary-foreground: 255 255 255;
-  --accent: 37 99 235;
-  --accent-foreground: 255 255 255;
-  
-  /* Status Colors */
-  --info: 2 132 199;
-  --info-foreground: 0 16 25;
-  --success: 22 163 74;
-  --success-foreground: 0 17 10;
-  --warning: 202 138 4;
-  --warning-foreground: 26 18 0;
-  --destructive: 185 28 28;
-  --destructive-foreground: 255 245 245;
-
-  /* Form & Input Colors */
-  --muted: 241 243 247;
-  --muted-foreground: 95 107 122;
-  --input: 217 223 232;
-  --input-placeholder: 138 149 165;
-  --disabled: 236 239 245;
-  --disabled-foreground: 154 166 180;
-
-  /* Page Canvas Tokens */
-  --page-bg: 248 249 251;
-  --page-surface: 255 255 255;
-  --page-border: 226 231 239;
-  --page-shadow-color: 16 24 40;
-}
-
-/* ==========================================================================
-   NEON POP THEME
-   ========================================================================== */
-[data-theme="neon"] {
-  /* Background & Surfaces */
-  --bg: 11 15 23;
-  --surface: 15 20 32;
-  --surface-2: 20 26 41;
-  --surface-3: 25 32 51;
-  --card: 15 20 32;
-  --popover: 15 20 32;
-  --border: 40 50 74;
-  --ring: 167 139 250;
+  --bg: 10 10 10;
+  --surface: 14 14 16;
+  --surface-2: 20 20 23;
+  --surface-3: 27 27 32;
+  --card: 16 16 19;
+  --popover: 16 16 19;
+  --border: 42 42 48;
+  --ring: 245 197 66;
   --shadow-color: 0 0 0;
 
   /* Text Colors */
-  --text-primary: 231 236 243;
-  --text-secondary: 195 204 218;
-  --text-tertiary: 154 166 187;
-  --text-inverse: 11 15 23;
-  --text-muted: 138 148 166;
+  --text-primary: 243 243 246;
+  --text-secondary: 207 210 217;
+  --text-tertiary: 168 172 183;
+  --text-inverse: 10 10 10;
+  --text-muted: 156 163 175;
 
   /* Action Colors */
-  --primary: 167 139 250;
-  --primary-foreground: 20 10 51;
-  --secondary: 34 211 238;
-  --secondary-foreground: 7 18 23;
-  --accent: 34 197 94;
-  --accent-foreground: 6 21 13;
+  --primary: 245 197 66;
+  --primary-foreground: 35 28 0;
+  --secondary: 157 123 255;
+  --secondary-foreground: 20 10 51;
+  --accent: 61 214 166;
+  --accent-foreground: 6 21 15;
   
   /* Status Colors */
-  --info: 96 165 250;
-  --info-foreground: 0 16 34;
-  --success: 52 211 153;
-  --success-foreground: 6 21 13;
-  --warning: 245 158 11;
-  --warning-foreground: 26 18 0;
-  --destructive: 249 115 22;
-  --destructive-foreground: 26 10 0;
+  --info: 123 179 255;
+  --info-foreground: 0 18 31;
+  --success: 57 255 136;
+  --success-foreground: 0 25 11;
+  --warning: 255 209 102;
+  --warning-foreground: 36 26 0;
+  --destructive: 255 107 107;
+  --destructive-foreground: 42 0 0;
 
   /* Form & Input Colors */
-  --muted: 20 26 41;
-  --muted-foreground: 154 166 187;
-  --input: 39 50 72;
-  --input-placeholder: 125 136 155;
-  --disabled: 26 33 51;
-  --disabled-foreground: 126 138 161;
+  --muted: 19 19 23;
+  --muted-foreground: 191 195 204;
+  --input: 47 47 54;
+  --input-placeholder: 139 144 160;
+  --disabled: 24 24 29;
+  --disabled-foreground: 140 145 160;
 
   /* Page Canvas Tokens */
-  --page-bg: 15 20 32;
-  --page-surface: 20 26 41;
-  --page-border: 40 50 74;
+  --page-bg: 14 14 16;
+  --page-surface: 20 20 23;
+  --page-border: 42 42 48;
   --page-shadow-color: 0 0 0;
 }
+
+
 
 /* ==========================================================================
    COMPONENT UTILITIES
@@ -828,6 +775,149 @@
 
   .hover-overlay:hover::after {
     background-color: rgb(var(--primary) / 0.08);
+  }
+
+  /* ==========================================================================
+     DASHBOARD COMPONENT FIXES - Critical Readability Improvements
+     ========================================================================== */
+  
+  /* Tab Navigation System */
+  .tab-container {
+    background: rgb(var(--surface));
+  }
+
+  .tab:not(.active) {
+    background: transparent;
+    color: rgb(var(--text-secondary));
+  }
+
+  .tab:hover:not(.active) {
+    background: rgb(var(--surface-2));
+    color: rgb(var(--text-secondary));
+  }
+
+  .tab.active {
+    background: rgb(var(--surface-2));
+    color: rgb(var(--text-primary));
+    border-bottom: 2px solid rgb(var(--primary));
+  }
+
+  .tab svg {
+    color: inherit;
+  }
+
+  /* Search Bar & Chips */
+  .search-input {
+    background: rgb(var(--surface));
+    border: 1px solid rgb(var(--input));
+    color: rgb(var(--text-primary));
+  }
+
+  .search-input::placeholder {
+    color: rgb(var(--input-placeholder));
+  }
+
+  .search-input:focus {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+
+  .chip {
+    background: rgb(var(--muted));
+    color: rgb(var(--muted-foreground));
+  }
+
+  .chip:hover {
+    background: rgb(var(--surface-2));
+  }
+
+  /* Enhanced Cards & Statistics */
+  .card-enhanced {
+    background: rgb(var(--card));
+    border: 1px solid rgb(var(--border));
+    box-shadow: 0 1px 3px rgb(var(--shadow-color) / 0.1);
+  }
+
+  .card-title {
+    color: rgb(var(--text-primary));
+  }
+
+  .card-meta {
+    color: rgb(var(--text-secondary));
+  }
+
+  /* Progress bars */
+  .progress-track-enhanced {
+    background: rgb(var(--surface-2));
+  }
+
+  .progress-bar-enhanced {
+    background: rgb(var(--primary));
+  }
+
+  .progress-text {
+    color: rgb(var(--text-secondary));
+  }
+
+  /* Info Banner Strip */
+  .info-banner {
+    background: color-mix(in srgb, rgb(var(--info)) 10%, rgb(var(--bg)));
+    color: rgb(var(--info-foreground));
+  }
+
+  .info-banner svg {
+    color: rgb(var(--info));
+  }
+
+  .info-banner a {
+    color: rgb(var(--info-foreground));
+    text-decoration: underline;
+  }
+
+  /* Call-to-Action Section */
+  .cta-container {
+    background: rgb(var(--card));
+  }
+
+  .cta-button {
+    background: rgb(var(--primary));
+    color: rgb(var(--primary-foreground));
+  }
+
+  .cta-button:hover {
+    filter: brightness(0.94);
+  }
+
+  .cta-button:active {
+    filter: brightness(0.88);
+  }
+
+  /* Enhanced Table Components */
+  .table-header-enhanced {
+    background: rgb(var(--surface-2));
+    color: rgb(var(--text-secondary));
+  }
+
+  .table-row-enhanced:hover {
+    background: rgb(var(--surface-2));
+  }
+
+  .table-row-enhanced.selected {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: -2px;
+  }
+
+  /* Focus States - WCAG Compliance */
+  .focusable:focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Disabled States */
+  .disabled {
+    background: rgb(var(--disabled));
+    color: rgb(var(--disabled-foreground));
+    cursor: not-allowed;
   }
 
   /* Toast Notifications */

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export type Theme = 'light' | 'dark' | 'feminine' | 'high-contrast' | 'minimal' | 'neon';
+export type Theme = 'light' | 'dark' | 'feminine' | 'high-contrast' | 'luxury';
 
 interface ThemeContextType {
   theme: Theme;
@@ -43,16 +43,11 @@ const themes: ThemeInfo[] = [
     accessibility: 'WCAG AAA compliant - Enhanced visibility for low vision users',
   },
   {
-    id: 'minimal',
-    name: 'Minimal Greyscale',
-    description: 'Distraction-free monochromatic design',
-    icon: '⚪',
-  },
-  {
-    id: 'neon',
-    name: 'Neon Pop',
-    description: 'Vibrant colors for an energetic feel',
-    icon: '⚡',
+    id: 'luxury',
+    name: 'Luxury',
+    description: 'Elegant black and gold theme for premium experience',
+    icon: '👑',
+    accessibility: 'WCAG AA compliant - Premium dark theme with gold accents',
   },
 ];
 

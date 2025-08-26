@@ -31,6 +31,8 @@ export default function ThemeQA() {
   const sections = [
     { id: 'canvas', name: 'Page Canvas' },
     { id: 'buttons', name: 'Buttons' },
+    { id: 'tabs', name: 'Tabs' },
+    { id: 'banners', name: 'Banners' },
     { id: 'inputs', name: 'Inputs' },
     { id: 'cards', name: 'Cards' },
     { id: 'badges', name: 'Badges' },
@@ -188,68 +190,316 @@ export default function ThemeQA() {
     </div>
   );
 
-  const ButtonShowcase = () => (
+  const TabsShowcase = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-3">Button Variants</h3>
-        <div className="flex flex-wrap gap-3">
-          <button className="btn btn-primary btn-md">Primary Button</button>
-          <button className="btn btn-secondary btn-md">Secondary Button</button>
-          <button className="btn btn-ghost btn-md">Ghost Button</button>
-          <button className="btn btn-destructive btn-md">Destructive Button</button>
-          <button className="btn btn-outline btn-md">Outline Button</button>
-        </div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Tab Navigation States</h3>
+        <p className="text-text-secondary mb-4">
+          Comprehensive tab system with proper focus, hover, active, and disabled states.
+        </p>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-3">Button States</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-sm text-text-secondary mb-2">Normal</p>
-            <button className="btn btn-primary btn-md w-full">Button</button>
-          </div>
-          <div>
-            <p className="text-sm text-text-secondary mb-2">Hover (CSS :hover)</p>
-            <button className="btn btn-primary btn-md w-full hover:opacity-90">Hover State</button>
-          </div>
-          <div>
-            <p className="text-sm text-text-secondary mb-2">Focus</p>
-            <button className="btn btn-primary btn-md w-full focus:ring-2 focus:ring-ring">Focus State</button>
-          </div>
-          <div>
-            <p className="text-sm text-text-secondary mb-2">Disabled</p>
-            <button disabled className="btn btn-primary btn-md w-full">Disabled</button>
+        <h4 className="text-md font-semibold text-text-primary mb-3">Standard Tab Navigation</h4>
+        <div className="tab-container p-1 rounded-lg">
+          <div className="flex space-x-1">
+            <button className="tab active px-4 py-2 text-sm font-medium rounded-md transition-all">
+              Active Tab
+            </button>
+            <button className="tab px-4 py-2 text-sm font-medium rounded-md transition-all hover:bg-surface-2">
+              Inactive Tab
+            </button>
+            <button className="tab px-4 py-2 text-sm font-medium rounded-md transition-all hover:bg-surface-2">
+              Another Tab
+            </button>
+            <button className="tab disabled px-4 py-2 text-sm font-medium rounded-md opacity-60 cursor-not-allowed">
+              Disabled Tab
+            </button>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-3">Button Sizes</h3>
-        <div className="flex items-center gap-3">
-          <button className="btn btn-primary btn-sm">Small</button>
-          <button className="btn btn-primary btn-md">Medium</button>
-          <button className="btn btn-primary btn-lg">Large</button>
+        <h4 className="text-md font-semibold text-text-primary mb-3">Enhanced Tab Navigation</h4>
+        <div className="tab-enhanced">
+          <div className="flex space-x-1">
+            <button className="tab-trigger focusable" data-state="active">Canvas</button>
+            <button className="tab-trigger focusable">Components</button>
+            <button className="tab-trigger focusable">Themes</button>
+            <button className="tab-trigger focusable" disabled>Disabled</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const BannersShowcase = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Information Banners</h3>
+        <p className="text-text-secondary mb-4">
+          Contextual banners with proper status colors, inline links, and accessibility features.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="info-banner rounded-lg p-4 flex items-start space-x-3">
+          <InformationCircleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <h5 className="font-medium mb-1">Information Banner</h5>
+            <p className="text-sm">
+              This is an informational message with <a href="#" className="underline hover:no-underline">inline links</a> for additional context.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg p-4 flex items-start space-x-3" style={{ background: 'color-mix(in srgb, rgb(var(--success)) 10%, rgb(var(--bg)))', color: 'rgb(var(--success-foreground))' }}>
+          <CheckIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--success))' }} />
+          <div>
+            <h5 className="font-medium mb-1">Success Banner</h5>
+            <p className="text-sm">
+              Your action was completed successfully. <a href="#" className="underline hover:no-underline">View details</a> or continue working.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg p-4 flex items-start space-x-3" style={{ background: 'color-mix(in srgb, rgb(var(--warning)) 10%, rgb(var(--bg)))', color: 'rgb(var(--warning-foreground))' }}>
+          <ExclamationTriangleIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--warning))' }} />
+          <div>
+            <h5 className="font-medium mb-1">Warning Banner</h5>
+            <p className="text-sm">
+              Please review these important changes. <a href="#" className="underline hover:no-underline">Learn more</a> about the implications.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg p-4 flex items-start space-x-3" style={{ background: 'color-mix(in srgb, rgb(var(--destructive)) 10%, rgb(var(--bg)))', color: 'rgb(var(--destructive-foreground))' }}>
+          <XMarkIcon className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: 'rgb(var(--destructive))' }} />
+          <div>
+            <h5 className="font-medium mb-1">Error Banner</h5>
+            <p className="text-sm">
+              An error occurred while processing your request. <a href="#" className="underline hover:no-underline">Contact support</a> if the issue persists.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const ButtonShowcase = () => (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Complete Button Matrix</h3>
+        <p className="text-text-secondary mb-6">
+          All button variants in every state for comprehensive testing and accessibility validation.
+        </p>
+
+        {/* Button Matrix - All Variants x All States */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-border">
+            <thead>
+              <tr className="bg-surface-2">
+                <th className="border border-border p-3 text-left text-text-primary font-medium">Variant</th>
+                <th className="border border-border p-3 text-center text-text-primary font-medium">Normal</th>
+                <th className="border border-border p-3 text-center text-text-primary font-medium">Hover</th>
+                <th className="border border-border p-3 text-center text-text-primary font-medium">Focus</th>
+                <th className="border border-border p-3 text-center text-text-primary font-medium">Active</th>
+                <th className="border border-border p-3 text-center text-text-primary font-medium">Disabled</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Primary</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-primary btn-md">Primary</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-primary btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-primary btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-primary btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-primary btn-md">Disabled</button>
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Secondary</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-secondary btn-md">Secondary</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-secondary btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-secondary btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-secondary btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-secondary btn-md">Disabled</button>
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Accent</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-accent btn-md">Accent</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-accent btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-accent btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-accent btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-accent btn-md">Disabled</button>
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Destructive</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-destructive btn-md">Destructive</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-destructive btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-destructive btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-destructive btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-destructive btn-md">Disabled</button>
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Ghost</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-ghost btn-md">Ghost</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-ghost btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-ghost btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-ghost btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-ghost btn-md">Disabled</button>
+                </td>
+              </tr>
+              <tr>
+                <td className="border border-border p-3 text-text-primary font-medium bg-surface">Outline</td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-outline btn-md">Outline</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-outline btn-md hover-darken-6">Hover</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-outline btn-md focusable">Focus</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button className="btn btn-outline btn-md active-darken-10">Active</button>
+                </td>
+                <td className="border border-border p-3 text-center">
+                  <button disabled className="btn btn-outline btn-md">Disabled</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Button Sizes Comparison</h3>
+        <div className="space-y-4">
+          {['primary', 'secondary', 'outline'].map((variant) => (
+            <div key={variant} className="flex items-center gap-4">
+              <div className="w-20 text-sm text-text-secondary capitalize">{variant}:</div>
+              <button className={`btn btn-${variant} btn-sm`}>Small</button>
+              <button className={`btn btn-${variant} btn-md`}>Medium</button>
+              <button className={`btn btn-${variant} btn-lg`}>Large</button>
+            </div>
+          ))}
         </div>
       </div>
 
       <div>
         <h3 className="text-lg font-semibold text-text-primary mb-3">Buttons with Icons</h3>
-        <div className="flex flex-wrap gap-3">
-          <button className="btn btn-primary btn-md">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <button className="btn btn-primary btn-md flex items-center gap-2">
             <HeartIcon className="w-4 h-4" />
             Like
           </button>
-          <button className="btn btn-secondary btn-md">
+          <button className="btn btn-secondary btn-md flex items-center gap-2">
             <StarIcon className="w-4 h-4" />
             Favorite
           </button>
-          <button className="btn btn-ghost btn-md">
+          <button className="btn btn-accent btn-md flex items-center gap-2">
             <EyeIcon className="w-4 h-4" />
             View
           </button>
-          <button className="btn btn-destructive btn-md">
+          <button className="btn btn-destructive btn-md flex items-center gap-2">
             <TrashIcon className="w-4 h-4" />
             Delete
+          </button>
+          <button className="btn btn-ghost btn-md flex items-center gap-2">
+            <PencilIcon className="w-4 h-4" />
+            Edit
+          </button>
+          <button className="btn btn-outline btn-md flex items-center gap-2">
+            <CogIcon className="w-4 h-4" />
+            Settings
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Icon-Only Buttons</h3>
+        <div className="flex flex-wrap gap-3">
+          <button className="btn btn-primary btn-md w-10 h-10 p-0 flex items-center justify-center">
+            <BellIcon className="w-4 h-4" />
+          </button>
+          <button className="btn btn-secondary btn-md w-10 h-10 p-0 flex items-center justify-center">
+            <UserIcon className="w-4 h-4" />
+          </button>
+          <button className="btn btn-ghost btn-md w-10 h-10 p-0 flex items-center justify-center">
+            <CogIcon className="w-4 h-4" />
+          </button>
+          <button className="btn btn-outline btn-md w-10 h-10 p-0 flex items-center justify-center">
+            <PencilIcon className="w-4 h-4" />
+          </button>
+          <button disabled className="btn btn-primary btn-md w-10 h-10 p-0 flex items-center justify-center">
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Loading State Buttons</h3>
+        <div className="flex flex-wrap gap-3">
+          <button disabled className="btn btn-primary btn-md flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
+            Saving...
+          </button>
+          <button disabled className="btn btn-secondary btn-md flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-foreground"></div>
+            Loading...
+          </button>
+          <button disabled className="btn btn-outline btn-md flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+            Processing...
           </button>
         </div>
       </div>
@@ -257,50 +507,161 @@ export default function ThemeQA() {
   );
 
   const InputShowcase = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-3">Text Inputs</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Enhanced Input States</h3>
+        <p className="text-text-secondary mb-6">
+          Comprehensive input field variations showing filled, placeholder, error, disabled, and focus states for accessibility testing.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Normal Input
+              Placeholder State
             </label>
             <input
               type="text"
-              placeholder="Enter text here..."
-              className="input"
+              placeholder="Enter your email address..."
+              className="input focusable"
             />
+            <p className="text-xs text-text-tertiary mt-1">Empty field with placeholder text</p>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Focused Input
+              Filled State
             </label>
             <input
               type="text"
-              placeholder="This input is focused"
-              className="input ring-2 ring-ring"
+              value="john.doe@example.com"
+              className="input focusable"
+              readOnly
             />
+            <p className="text-xs text-text-tertiary mt-1">Field with user input</p>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
-              Disabled Input
+              Focus State
             </label>
             <input
               type="text"
-              placeholder="Disabled input"
-              disabled
-              className="input"
+              placeholder="Click to focus..."
+              className="input focusable ring-2 ring-ring"
             />
+            <p className="text-xs text-text-tertiary mt-1">Active focus with ring indicator</p>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
               Error State
             </label>
             <input
-              type="text"
-              placeholder="Error state"
-              className="input ring-2 ring-destructive"
+              type="email"
+              value="invalid-email"
+              className="input ring-2 ring-destructive border-destructive"
             />
+            <p className="text-xs text-destructive mt-1">Invalid email format</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              Disabled State
+            </label>
+            <input
+              type="text"
+              placeholder="Disabled input"
+              disabled
+              className="input disabled"
+            />
+            <p className="text-xs text-text-tertiary mt-1">Non-interactive field</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-2">
+              Success State
+            </label>
+            <input
+              type="email"
+              value="user@example.com"
+              className="input ring-2 ring-success border-success"
+              readOnly
+            />
+            <p className="text-xs text-success mt-1">✓ Valid email address</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Input Types & Variations</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Search Input
+              </label>
+              <div className="relative">
+                <input
+                  type="search"
+                  placeholder="Search courses..."
+                  className="input search-input pl-10 focusable"
+                />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-input-placeholder">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Password Input
+              </label>
+              <input
+                type="password"
+                placeholder="Enter password..."
+                className="input focusable"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Number Input
+              </label>
+              <input
+                type="number"
+                placeholder="Enter amount..."
+                min="0"
+                step="0.01"
+                className="input focusable"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Textarea Field
+              </label>
+              <textarea
+                rows={4}
+                placeholder="Enter your message here..."
+                className="input focusable resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Select Dropdown
+              </label>
+              <select className="input focusable">
+                <option value="">Choose an option</option>
+                <option value="beginner">Beginner Level</option>
+                <option value="intermediate">Intermediate Level</option>
+                <option value="advanced">Advanced Level</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -510,106 +871,262 @@ export default function ThemeQA() {
   );
 
   const AlertShowcase = () => (
-    <div className="space-y-4">
-      <div className="alert alert-info">
-        <InformationCircleIcon className="w-5 h-5" />
-        <div>
-          <h4 className="font-medium">Information</h4>
-          <p className="text-sm mt-1">This is an informational alert with some helpful content.</p>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Alert Components</h3>
+        <p className="text-text-secondary mb-4">
+          Status alerts with proper color contrast and text readability across all themes.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <div className="alert alert-info">
+          <InformationCircleIcon className="w-5 h-5" />
+          <div>
+            <h4 className="font-medium text-info-foreground">Information Alert</h4>
+            <p className="text-sm mt-1 text-info-foreground opacity-90">This is an informational alert with enhanced text contrast and readability.</p>
+          </div>
+        </div>
+
+        <div className="alert alert-success">
+          <CheckIcon className="w-5 h-5" />
+          <div>
+            <h4 className="font-medium text-success-foreground">Success Alert</h4>
+            <p className="text-sm mt-1 text-success-foreground opacity-90">Your action was completed successfully! All changes have been saved.</p>
+          </div>
+        </div>
+
+        <div className="alert alert-warning">
+          <ExclamationTriangleIcon className="w-5 h-5" />
+          <div>
+            <h4 className="font-medium text-warning-foreground">Warning Alert</h4>
+            <p className="text-sm mt-1 text-warning-foreground opacity-90">Please review this important warning message before proceeding with your action.</p>
+          </div>
+        </div>
+
+        <div className="alert alert-destructive">
+          <XMarkIcon className="w-5 h-5" />
+          <div>
+            <h4 className="font-medium text-destructive-foreground">Error Alert</h4>
+            <p className="text-sm mt-1 text-destructive-foreground opacity-90">An error occurred while processing your request. Please try again or contact support.</p>
+          </div>
         </div>
       </div>
 
-      <div className="alert alert-success">
-        <CheckIcon className="w-5 h-5" />
-        <div>
-          <h4 className="font-medium">Success</h4>
-          <p className="text-sm mt-1">Your action was completed successfully!</p>
-        </div>
-      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Enhanced Alerts with Actions</h3>
+        <div className="space-y-4">
+          <div className="alert-enhanced alert-info">
+            <InformationCircleIcon className="w-5 h-5" />
+            <div className="flex-1">
+              <h5 className="font-medium text-info-foreground">System Maintenance</h5>
+              <p className="text-sm mt-1 text-info-foreground opacity-90">
+                Scheduled maintenance will occur tonight from 2:00 AM to 4:00 AM EST.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button className="text-xs px-3 py-1 rounded bg-info/20 text-info-foreground hover:bg-info/30 transition-colors">
+                  Learn More
+                </button>
+                <button className="text-xs px-3 py-1 rounded bg-transparent text-info-foreground hover:bg-info/10 transition-colors">
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
 
-      <div className="alert alert-warning">
-        <ExclamationTriangleIcon className="w-5 h-5" />
-        <div>
-          <h4 className="font-medium">Warning</h4>
-          <p className="text-sm mt-1">Please review this important warning message.</p>
-        </div>
-      </div>
-
-      <div className="alert alert-destructive">
-        <XMarkIcon className="w-5 h-5" />
-        <div>
-          <h4 className="font-medium">Error</h4>
-          <p className="text-sm mt-1">An error occurred while processing your request.</p>
+          <div className="alert-enhanced alert-success">
+            <CheckIcon className="w-5 h-5" />
+            <div className="flex-1">
+              <h5 className="font-medium text-success-foreground">Course Completed!</h5>
+              <p className="text-sm mt-1 text-success-foreground opacity-90">
+                Congratulations! You've successfully completed "Advanced React Patterns".
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button className="text-xs px-3 py-1 rounded bg-success/20 text-success-foreground hover:bg-success/30 transition-colors">
+                  View Certificate
+                </button>
+                <button className="text-xs px-3 py-1 rounded bg-transparent text-success-foreground hover:bg-success/10 transition-colors">
+                  Next Course
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 
   const TableShowcase = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-text-primary mb-3">Data Table</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Enhanced Data Tables</h3>
+        <p className="text-text-secondary mb-6">
+          Tables with enhanced headers, hover states, and selection indicators using semantic tokens.
+        </p>
+
         <div className="overflow-x-auto">
-          <table className="table">
+          <table className="table-enhanced w-full border-collapse border border-border rounded-lg overflow-hidden">
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
+              <tr className="table-header-enhanced">
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">
+                  <input type="checkbox" className="w-4 h-4 text-primary bg-surface border-input rounded focusable" />
+                </th>
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">Name</th>
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">Email</th>
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">Role</th>
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">Status</th>
+                <th className="text-left p-4 font-medium text-text-secondary border-b border-border">Last Login</th>
+                <th className="text-center p-4 font-medium text-text-secondary border-b border-border">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
+              <tr className="table-row-enhanced hover:bg-surface-2 transition-colors">
+                <td className="p-4">
+                  <input type="checkbox" className="w-4 h-4 text-primary bg-surface border-input rounded focusable" />
+                </td>
+                <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <UserIcon className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-text-secondary" />
                     </div>
-                    John Doe
+                    <div>
+                      <div className="font-medium text-text-primary">John Doe</div>
+                      <div className="text-xs text-text-tertiary">ID: 12345</div>
+                    </div>
                   </div>
                 </td>
-                <td>john@example.com</td>
-                <td>Admin</td>
-                <td>
+                <td className="p-4 text-text-secondary">john.doe@example.com</td>
+                <td className="p-4">
+                  <div className="badge badge-primary">Admin</div>
+                </td>
+                <td className="p-4">
                   <div className="badge badge-success">Active</div>
                 </td>
-                <td>
-                  <div className="flex gap-1">
-                    <button className="btn btn-ghost btn-sm">
+                <td className="p-4 text-text-secondary text-sm">2 hours ago</td>
+                <td className="p-4">
+                  <div className="flex justify-center gap-1">
+                    <button className="btn btn-ghost btn-sm focusable" title="Edit user">
                       <PencilIcon className="w-4 h-4" />
                     </button>
-                    <button className="btn btn-ghost btn-sm text-destructive">
+                    <button className="btn btn-ghost btn-sm text-destructive focusable" title="Delete user">
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
               </tr>
-              <tr>
-                <td>
+              <tr className="table-row-enhanced hover:bg-surface-2 transition-colors">
+                <td className="p-4">
+                  <input type="checkbox" className="w-4 h-4 text-primary bg-surface border-input rounded focusable" />
+                </td>
+                <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <UserIcon className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-text-secondary" />
                     </div>
-                    Jane Smith
+                    <div>
+                      <div className="font-medium text-text-primary">Jane Smith</div>
+                      <div className="text-xs text-text-tertiary">ID: 67890</div>
+                    </div>
                   </div>
                 </td>
-                <td>jane@example.com</td>
-                <td>User</td>
-                <td>
+                <td className="p-4 text-text-secondary">jane.smith@example.com</td>
+                <td className="p-4">
+                  <div className="badge badge-secondary">Instructor</div>
+                </td>
+                <td className="p-4">
                   <div className="badge badge-warning">Pending</div>
                 </td>
-                <td>
-                  <div className="flex gap-1">
-                    <button className="btn btn-ghost btn-sm">
+                <td className="p-4 text-text-secondary text-sm">1 day ago</td>
+                <td className="p-4">
+                  <div className="flex justify-center gap-1">
+                    <button className="btn btn-ghost btn-sm focusable" title="Edit user">
                       <PencilIcon className="w-4 h-4" />
                     </button>
-                    <button className="btn btn-ghost btn-sm text-destructive">
+                    <button className="btn btn-ghost btn-sm text-destructive focusable" title="Delete user">
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
+              </tr>
+              <tr className="table-row-enhanced selected">
+                <td className="p-4">
+                  <input type="checkbox" checked className="w-4 h-4 text-primary bg-surface border-input rounded focusable" />
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-text-secondary" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-text-primary">Bob Johnson</div>
+                      <div className="text-xs text-text-tertiary">ID: 11111</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="p-4 text-text-secondary">bob.johnson@example.com</td>
+                <td className="p-4">
+                  <div className="badge badge-accent">Student</div>
+                </td>
+                <td className="p-4">
+                  <div className="badge badge-destructive">Suspended</div>
+                </td>
+                <td className="p-4 text-text-secondary text-sm">3 weeks ago</td>
+                <td className="p-4">
+                  <div className="flex justify-center gap-1">
+                    <button className="btn btn-ghost btn-sm focusable" title="Edit user">
+                      <PencilIcon className="w-4 h-4" />
+                    </button>
+                    <button className="btn btn-ghost btn-sm text-destructive focusable" title="Delete user">
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-text-primary mb-3">Compact Table Variation</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-3 text-sm font-medium text-text-secondary">Course</th>
+                <th className="text-left py-2 px-3 text-sm font-medium text-text-secondary">Progress</th>
+                <th className="text-left py-2 px-3 text-sm font-medium text-text-secondary">Grade</th>
+                <th className="text-left py-2 px-3 text-sm font-medium text-text-secondary">Due Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border hover:bg-surface transition-colors">
+                <td className="py-2 px-3 text-sm text-text-primary">React Fundamentals</td>
+                <td className="py-2 px-3">
+                  <div className="progress-container">
+                    <div className="progress-enhanced w-20">
+                      <div className="progress-bar" style={{width: '85%'}}></div>
+                    </div>
+                  </div>
+                </td>
+                <td className="py-2 px-3 text-sm">
+                  <span className="badge badge-success">A+</span>
+                </td>
+                <td className="py-2 px-3 text-sm text-text-secondary">Dec 15, 2024</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-surface transition-colors">
+                <td className="py-2 px-3 text-sm text-text-primary">Advanced JavaScript</td>
+                <td className="py-2 px-3">
+                  <div className="progress-container">
+                    <div className="progress-enhanced w-20">
+                      <div className="progress-bar" style={{width: '60%'}}></div>
+                    </div>
+                  </div>
+                </td>
+                <td className="py-2 px-3 text-sm">
+                  <span className="badge badge-warning">B</span>
+                </td>
+                <td className="py-2 px-3 text-sm text-text-secondary">Jan 20, 2025</td>
               </tr>
             </tbody>
           </table>
@@ -737,6 +1254,8 @@ export default function ThemeQA() {
     switch (tabActive) {
       case 'canvas': return <CanvasShowcase />;
       case 'buttons': return <ButtonShowcase />;
+      case 'tabs': return <TabsShowcase />;
+      case 'banners': return <BannersShowcase />;
       case 'inputs': return <InputShowcase />;
       case 'cards': return <CardShowcase />;
       case 'badges': return <BadgeShowcase />;
