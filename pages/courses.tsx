@@ -20,6 +20,7 @@ import { getFastStats } from '../lib/services/progressService';
 import { canStartCourse, courseLockState, getLockMessage, UserFlags, requiresUpgradeCTA, isTrialLike, isPremium } from '../lib/access';
 import { getCourseMapping, SECTION_NAMES } from '../lib/sections';
 import { useUserFlags } from '../lib/userFlags';
+import { useThemeCanvasV1, useThemeCanvasClass } from '../contexts/ThemeContext';
 
 export default function AllCourses() {
   const [data, setData] = useState<CourseData | null>(null);
@@ -43,6 +44,10 @@ export default function AllCourses() {
   
   // Check if user is trial-like using centralized logic
   const isTrialUser = isTrialLike(userFlags.role);
+
+  // Theme canvas integration
+  const canvasEnabled = useThemeCanvasV1();
+  const pageCanvasClass = useThemeCanvasClass('page-canvas', 'min-h-screen bg-gray-50');
 
   const handleIndividualPurchase = (course: any) => {
     setSelectedCourse(course);
@@ -147,7 +152,7 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center theme-button-success py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center bg-green-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-green-600 transition-colors text-sm w-full"
           >
             <i className="fas fa-redo mr-2"></i>Completed - Watch Again
           </a>
@@ -159,7 +164,7 @@ export default function AllCourses() {
         return (
           <a 
             href={`/courses/${course.id}`}
-            className="inline-flex items-center justify-center theme-button-primary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
+            className="inline-flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm w-full"
           >
             <i className="fas fa-play mr-2"></i>Continue ({completedLessons}/{course.lessonCount})
           </a>
@@ -169,7 +174,7 @@ export default function AllCourses() {
       return (
         <a 
           href={`/courses/${course.id}`}
-          className="inline-flex items-center justify-center theme-button-secondary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors text-sm w-full"
         >
           <i className="fas fa-rocket mr-2"></i>Start Course
         </a>
@@ -192,7 +197,7 @@ export default function AllCourses() {
       return (
         <button
           onClick={() => setShowPremiumModal(true)}
-          className="inline-flex items-center justify-center theme-button-primary py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-purple-700 transition-colors text-sm w-full"
         >
           <i className="fas fa-crown mr-2"></i>Upgrade to Premium
         </button>
@@ -203,7 +208,7 @@ export default function AllCourses() {
       return (
         <button
           onClick={() => handleMasterclassPurchase(course)}
-          className="inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm w-full"
+          className="inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm w-full"
         >
           <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - ${course.price || 97}
         </button>
@@ -250,12 +255,12 @@ export default function AllCourses() {
   if (loading) {
     return (
       <AppLayout user={{ id: 0, name: 'Loading...', avatarUrl: '' }}>
-        <div className="p-6 theme-bg">
+        <div className="p-6">
           <div className="animate-pulse">
-            <div className="h-8 theme-card rounded w-48 mb-6"></div>
+            <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="theme-card h-32 rounded-lg"></div>
+                <div key={i} className="bg-gray-200 h-32 rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -267,7 +272,7 @@ export default function AllCourses() {
   if (error || !data) {
     return (
       <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
-        <div className="p-6 theme-bg">
+        <div className="p-6">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error || 'Failed to load courses data'}
             <button 
@@ -293,14 +298,14 @@ export default function AllCourses() {
         user={data?.user || { id: 0, name: 'User', avatarUrl: '' }}
         onFeedbackClick={() => setFeedbackModalOpen(true)}
       >
-        <div className="min-h-screen theme-bg">
+        <div className={pageCanvasClass}>
           
           {/* Statistics Cards Row - Fixed height and alignment */}
-          <div className="theme-header theme-border border-b px-4 md:px-6 lg:px-8 py-5 mt-5">
+          <div className={canvasEnabled ? "page-content px-4 md:px-6 lg:px-8 py-5 mt-5" : "bg-white border-b border-gray-200 px-4 md:px-6 lg:px-8 py-5 mt-5"}>
             <div className="max-w-7xl mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Courses Completed Card */}
-                <div className="theme-card rounded-2xl shadow-sm p-5 flex items-center gap-4 h-[104px]">
+                <div className={canvasEnabled ? "card-item p-5 flex items-center gap-4 h-[104px]" : "bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]"}>
                   <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center">
                     <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
@@ -308,47 +313,47 @@ export default function AllCourses() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs theme-text-muted font-medium mb-1">Courses Completed</div>
-                    <div className="text-2xl font-bold theme-text-primary">{stats?.coursesCompleted || 0}/{stats?.coursesTotal || 3}</div>
+                    <div className="text-xs text-gray-500 font-medium mb-1">Courses Completed</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.coursesCompleted || 0}/{stats?.coursesTotal || 3}</div>
                   </div>
                 </div>
                 
                 {/* Learning Streak Card */}
-                <div className="theme-card rounded-2xl shadow-sm p-5 flex items-center gap-4 h-[104px]">
+                <div className={canvasEnabled ? "card-item p-5 flex items-center gap-4 h-[104px]" : "bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]"}>
                   <div className="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center">
                     <svg className="w-7 h-7 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12.75 2.25a.75.75 0 00-1.5 0v2.25a.75.75 0 001.5 0V2.25zm3.5 4.5a.75.75 0 00-1.061-1.061l-1.591 1.591a.75.75 0 001.061 1.061l1.591-1.591zm-7 0l1.591 1.591a.75.75 0 101.061-1.061L9.311 5.689A.75.75 0 008.25 6.75zm-.345 9.345l-1.591 1.591a.75.75 0 001.061 1.061l1.591-1.591a.75.75 0 00-1.061-1.061zm12.09 0a.75.75 0 10-1.061 1.061l1.591 1.591a.75.75 0 001.061-1.061l-1.591-1.591zM5.25 12a.75.75 0 01-.75.75H2.25a.75.75 0 010-1.5H4.5a.75.75 0 01.75.75zm16.5 0a.75.75 0 01-.75.75H19.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM12 17.25a5.25 5.25 0 100-10.5 5.25 5.25 0 000 10.5z"/>
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs theme-text-muted font-medium mb-1">Learning Streak</div>
-                    <div className="text-2xl font-bold theme-text-primary">{stats?.learningStreakDays || 5} days</div>
+                    <div className="text-xs text-gray-500 font-medium mb-1">Learning Streak</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.learningStreakDays || 5} days</div>
                   </div>
                 </div>
                 
                 {/* Experience Points Card */}
-                <div className="theme-card rounded-2xl shadow-sm p-5 flex items-center gap-4 h-[104px]">
+                <div className={canvasEnabled ? "card-item p-5 flex items-center gap-4 h-[104px]" : "bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]"}>
                   <div className="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center">
                     <svg className="w-7 h-7 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs theme-text-muted font-medium mb-1">Experience Points</div>
-                    <div className="text-2xl font-bold theme-text-primary">{stats?.xpPoints?.toLocaleString() || '2,450'} XP</div>
+                    <div className="text-xs text-gray-500 font-medium mb-1">Experience Points</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.xpPoints?.toLocaleString() || '2,450'} XP</div>
                   </div>
                 </div>
                 
                 {/* Current Level Card */}
-                <div className="theme-card rounded-2xl shadow-sm p-5 flex items-center gap-4 h-[104px]">
+                <div className={canvasEnabled ? "card-item p-5 flex items-center gap-4 h-[104px]" : "bg-white rounded-2xl shadow-sm border border-black/5 p-5 flex items-center gap-4 h-[104px]"}>
                   <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center">
                     <svg className="w-7 h-7 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 00-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 00.75-.75 2.25 2.25 0 00-2.25-2.25H16.5v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.22 49.22 0 00-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 00-.657.744z"/>
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs theme-text-muted font-medium mb-1">Current Level</div>
-                    <div className="text-2xl font-bold theme-text-primary">{stats?.level || 'Rookie'}</div>
+                    <div className="text-xs text-gray-500 font-medium mb-1">Current Level</div>
+                    <div className="text-2xl font-bold text-gray-900">{stats?.level || 'Rookie'}</div>
                   </div>
                 </div>
               </div>
@@ -360,7 +365,7 @@ export default function AllCourses() {
             
             {/* Your Learning Journey Header */}
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-bold theme-text-primary">Your Learning Journey</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Your Learning Journey</h2>
               <div className="text-sm text-blue-600 font-semibold">18 courses available</div>
             </div>
 
@@ -403,12 +408,12 @@ export default function AllCourses() {
               {/* Progress message for users who have started - REMOVED for cleaner UX */}
 
               <div className="flex items-center mb-3">
-                <div className="w-7 h-7 theme-progress-fill text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
+                <div className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3">
                   <i className="fas fa-play"></i>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold theme-text-primary">Start Here - Foundation Training</h2>
-                  <p className="text-xs theme-text-muted">Essential courses to build your online business foundation</p>
+                  <h2 className="text-lg font-bold text-gray-900">Start Here - Foundation Training</h2>
+                  <p className="text-xs text-gray-500">Essential courses to build your online business foundation</p>
                 </div>
                 {(currentRole === 'free' || currentRole === 'trial') && (
                   <span className="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full">
@@ -450,11 +455,18 @@ export default function AllCourses() {
                   const tooltipText = getLockedTooltipText(course.id);
 
                   return (
-                    <div key={course.id} className={`theme-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative ${
-                      shouldHighlight 
-                        ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
-                        : ''
-                    }`} data-gated={locked}>
+                    <div key={course.id} className={canvasEnabled 
+                      ? `card-item hover-overlay overflow-hidden relative ${
+                          shouldHighlight 
+                            ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
+                            : ''
+                        }`
+                      : `bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative ${
+                          shouldHighlight 
+                            ? 'border-2 border-green-400 shadow-lg ring-2 ring-green-400 ring-opacity-20' 
+                            : 'border border-gray-200'
+                        }`
+                    } data-gated={locked}>
                       {shouldHighlight && (
                         <div className="bg-gradient-to-r from-green-400 to-green-500 text-white px-3 py-1 text-xs font-bold text-center">
                           <i className="fas fa-star mr-1"></i>START HERE FIRST
@@ -501,20 +513,20 @@ export default function AllCourses() {
                           <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">BEGINNER</span>
                           <span className="text-green-600 font-semibold text-sm">+{course.lessonCount * 15} XP</span>
                         </div>
-                        <h3 className="font-bold theme-text-primary mb-2 text-lg leading-tight">{course.title}</h3>
-                        <p className="text-sm theme-text-secondary mb-3 leading-relaxed">{course.description}</p>
-                        <div className="flex items-center justify-between text-sm theme-text-muted mb-3">
+                        <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 leading-relaxed">{course.description}</p>
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                           <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount} lessons</span>
                           <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.17)}h</span>
                         </div>
                         <div className="mb-4">
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="theme-text-secondary font-medium">Progress</span>
-                            <span className="font-semibold theme-text-primary">{course.progress}%</span>
+                            <span className="text-gray-600 font-medium">Progress</span>
+                            <span className="font-semibold text-gray-900">{course.progress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "theme-progress-fill" : "bg-gray-400"}`}
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -631,7 +643,7 @@ export default function AllCourses() {
                       <div className="flex flex-col sm:flex-row gap-3 justify-center items-center max-w-md mx-auto mb-3">
                         <button
                           onClick={() => setShowPremiumModal(true)}
-                          className="theme-button-primary px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
+                          className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 px-8 py-4 rounded-xl font-bold shadow-lg transform hover:scale-105 transition-all duration-200 text-lg"
                         >
                           <i className="fas fa-crown mr-2"></i>Upgrade to Unlock
                         </button>
@@ -653,8 +665,8 @@ export default function AllCourses() {
                   <i className="fas fa-graduation-cap"></i>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold theme-text-primary">Advanced Training</h2>
-                  <p className="text-xs theme-text-muted">Specialized courses for scaling your business</p>
+                  <h2 className="text-lg font-bold text-gray-900">Advanced Training</h2>
+                  <p className="text-xs text-gray-500">Specialized courses for scaling your business</p>
                 </div>
                 {(currentRole === 'free' || currentRole === 'trial') ? (
                   <span className="bg-orange-100 text-orange-800 text-xs font-bold px-3 py-1 rounded-full">
@@ -704,7 +716,7 @@ export default function AllCourses() {
                   const tooltipText = getLockedTooltipText(course.id);
 
                   return (
-                    <div key={course.id} className="theme-card rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300 relative" data-gated={locked}>
+                    <div key={course.id} className={canvasEnabled ? "card-item hover-overlay overflow-hidden flex flex-col relative" : "bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-all duration-300 relative"} data-gated={locked}>
                       <div className="relative h-40 bg-gray-100 overflow-hidden">
                         <img 
                           src={`https://via.placeholder.com/400x240/${
@@ -747,20 +759,20 @@ export default function AllCourses() {
                           <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">{getDifficulty()}</span>
                           <span className="text-green-600 font-semibold text-sm">+{course.lessonCount * 20} XP</span>
                         </div>
-                        <h3 className="font-bold theme-text-primary mb-2 text-lg leading-tight">{course.title}</h3>
-                        <p className="text-sm theme-text-secondary mb-3 flex-1 leading-relaxed">{course.description}</p>
-                        <div className="flex items-center justify-between text-sm theme-text-muted mb-3">
+                        <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">{course.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 flex-1 leading-relaxed">{course.description}</p>
+                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                           <span><i className="fas fa-play-circle mr-1"></i>{course.lessonCount} lessons</span>
                           <span><i className="fas fa-clock mr-1"></i>{Math.round(course.lessonCount * 0.2)}h</span>
                         </div>
                         <div className="mb-4">
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="theme-text-secondary font-medium">Progress</span>
-                            <span className="font-semibold theme-text-primary">{course.progress}%</span>
+                            <span className="text-gray-600 font-medium">Progress</span>
+                            <span className="font-semibold text-gray-900">{course.progress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "theme-progress-fill" : "bg-gray-400"}`}
+                              className={`h-2 rounded-full transition-all duration-500 ${course.isCompleted ? "bg-green-500" : course.progress > 0 ? "bg-blue-600" : "bg-gray-400"}`}
                               style={{ width: `${course.progress}%` }}
                             ></div>
                           </div>
@@ -806,8 +818,8 @@ export default function AllCourses() {
                   <i className="fas fa-crown"></i>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-bold theme-text-primary">Masterclass Training</h2>
-                  <p className="text-xs theme-text-muted">Premium courses for advanced business growth</p>
+                  <h2 className="text-lg font-bold text-gray-900">Masterclass Training</h2>
+                  <p className="text-xs text-gray-500">Premium courses for advanced business growth</p>
                 </div>
                 <span className="bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full border border-yellow-300">
                   <i className="fas fa-star mr-1"></i>PREMIUM
@@ -816,7 +828,7 @@ export default function AllCourses() {
               
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                 {/* Email Marketing Secrets */}
-                <div className="theme-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                <div className={canvasEnabled ? "card-item hover-overlay overflow-hidden" : "bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"}>
                   <div className="relative h-40 bg-gray-100 overflow-hidden">
                     <img 
                       src="https://via.placeholder.com/400x240/EC4899/FFFFFF?text=Email+Marketing"
@@ -848,9 +860,9 @@ export default function AllCourses() {
                       <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">INTERMEDIATE</span>
                       <span className="text-yellow-600 font-semibold text-sm">+400 XP</span>
                     </div>
-                    <h3 className="font-bold theme-text-primary mb-2 text-lg leading-tight">Email Marketing Secrets</h3>
-                    <p className="text-sm theme-text-secondary mb-3 leading-relaxed">Build profitable email sequences and automated funnels that convert</p>
-                    <div className="flex items-center justify-between text-sm theme-text-muted mb-3">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Email Marketing Secrets</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build profitable email sequences and automated funnels that convert</p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>16 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>5h</span>
                     </div>
@@ -871,7 +883,7 @@ export default function AllCourses() {
                         lessonCount: 16,
                         price: 49
                       })}
-                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $49
                     </button>
@@ -879,7 +891,7 @@ export default function AllCourses() {
                 </div>
 
                 {/* Advanced Copywriting Masterclass */}
-                <div className="theme-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                <div className={canvasEnabled ? "card-item hover-overlay overflow-hidden" : "bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"}>
                   <div className="relative h-40 bg-gray-100 overflow-hidden">
                     <img 
                       src="https://via.placeholder.com/400x240/8B5CF6/FFFFFF?text=Copywriting"
@@ -911,9 +923,9 @@ export default function AllCourses() {
                       <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">ADVANCED</span>
                       <span className="text-yellow-600 font-semibold text-sm">+500 XP</span>
                     </div>
-                    <h3 className="font-bold theme-text-primary mb-2 text-lg leading-tight">Advanced Copywriting Masterclass</h3>
-                    <p className="text-sm theme-text-secondary mb-3 leading-relaxed">Master the art of persuasive writing that sells and converts at scale</p>
-                    <div className="flex items-center justify-between text-sm theme-text-muted mb-3">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Advanced Copywriting Masterclass</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Master the art of persuasive writing that sells and converts at scale</p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>20 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>8h</span>
                     </div>
@@ -934,7 +946,7 @@ export default function AllCourses() {
                         lessonCount: 20,
                         price: 97
                       })}
-                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $97
                     </button>
@@ -942,7 +954,7 @@ export default function AllCourses() {
                 </div>
 
                 {/* Scaling Systems Masterclass */}
-                <div className="theme-card rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+                <div className={canvasEnabled ? "card-item hover-overlay overflow-hidden" : "bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"}>
                   <div className="relative h-40 bg-gray-100 overflow-hidden">
                     <img 
                       src="https://via.placeholder.com/400x240/059669/FFFFFF?text=Scaling+Systems"
@@ -974,9 +986,9 @@ export default function AllCourses() {
                       <span className="text-xs text-gray-500 uppercase tracking-wide font-medium">EXPERT</span>
                       <span className="text-yellow-600 font-semibold text-sm">+600 XP</span>
                     </div>
-                    <h3 className="font-bold theme-text-primary mb-2 text-lg leading-tight">Scaling Systems Masterclass</h3>
-                    <p className="text-sm theme-text-secondary mb-3 leading-relaxed">Build automated systems and processes to scale your business to 7-figures</p>
-                    <div className="flex items-center justify-between text-sm theme-text-muted mb-3">
+                    <h3 className="font-bold text-gray-900 mb-2 text-lg leading-tight">Scaling Systems Masterclass</h3>
+                    <p className="text-sm text-gray-600 mb-3 leading-relaxed">Build automated systems and processes to scale your business to 7-figures</p>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <span><i className="fas fa-play-circle mr-1"></i>24 lessons</span>
                       <span><i className="fas fa-clock mr-1"></i>12h</span>
                     </div>
@@ -997,7 +1009,7 @@ export default function AllCourses() {
                         lessonCount: 24,
                         price: 197
                       })}
-                      className="w-full inline-flex items-center justify-center theme-button-warning py-2 px-4 rounded-lg font-semibold transition-colors text-sm"
+                      className="w-full inline-flex items-center justify-center bg-orange-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-sm"
                     >
                       <i className="fas fa-shopping-cart mr-2"></i>Buy Masterclass - $197
                     </button>

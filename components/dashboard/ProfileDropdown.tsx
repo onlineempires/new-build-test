@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { useUserRole } from '../../contexts/UserRoleContext';
-import { ThemeSelector } from '../ThemeSelector';
+import ThemeSelector from '../theme/ThemeSelector';
 
 interface User {
   id: number;
@@ -65,71 +65,29 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="flex items-center gap-2 p-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300"
-        style={{
-          backgroundColor: isOpen ? 'var(--color-hover)' : 'transparent',
-          ':hover': { backgroundColor: 'var(--color-hover)' },
-          ringColor: 'var(--color-primary)'
-        }}
-        onMouseEnter={(e) => {
-          if (!isOpen) e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-        }}
-        onMouseLeave={(e) => {
-          if (!isOpen) e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        className="flex items-center gap-2 p-1 rounded-lg hover:bg-surface-2 focus-ring"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="User menu"
       >
-        <div 
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-          style={{ backgroundColor: 'var(--color-primary)' }}
-        >
+        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
           {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
         </div>
-        <span 
-          className="text-sm font-medium hidden sm:block transition-colors duration-300"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          {user.name}
-        </span>
-        <span 
-          className="text-xs hidden sm:block transition-colors duration-300"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          ▼
-        </span>
+        <span className="text-sm font-medium text-text-primary hidden sm:block">{user.name}</span>
+        <span className="text-text-tertiary text-xs hidden sm:block">▼</span>
       </button>
 
       {isOpen && (
-        <div 
-          className="absolute right-0 mt-2 w-64 rounded-lg shadow-lg border z-50 transition-colors duration-300"
-          style={{
-            backgroundColor: 'var(--color-card)',
-            borderColor: 'var(--color-border)'
-          }}
-        >
-          <div 
-            className="p-4 border-b transition-colors duration-300"
-            style={{ borderColor: 'var(--color-divider)' }}
-          >
+        <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border z-50">
+          <div className="p-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                style={{ backgroundColor: 'var(--color-primary)' }}
-              >
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold">
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
-                <div 
-                  className="font-medium transition-colors duration-300"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
+                <div className="font-medium text-text-primary">
                   {isAdminAuthenticated && currentRole === 'admin' ? adminUser?.username : user.name}
                 </div>
-                <div 
-                  className="text-sm transition-colors duration-300"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
+                <div className="text-sm text-text-secondary">
                   {isAdminAuthenticated && currentRole === 'admin' ? 'Admin User' : 'View Profile'}
                 </div>
               </div>
@@ -137,16 +95,15 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
           </div>
           
           <div className="py-2">
+            {/* Theme Selector */}
+            <div className="px-4 py-2 border-b border-border">
+              <div className="text-xs font-medium text-text-secondary mb-2">Theme</div>
+              <ThemeSelector variant="simple" />
+            </div>
+
             <Link href="/profile">
               <a 
-                className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
-                style={{ color: 'var(--color-text-primary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-surface-2"
                 onClick={() => setIsOpen(false)}
               >
                 <span className="mr-3">👤</span>
@@ -156,14 +113,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
             
             <Link href="/settings">
               <a 
-                className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
-                style={{ color: 'var(--color-text-primary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-surface-2"
                 onClick={() => setIsOpen(false)}
               >
                 <span className="mr-3">⚙️</span>
@@ -171,38 +121,9 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
               </a>
             </Link>
             
-            {/* Theme Selector Divider */}
-            <div 
-              className="mx-4 my-2 border-t transition-colors duration-300"
-              style={{ borderColor: 'var(--color-divider)' }}
-            />
-            
-            {/* Inline Theme Selector */}
-            <div className="px-4 py-2">
-              <div 
-                className="text-xs font-medium mb-2 transition-colors duration-300"
-                style={{ color: 'var(--color-text-muted)' }}
-              >
-                THEME
-              </div>
-              <ThemeSelector variant="dropdown" className="w-full" />
-            </div>
-            
-            <div 
-              className="mx-4 my-2 border-t transition-colors duration-300"
-              style={{ borderColor: 'var(--color-divider)' }}
-            />
-            
             <button
               onClick={handleFeedbackClick}
-              className="w-full flex items-center px-4 py-2 text-sm text-left transition-colors duration-300"
-              style={{ color: 'var(--color-text-primary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="w-full flex items-center px-4 py-2 text-sm text-text-primary hover:bg-surface-2 text-left"
             >
               <span className="mr-3">💬</span>
               Send Feedback
@@ -212,33 +133,17 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
               href="https://www.facebook.com/groups/onlineempiresvip"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center px-4 py-2 text-sm transition-colors duration-300"
-              style={{ color: 'var(--color-text-primary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="flex items-center px-4 py-2 text-sm text-text-primary hover:bg-surface-2"
               onClick={() => setIsOpen(false)}
             >
               <span className="mr-3">👥</span>
               Facebook Group
             </a>
             
-            <div 
-              className="border-t mt-2 pt-2 transition-colors duration-300"
-              style={{ borderColor: 'var(--color-divider)' }}
-            >
+            <div className="border-t border-border mt-2 pt-2">
               {isAdminAuthenticated && currentRole === 'admin' && (
-                <div 
-                  className="px-4 py-2 mb-2 rounded mx-2 transition-colors duration-300"
-                  style={{ 
-                    backgroundColor: 'var(--color-primary)20',
-                    color: 'var(--color-primary)'
-                  }}
-                >
-                  <div className="flex items-center text-sm">
+                <div className="px-4 py-2 bg-info/10 mb-2 rounded mx-2">
+                  <div className="flex items-center text-sm text-info-foreground">
                     <i className="fas fa-shield-alt mr-2"></i>
                     Admin Session Active
                   </div>
@@ -246,14 +151,7 @@ export default function ProfileDropdown({ user, onLogout, onFeedbackClick }: Pro
               )}
               <button
                 onClick={handleLogoutClick}
-                className="w-full flex items-center px-4 py-2 text-sm text-left transition-colors duration-300"
-                style={{ color: 'var(--color-text-primary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
+                className="w-full flex items-center px-4 py-2 text-sm text-text-primary hover:bg-surface-2 text-left"
               >
                 <span className="mr-3">🚪</span>
                 {isAdminAuthenticated && currentRole === 'admin' ? 'Admin Logout' : 'Logout'}
