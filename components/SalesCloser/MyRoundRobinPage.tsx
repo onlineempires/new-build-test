@@ -59,11 +59,17 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+      <div className="theme-bg min-h-screen p-4 md:p-8">
         <div className="mx-auto max-w-4xl">
           <div className="animate-pulse">
-            <div className="mb-6 h-8 w-64 rounded bg-gray-200"></div>
-            <div className="h-96 rounded-2xl bg-gray-200"></div>
+            <div
+              className="mb-6 h-8 w-64 rounded"
+              style={{ backgroundColor: 'var(--color-secondary-bg)' }}
+            ></div>
+            <div
+              className="h-96 rounded-2xl"
+              style={{ backgroundColor: 'var(--color-secondary-bg)' }}
+            ></div>
           </div>
         </div>
       </div>
@@ -72,20 +78,33 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
 
   if (!preference || preference.preference_type !== 'round-robin') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+      <div className="theme-bg min-h-screen p-4 md:p-8">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="rounded-2xl bg-white p-8 shadow-lg md:p-12">
-            <Zap className="mx-auto mb-4 h-16 w-16 text-gray-400" />
-            <h1 className="mb-4 text-2xl font-bold text-gray-900">Round Robin Not Active</h1>
-            <p className="mb-6 text-gray-600">
+          <div
+            className="theme-border rounded-2xl border p-8 shadow-lg md:p-12"
+            style={{ backgroundColor: 'var(--color-bg)' }}
+          >
+            <Zap className="mx-auto mb-4 h-16 w-16" style={{ color: 'var(--color-secondary)' }} />
+            <h1 className="theme-text-primary mb-4 text-2xl font-bold">Round Robin Not Active</h1>
+            <p className="theme-text-secondary mb-6">
               You don't have an active round-robin service preference.
             </p>
-            <Link
-              href="/sales_closer"
-              className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 text-white transition-colors hover:bg-blue-700"
-            >
-              <Settings size={20} />
-              <span>Set Up Sales Service</span>
+            <Link href="/sales_closer">
+              <div
+                className="inline-flex cursor-pointer items-center space-x-2 rounded-lg px-6 py-3 text-white transition-colors"
+                style={{
+                  backgroundColor: 'var(--color-primary)',
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)')
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = 'var(--color-primary)')
+                }
+              >
+                <Settings size={20} />
+                <span>Set Up Sales Service</span>
+              </div>
             </Link>
           </div>
         </div>
@@ -94,16 +113,16 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+    <div className="theme-bg min-h-screen p-4 md:p-8">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between md:mb-8">
           <div className="flex items-center space-x-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+              <h1 className="theme-text-primary text-2xl font-bold md:text-3xl">
                 Automated Round Robin
               </h1>
-              <p className="text-sm text-gray-600 md:text-base">
+              <p className="theme-text-secondary text-sm md:text-base">
                 Your professional sales service is active
               </p>
             </div>
@@ -111,7 +130,10 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
         </div>
 
         {/* Main Status Card */}
-        <div className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg">
+        <div
+          className="theme-border mb-8 overflow-hidden rounded-2xl border shadow-lg"
+          style={{ backgroundColor: 'var(--color-bg)' }}
+        >
           {/* Header Section */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center text-white md:p-8">
             <CheckCircle className="mx-auto mb-4 h-12 w-12 opacity-90 md:h-16 md:w-16" />

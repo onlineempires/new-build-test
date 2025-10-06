@@ -15,7 +15,7 @@ export class APIError extends Error {
 
 // Create axios instance with defaults
 const client: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v2',
   withCredentials: true,
   timeout: 30000, // 30 seconds timeout
   headers: {
@@ -86,15 +86,18 @@ client.interceptors.response.use(
           return client(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Refresh failed, handle based on context
         if (typeof window !== 'undefined') {
           // Clear auth data
           localStorage.removeItem('auth_token');
           localStorage.removeItem('adminSession');
 
-          // Redirect to appropriate login page
+          // Only redirect to login for admin routes
           const isAdminRoute = window.location.pathname.startsWith('/admin');
-          window.location.href = isAdminRoute ? '/admin/login' : '/login';
+          if (isAdminRoute) {
+            window.location.href = '/admin/login';
+          }
+          // For regular routes, don't redirect - let the role-based system handle it
         }
       }
     }

@@ -14,14 +14,14 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-4 md:p-8">
+    <div className="theme-bg relative min-h-screen p-4 md:p-8">
       <div className="mx-auto flex max-w-7xl flex-col">
         {/* Header */}
         <div className="mb-8 text-center md:mb-12">
-          <h1 className="mb-3 text-2xl font-bold text-gray-900 md:mb-4 md:text-4xl">
+          <h1 className="theme-text-primary mb-3 text-2xl font-bold md:mb-4 md:text-4xl">
             Discovery Call Setup
           </h1>
-          <p className="mx-auto max-w-3xl px-2 text-base leading-relaxed text-gray-600 md:text-xl">
+          <p className="theme-text-secondary mx-auto max-w-3xl px-2 text-base leading-relaxed md:text-xl">
             Choose how your discovery calls will be handled for new members. Select the option that
             best fits your business needs and growth stage.
           </p>
@@ -31,24 +31,37 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
         <div className="mb-8 grid gap-6 md:mb-12 md:grid-cols-2 md:gap-8">
           {/* Option 1: Round Robin */}
           <div
-            className="relative transform cursor-pointer overflow-hidden rounded-2xl border-2 border-gray-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:border-blue-300"
+            className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
+            style={{ backgroundColor: 'var(--color-bg)' }}
             onClick={() => handleSelectOption('round-robin')}
           >
             {/* Recommended Badge */}
-            <div className="absolute right-4 top-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-1 text-sm font-semibold text-white">
+            <div
+              className="absolute right-4 top-4 rounded-full px-3 py-1 text-sm font-semibold text-white"
+              style={{ backgroundColor: 'var(--color-success)' }}
+            >
               Recommended
             </div>
 
             <div className="p-6 md:p-8">
               <div className="mb-6 flex items-center">
-                <div className="mr-3 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 md:mr-4 md:h-16 md:w-16">
+                <div
+                  className="mr-3 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl md:mr-4 md:h-16 md:w-16"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
+                  }}
+                >
                   <Zap className="h-6 w-6 text-white md:h-8 md:w-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 md:text-2xl">
+                  <h3 className="theme-text-primary text-lg font-bold md:text-2xl">
                     Automated Round Robin
                   </h3>
-                  <p className="text-sm font-medium text-blue-600 md:text-base">
+                  <p
+                    className="text-sm font-medium md:text-base"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
                     Instant Setup & Expert Support
                   </p>
                 </div>
@@ -56,34 +69,49 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
 
               <div className="mb-8 space-y-4">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Professional trained sales experts handle your calls automatically
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Full end-to-end service including paperwork for completed sales
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Perfect for new businesses or those not confident in sales yet
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Maintain clear communication with leads using 3-way chats
                   </p>
                 </div>
               </div>
 
-              <div className="mb-6 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 p-6">
-                <h4 className="mb-2 font-semibold text-gray-900">This is for you if...</h4>
-                <ul className="space-y-2 text-sm text-gray-700">
+              <div
+                className="mb-6 rounded-xl p-6"
+                style={{ backgroundColor: 'var(--color-primary-bg)' }}
+              >
+                <h4 className="theme-text-primary mb-2 font-semibold">This is for you if...</h4>
+                <ul className="theme-text-secondary space-y-2 text-sm">
                   <li>✓ You're new to the business or not confident in sales yet</li>
                   <li>✓ You want trained expert sales advisors to handle your calls</li>
                   <li>✓ You want a full end-to-end service including paperwork</li>
@@ -94,19 +122,29 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
 
           {/* Option 2: Dedicated Closer */}
           <div
-            className="relative transform cursor-pointer overflow-hidden rounded-2xl border-2 border-gray-200 bg-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:border-purple-300"
+            className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
+            style={{ backgroundColor: 'var(--color-bg)' }}
             onClick={() => handleSelectOption('dedicated')}
           >
             <div className="p-6 md:p-8">
               <div className="mb-6 flex items-center">
-                <div className="mr-3 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 md:mr-4 md:h-16 md:w-16">
+                <div
+                  className="mr-3 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl md:mr-4 md:h-16 md:w-16"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))',
+                  }}
+                >
                   <Target className="h-6 w-6 text-white md:h-8 md:w-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 md:text-2xl">
+                  <h3 className="theme-text-primary text-lg font-bold md:text-2xl">
                     Dedicated Sales Closer
                   </h3>
-                  <p className="text-sm font-medium text-purple-600 md:text-base">
+                  <p
+                    className="text-sm font-medium md:text-base"
+                    style={{ color: 'var(--color-primary)' }}
+                  >
                     Choose Your Personal Expert
                   </p>
                 </div>
@@ -114,30 +152,49 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
 
               <div className="mb-8 space-y-4">
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Hand-pick a dedicated advisor to handle your calls exclusively
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
                     Build a personal relationship with your chosen sales expert
                   </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">Consistent communication style and approach</p>
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
+                    Consistent communication style and approach
+                  </p>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <CheckCircle className="mt-0.5 h-6 w-6 flex-shrink-0 text-green-500" />
-                  <p className="text-gray-700">Perfect for experienced members who want control</p>
+                  <CheckCircle
+                    className="mt-0.5 h-6 w-6 flex-shrink-0"
+                    style={{ color: 'var(--color-success)' }}
+                  />
+                  <p className="theme-text-secondary">
+                    Perfect for experienced members who want control
+                  </p>
                 </div>
               </div>
 
-              <div className="mb-6 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 p-6">
-                <h4 className="mb-2 font-semibold text-gray-900">This is for you if...</h4>
-                <ul className="space-y-2 text-sm text-gray-700">
+              <div
+                className="mb-6 rounded-xl p-6"
+                style={{ backgroundColor: 'var(--color-primary-bg)' }}
+              >
+                <h4 className="theme-text-primary mb-2 font-semibold">This is for you if...</h4>
+                <ul className="theme-text-secondary space-y-2 text-sm">
                   <li>✓ You would prefer a dedicated advisor to take your calls</li>
                   <li>✓ You want to build a personal relationship with your closer</li>
                   <li>✓ You have specific requirements or preferences</li>

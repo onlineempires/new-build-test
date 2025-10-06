@@ -235,11 +235,17 @@ export default function SalesCloserForm({
   if (currentStep === 'closer-selection' && closersLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center">
+        <div
+          className="theme-border w-full max-w-md rounded-2xl border p-8 text-center"
+          style={{ backgroundColor: 'var(--color-bg)' }}
+        >
           <div className="mb-4 animate-spin">
-            <div className="mx-auto h-8 w-8 rounded-full border-4 border-purple-600 border-t-transparent"></div>
+            <div
+              className="mx-auto h-8 w-8 rounded-full border-4 border-t-transparent"
+              style={{ borderColor: 'var(--color-primary)', borderTopColor: 'transparent' }}
+            ></div>
           </div>
-          <p className="text-gray-600">Loading sales closers...</p>
+          <p className="theme-text-secondary">Loading sales closers...</p>
         </div>
       </div>
     );
@@ -262,13 +268,20 @@ export default function SalesCloserForm({
         }}
       >
         {currentStep === 'closer-selection' && (
-          <div className="flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl bg-white">
+          <div
+            className="theme-border flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl border shadow-lg"
+            style={{ backgroundColor: 'var(--color-bg)' }}
+          >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 p-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="theme-border flex items-center justify-between border-b p-6">
+              <h2 className="theme-text-primary text-2xl font-bold">
                 Choose Your Dedicated Sales Closer
               </h2>
-              <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+              <button
+                onClick={onClose}
+                className="theme-hover p-1"
+                style={{ color: 'var(--color-secondary)' }}
+              >
                 <X size={24} />
               </button>
             </div>
@@ -278,22 +291,36 @@ export default function SalesCloserForm({
               {/* Search and Filter */}
               <div className="mb-8 flex flex-col gap-4 lg:flex-row">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
+                  <Search
+                    className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform"
+                    style={{ color: 'var(--color-secondary)' }}
+                  />
                   <input
                     type="text"
                     placeholder="Search by name or specialty..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-4 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                    className="theme-input w-full rounded-lg border py-3 pl-10 pr-4 focus:border-transparent focus:ring-2"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      backgroundColor: 'var(--color-bg)',
+                    }}
                   />
                 </div>
 
                 <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
+                  <Filter
+                    className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform"
+                    style={{ color: 'var(--color-secondary)' }}
+                  />
                   <select
                     value={selectedSpecialty}
                     onChange={(e) => setSelectedSpecialty(e.target.value)}
-                    className="min-w-[200px] appearance-none rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-8 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+                    className="theme-input min-w-[200px] appearance-none rounded-lg border py-3 pl-10 pr-8 focus:border-transparent focus:ring-2"
+                    style={{
+                      borderColor: 'var(--color-border)',
+                      backgroundColor: 'var(--color-bg)',
+                    }}
                   >
                     <option value="">All Specialties</option>
                     {allSpecialties.map((specialty) => (
