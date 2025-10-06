@@ -2,27 +2,30 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  
+
   // Image optimization configuration with more domains
   images: {
     domains: [
-      'localhost', 
-      'your-cdn-domain.com', 
+      'localhost',
+      'your-cdn-domain.com',
       'images.unsplash.com',
       'via.placeholder.com',
-      'placeholder.com'
+      'placeholder.com',
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  
+
   // Performance optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
     styledComponents: true, // Enable if using styled-components
   },
 
@@ -64,7 +67,7 @@ const nextConfig = {
 
     return config;
   },
-  
+
   // Headers for security
   async headers() {
     return [
@@ -91,12 +94,22 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // Redirects for legacy routes if needed
   async redirects() {
     return [];
   },
-  
+
+  // Proxy API calls to backend server
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:3005/api/:path*',
+      },
+    ];
+  },
+
   // Environment variables to expose to the browser
   env: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,

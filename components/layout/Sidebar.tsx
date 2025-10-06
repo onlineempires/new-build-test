@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
 import { useUserRole } from '../../contexts/UserRoleContext';
-import { useAdminAuth } from '../../contexts/AdminAuthContext';
 import { MobileRoleSwitcher } from '../dev/RoleSwitcher';
 
 interface User {
@@ -22,7 +20,6 @@ interface MenuItem {
 
 interface SidebarProps {
   user: User;
-  onLogout: () => void;
   isMobileOpen?: boolean;
   setIsMobileOpen?: (open: boolean) => void;
   onFeedbackClick?: () => void;
@@ -30,83 +27,94 @@ interface SidebarProps {
 
 // Define menu items with their required permissions
 const menuItems: MenuItem[] = [
-  { 
-    name: 'Dashboard', 
-    href: '/', 
-    icon: 'fas fa-home', 
-    section: 'dashboard', 
-    requiredPermission: null // Always visible
+  {
+    name: 'Dashboard',
+    href: '/',
+    icon: 'fas fa-home',
+    section: 'dashboard',
+    requiredPermission: null, // Always visible
   },
-  { 
-    name: 'All Courses', 
-    href: '/courses', 
-    icon: 'fas fa-book', 
-    section: 'courses', 
-    requiredPermission: null // Always visible, but content filtered by role
+  {
+    name: 'All Courses',
+    href: '/courses',
+    icon: 'fas fa-book',
+    section: 'courses',
+    requiredPermission: null, // Always visible, but content filtered by role
   },
-  { 
-    name: 'Library (Beta)', 
-    href: '/library', 
-    icon: 'fas fa-film', 
-    section: 'library', 
-    requiredPermission: null // Always visible when feature flag is enabled
+  {
+    name: 'Library (Beta)',
+    href: '/library',
+    icon: 'fas fa-film',
+    section: 'library',
+    requiredPermission: null, // Always visible when feature flag is enabled
   },
-  { 
-    name: 'Expert Directory', 
-    href: '/experts', 
-    icon: 'fas fa-users', 
-    section: 'experts', 
-    requiredPermission: 'canAccessExpertDirectory' // Only for paid members
+  {
+    name: 'Expert Directory',
+    href: '/experts',
+    icon: 'fas fa-users',
+    section: 'experts',
+    requiredPermission: 'canAccessExpertDirectory', // Only for paid members
   },
-  { 
-    name: 'Daily Method (DMO)', 
-    href: '/dmo', 
-    icon: 'fas fa-tasks', 
-    section: 'dmo', 
-    requiredPermission: 'canAccessDMO' // Only for paid members
+  {
+    name: 'Daily Method (DMO)',
+    href: '/dmo',
+    icon: 'fas fa-tasks',
+    section: 'dmo',
+    requiredPermission: 'canAccessDMO', // Only for paid members
   },
-  { 
-    name: 'Affiliate Portal', 
-    href: '/affiliate', 
-    icon: 'fas fa-link', 
-    section: 'affiliate', 
-    requiredPermission: 'canAccessAffiliate' // Only for paid members and downsell
+  {
+    name: 'Affiliate Portal',
+    href: '/affiliate',
+    icon: 'fas fa-link',
+    section: 'affiliate',
+    requiredPermission: 'canAccessAffiliate', // Only for paid members and downsell
   },
-  { 
-    name: 'Statistics', 
-    href: '/stats', 
-    icon: 'fas fa-chart-bar', 
-    section: 'statistics', 
-    requiredPermission: 'canAccessStats' // Only for paid members
+  {
+    name: 'Sales Closer Setup',
+    href: '/sales_closer',
+    icon: 'fas fa-handshake',
+    section: 'sales-closer',
+    requiredPermission: 'canAccessSalesCloser', // New permission for sales closer access
   },
-  { 
-    name: 'Leads', 
-    href: '/leads', 
-    icon: 'fas fa-user-plus', 
-    section: 'leads', 
-    requiredPermission: 'canAccessLeads' // Only for paid members
+  {
+    name: 'Statistics',
+    href: '/stats',
+    icon: 'fas fa-chart-bar',
+    section: 'statistics',
+    requiredPermission: 'canAccessStats', // Only for paid members
   },
-  { 
-    name: 'Admin', 
-    href: '/admin', 
-    icon: 'fas fa-cog', 
-    section: 'admin', 
-    requiredPermission: 'isAdmin' // Only for admin role
+  {
+    name: 'Leads',
+    href: '/leads',
+    icon: 'fas fa-user-plus',
+    section: 'leads',
+    requiredPermission: 'canAccessLeads', // Only for paid members
   },
-  { 
-    name: 'Profile', 
-    href: '/profile', 
-    icon: 'fas fa-user', 
-    section: 'profile', 
-    requiredPermission: null // Always visible
+  {
+    name: 'Admin',
+    href: '/admin',
+    icon: 'fas fa-cog',
+    section: 'admin',
+    requiredPermission: 'isAdmin', // Only for admin role
+  },
+  {
+    name: 'Profile',
+    href: '/profile',
+    icon: 'fas fa-user',
+    section: 'profile',
+    requiredPermission: null, // Always visible
   },
 ];
 
-export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMobileOpen, onFeedbackClick }: SidebarProps) {
+export default function Sidebar({
+  user,
+  isMobileOpen = false,
+  setIsMobileOpen,
+  onFeedbackClick,
+}: SidebarProps) {
   const router = useRouter();
-  const { permissions, hasPermission, currentRole, setUserRole } = useUserRole();
-  const { isAuthenticated: isAdminAuthenticated, logout: adminLogout, adminUser } = useAdminAuth();
-  
+  const { currentRole } = useUserRole();
+
   const closeMobileMenu = () => {
     if (setIsMobileOpen) {
       setIsMobileOpen(false);
@@ -114,52 +122,40 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
   };
 
   // Filter menu items based on role directly
-  const visibleMenuItems = menuItems.filter(item => {
+  const visibleMenuItems = menuItems.filter((item) => {
     // Admin sees everything
     if (currentRole === 'admin') return true;
-    
+
     // Check specific items by name for clarity
     switch (item.name) {
       case 'Dashboard':
-      case 'All Courses':  
+      case 'All Courses':
       case 'Profile':
         return true; // Everyone sees these
-      
+
       case 'Library (Beta)':
         // Only show if feature flag is enabled
         return process.env.NEXT_PUBLIC_LIBRARY_BETA === 'true';
-      
+
       case 'Expert Directory':
       case 'Daily Method (DMO)':
       case 'Statistics':
       case 'Leads':
         // Only paid members (monthly/annual) can see these
         return currentRole === 'monthly' || currentRole === 'annual';
-      
+
       case 'Affiliate Portal':
         // Paid members and downsell users can see this
         return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
-      
-      case 'Admin':
-        // Only admin role
-        return currentRole === 'admin';
-      
+
+      case 'Sales Closer Setup':
+        // Paid members and downsell users can see this
+        return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
+
       default:
         return false;
     }
   });
-  
-  // Debug logging - ALWAYS log to see what's happening
-  useEffect(() => {
-    console.log('=== SIDEBAR DEBUG ===');
-    console.log('Current role:', currentRole);
-    console.log('Permissions object:', permissions);
-    console.log('All menu items:', menuItems.map(i => i.name));
-    console.log('Filtered menu items:', visibleMenuItems.map(i => i.name));
-    console.log('Should see DMO?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('Should see Expert Directory?', currentRole === 'monthly' || currentRole === 'annual');
-    console.log('===================');
-  }, [currentRole, permissions, visibleMenuItems]);
 
   const isActive = (href: string) => {
     if (href === '/courses') {
@@ -172,44 +168,43 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
     <>
       {/* Mobile backdrop */}
       {isMobileOpen && (
-        <div 
-          className="lg:hidden fixed inset-0 bg-black/40 z-[80]"
-          onClick={closeMobileMenu}
-        />
+        <div className="fixed inset-0 z-[80] bg-black/40 lg:hidden" onClick={closeMobileMenu} />
       )}
 
       {/* Sidebar drawer */}
-      <div className={`fixed inset-y-0 left-0 w-[84vw] max-w-[320px] theme-sidebar shadow-2xl rounded-r-2xl lg:rounded-none z-[90] transform transition-transform duration-300 ease-in-out lg:w-64 lg:shadow-none lg:transform-none ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } overflow-hidden flex flex-col`}>
-        
+      <div
+        data-sidebar
+        className={`theme-sidebar fixed inset-y-0 left-0 z-[90] w-[84vw] max-w-[320px] transform rounded-r-2xl shadow-2xl transition-transform duration-300 ease-in-out lg:w-64 lg:transform-none lg:rounded-none lg:shadow-none ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } flex flex-col overflow-hidden`}
+      >
         {/* Brand row */}
-        <div className="flex items-center p-4 border-b theme-border theme-sidebar">
-          <div 
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold mr-2 text-lg"
+        <div className="theme-border theme-sidebar flex items-center border-b p-4">
+          <div
+            className="mr-2 flex h-8 w-8 items-center justify-center rounded-lg text-lg font-bold text-white"
             style={{ backgroundColor: 'var(--color-primary)' }}
           >
             ⚡
           </div>
-          <span className="theme-text-primary font-bold text-lg">DIGITAL ERA</span>
+          <span className="theme-text-primary text-lg font-bold">DIGITAL ERA</span>
         </div>
 
         {/* Nav items */}
         <nav className="flex-1 py-4">
-          {visibleMenuItems.map((item, index) => (
+          {visibleMenuItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <a
-                className={`flex items-center px-4 py-3 text-sm transition-colors min-h-[48px] focus:outline-none focus:ring-2 mx-2 rounded-xl ${
-                  isActive(item.href) 
-                    ? 'text-white shadow-md' 
-                    : 'theme-text-primary theme-hover'
+                className={`mx-2 flex min-h-[48px] items-center rounded-xl px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-2 ${
+                  isActive(item.href) ? 'text-white shadow-md' : 'theme-text-primary theme-hover'
                 }`}
                 style={isActive(item.href) ? { backgroundColor: 'var(--color-primary)' } : {}}
                 onClick={closeMobileMenu}
               >
-                <i className={`${item.icon} text-base mr-4 w-5 flex-shrink-0 ${
-                  isActive(item.href) ? 'text-white' : 'theme-text-secondary'
-                }`}></i>
+                <i
+                  className={`${item.icon} mr-4 w-5 flex-shrink-0 text-base ${
+                    isActive(item.href) ? 'text-white' : 'theme-text-secondary'
+                  }`}
+                ></i>
                 <span className="font-medium">{item.name}</span>
               </a>
             </Link>
@@ -217,30 +212,30 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
         </nav>
 
         {/* Feedback Button - Only visible on mobile */}
-        <div className="lg:hidden border-t theme-border theme-sidebar">
+        <div className="theme-border theme-sidebar border-t lg:hidden">
           {onFeedbackClick && (
             <button
               onClick={() => {
                 onFeedbackClick();
                 closeMobileMenu();
               }}
-              className="w-full flex items-center px-4 py-3 text-sm theme-text-primary theme-hover transition-colors min-h-[48px]"
+              className="theme-text-primary theme-hover flex min-h-[48px] w-full items-center px-4 py-3 text-sm transition-colors"
             >
-              <i className="fas fa-comment text-base mr-4 w-5 flex-shrink-0 theme-text-secondary"></i>
+              <i className="fas fa-comment theme-text-secondary mr-4 w-5 flex-shrink-0 text-base"></i>
               <span className="font-medium">Send Feedback</span>
             </button>
           )}
-          
+
           {/* Mobile Dev Tools */}
           <MobileRoleSwitcher onSelect={closeMobileMenu} />
         </div>
 
         {/* User Profile */}
-        <div className="border-t theme-border theme-sidebar">
+        <div className="theme-border theme-sidebar border-t">
           <Link href="/profile">
-            <a className="flex items-center p-4 theme-hover transition-colors">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold mr-3 shadow-lg"
+            <a className="theme-hover flex items-center p-4 transition-colors">
+              <div
+                className="mr-3 flex h-10 w-10 items-center justify-center rounded-full font-bold text-white shadow-lg"
                 style={{ backgroundColor: 'var(--color-primary)' }}
               >
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -253,8 +248,6 @@ export default function Sidebar({ user, onLogout, isMobileOpen = false, setIsMob
           </Link>
         </div>
       </div>
-
-
     </>
   );
 }

@@ -20,7 +20,7 @@ const client: AxiosInstance = axios.create({
   timeout: 30000, // 30 seconds timeout
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
 });
 
@@ -33,19 +33,19 @@ client.interceptors.request.use(
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
+
       // Add session info for admin requests
       const adminSession = localStorage.getItem('adminSession');
       if (adminSession && config.url?.includes('/admin')) {
         config.headers['X-Admin-Session'] = adminSession;
       }
     }
-    
+
     // Log request in development
     if (process.env.NODE_ENV === 'development') {
       console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data);
     }
-    
+
     return config;
   },
   (error) => {
@@ -61,22 +61,26 @@ client.interceptors.response.use(
     if (process.env.NODE_ENV === 'development') {
       console.log(`[API] Response from ${response.config.url}:`, response.data);
     }
-    
+
     return response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-    
+
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       // Try to refresh token
       try {
-        const refreshResponse = await axios.post('/api/auth/refresh', {}, {
-          withCredentials: true,
-        });
-        
+        const refreshResponse = await axios.post(
+          '/api/auth/refresh',
+          {},
+          {
+            withCredentials: true,
+          }
+        );
+
         if (refreshResponse.data.success) {
           // Retry original request
           return client(originalRequest);
@@ -87,30 +91,31 @@ client.interceptors.response.use(
           // Clear auth data
           localStorage.removeItem('auth_token');
           localStorage.removeItem('adminSession');
-          
+
           // Redirect to appropriate login page
           const isAdminRoute = window.location.pathname.startsWith('/admin');
           window.location.href = isAdminRoute ? '/admin/login' : '/login';
         }
       }
     }
-    
+
     // Handle other errors
-    const message = error.response?.data?.error || error.message || 'An unexpected error occurred';
+    const message =
+      (error.response?.data as any)?.error || error.message || 'An unexpected error occurred';
     const statusCode = error.response?.status;
     const details = error.response?.data;
-    
+
     console.error(`[API] Error ${statusCode}:`, message, details);
-    
+
     // Show notification for user-facing errors
     if (typeof window !== 'undefined' && statusCode && statusCode >= 400 && statusCode < 500) {
       // Dispatch custom event for notification system
       const event = new CustomEvent('api-error', {
-        detail: { message, statusCode, details }
+        detail: { message, statusCode, details },
       });
       window.dispatchEvent(event);
     }
-    
+
     throw new APIError(message, statusCode, details);
   }
 );
@@ -128,7 +133,7 @@ export const apiClient = {
       throw new APIError('Failed to fetch data', undefined, error);
     }
   },
-  
+
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await client.post<T>(url, data, config);
@@ -140,7 +145,7 @@ export const apiClient = {
       throw new APIError('Failed to send data', undefined, error);
     }
   },
-  
+
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await client.put<T>(url, data, config);
@@ -152,7 +157,7 @@ export const apiClient = {
       throw new APIError('Failed to update data', undefined, error);
     }
   },
-  
+
   async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await client.patch<T>(url, data, config);
@@ -164,7 +169,7 @@ export const apiClient = {
       throw new APIError('Failed to patch data', undefined, error);
     }
   },
-  
+
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     try {
       const response = await client.delete<T>(url, config);
