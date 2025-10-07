@@ -237,7 +237,7 @@ export default function SalesCloserForm({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
         <div
           className="theme-border w-full max-w-md rounded-2xl border p-8 text-center"
-          style={{ backgroundColor: 'var(--color-bg)' }}
+          style={{ backgroundColor: 'var(--color-background)' }}
         >
           <div className="mb-4 animate-spin">
             <div
@@ -270,7 +270,7 @@ export default function SalesCloserForm({
         {currentStep === 'closer-selection' && (
           <div
             className="theme-border flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl border shadow-lg"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
           >
             {/* Modal Header */}
             <div className="theme-border flex items-center justify-between border-b p-6">
@@ -337,11 +337,12 @@ export default function SalesCloserForm({
                 {filteredClosers.map((closer) => (
                   <div
                     key={closer.id}
-                    className={`cursor-pointer rounded-xl border-2 bg-white transition-all duration-200 hover:shadow-lg ${
+                    className={`cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
                       selectedCloser?.id === closer.id
                         ? 'border-purple-500 shadow-lg ring-4 ring-purple-100'
                         : 'border-gray-200 hover:border-purple-300'
                     }`}
+                    style={{ backgroundColor: 'var(--color-background)' }}
                     onClick={() => setSelectedCloser(closer)}
                   >
                     <div className="p-6">
@@ -353,7 +354,10 @@ export default function SalesCloserForm({
                             className="h-16 w-16 rounded-full object-cover ring-2 ring-gray-100"
                           />
                           <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-green-500">
-                            <div className="h-2 w-2 rounded-full bg-white"></div>
+                            <div
+                              className="h-2 w-2 rounded-full"
+                              style={{ backgroundColor: 'var(--color-background)' }}
+                            ></div>
                           </div>
                         </div>
                         <div className="min-w-0 flex-1">
@@ -462,16 +466,36 @@ export default function SalesCloserForm({
         )}
 
         {currentStep === 'terms' && (
-          <div className="flex max-h-[calc(100vh-8rem)] w-full max-w-4xl flex-col rounded-2xl bg-white">
+          <div
+            className="flex max-h-[calc(100vh-8rem)] w-full max-w-4xl flex-col rounded-2xl"
+            style={{ backgroundColor: 'var(--color-background)' }}
+          >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 p-6">
+            <div
+              className="flex items-center justify-between border-b p-6"
+              style={{ borderColor: 'var(--color-border)' }}
+            >
               <div className="flex items-center space-x-3">
-                <FileText className="h-6 w-6 text-blue-600" />
-                <h2 className="text-2xl font-bold text-gray-900">Terms of Service Agreement</h2>
+                <FileText className="h-6 w-6" style={{ color: 'var(--color-primary)' }} />
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  Terms of Service Agreement
+                </h2>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-lg p-2 transition-colors"
+                style={{
+                  color: 'var(--color-text-muted)',
+                  backgroundColor: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-hover)';
+                  e.currentTarget.style.color = 'var(--color-text-secondary)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = 'var(--color-text-muted)';
+                }}
               >
                 <X size={24} />
               </button>
@@ -479,11 +503,12 @@ export default function SalesCloserForm({
 
             {/* Service Type Banner */}
             <div
-              className={`p-4 ${
+              className={`border-b p-4 ${
                 selectedOption === 'round-robin' ? 'bg-blue-50' : 'bg-purple-50'
-              } border-b border-gray-200`}
+              }`}
+              style={{ borderColor: 'var(--color-border)' }}
             >
-              <p className="text-center font-medium text-gray-900">
+              <p className="text-center font-medium" style={{ color: 'var(--color-text-primary)' }}>
                 {selectedOption === 'round-robin'
                   ? 'Automated Round Robin Sales Service Agreement'
                   : `Dedicated Sales Closer Agreement - ${selectedCloser?.name}`}
@@ -492,13 +517,19 @@ export default function SalesCloserForm({
 
             {/* Terms Content */}
             <div
-              className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed text-gray-700"
+              className="flex-1 overflow-y-auto p-6 text-sm leading-relaxed"
+              style={{
+                maxHeight: 'calc(100vh - 200px)',
+                color: 'var(--color-text-secondary)',
+              }}
               onScroll={handleScroll}
-              style={{ maxHeight: 'calc(100vh - 200px)' }}
             >
               <div className="space-y-6">
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     1. Service Description
                   </h3>
                   <p>
@@ -511,7 +542,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     2. Commission Structure
                   </h3>
                   <p>
@@ -523,7 +557,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     3. Lead Assignment and Handling
                   </h3>
                   <p>
@@ -536,7 +573,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     4. Performance Standards
                   </h3>
                   <p>
@@ -551,7 +591,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     5. Communication and Transparency
                   </h3>
                   <p>
@@ -562,7 +605,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     6. Modification and Termination
                   </h3>
                   <p>
@@ -573,7 +619,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     7. Data Privacy and Security
                   </h3>
                   <p>
@@ -585,7 +634,12 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">8. Quality Assurance</h3>
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    8. Quality Assurance
+                  </h3>
                   <p>
                     Online Empires monitors all sales interactions for quality assurance. We reserve
                     the right to provide feedback, additional training, or reassign sales closers to
@@ -594,7 +648,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     9. Liability and Warranties
                   </h3>
                   <p>
@@ -606,7 +663,10 @@ export default function SalesCloserForm({
                 </section>
 
                 <section>
-                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                  <h3
+                    className="mb-3 text-lg font-semibold"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
                     10. Agreement Acceptance
                   </h3>
                   <p>
@@ -625,7 +685,13 @@ export default function SalesCloserForm({
             </div>
 
             {/* Footer */}
-            <div className="rounded-b-2xl border-t border-gray-200 bg-gray-50 p-6">
+            <div
+              className="rounded-b-2xl border-t p-6"
+              style={{
+                borderColor: 'var(--color-border)',
+                backgroundColor: 'var(--color-background-secondary)',
+              }}
+            >
               <div className="mb-4 flex items-start space-x-3">
                 <input
                   type="checkbox"
@@ -680,21 +746,32 @@ export default function SalesCloserForm({
         )}
 
         {currentStep === 'confirmation' && (
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center md:p-8">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+          <div
+            className="w-full max-w-md rounded-2xl p-6 text-center md:p-8"
+            style={{ backgroundColor: 'var(--color-background)' }}
+          >
+            <div
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: 'var(--color-background-secondary)' }}
+            >
+              <CheckCircle className="h-8 w-8" style={{ color: 'var(--color-success)' }} />
             </div>
 
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">Setup Complete!</h2>
+            <h2 className="mb-4 text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              Setup Complete!
+            </h2>
 
-            <p className="mb-6 text-gray-600">
+            <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
               {selectedOption === 'round-robin'
                 ? 'You are now registered for our automated round-robin sales service. Your leads will be handled by our expert team.'
                 : `${selectedCloser?.name} is now your dedicated sales closer. You can message them directly and manage your relationship.`}
             </p>
 
             {selectedOption === 'dedicated' && (
-              <div className="mb-6 rounded-lg bg-purple-50 p-4">
+              <div
+                className="mb-6 rounded-lg p-4"
+                style={{ backgroundColor: 'var(--color-background-secondary)' }}
+              >
                 <div className="flex items-center space-x-3">
                   <img
                     src={selectedCloser?.profile_image_url || '/placeholder/48/48'}
@@ -702,8 +779,12 @@ export default function SalesCloserForm({
                     className="h-12 w-12 rounded-full object-cover"
                   />
                   <div className="text-left">
-                    <h3 className="font-semibold text-gray-900">{selectedCloser?.name}</h3>
-                    <p className="text-sm text-gray-600">{selectedCloser?.title}</p>
+                    <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      {selectedCloser?.name}
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {selectedCloser?.title}
+                    </p>
                   </div>
                 </div>
               </div>

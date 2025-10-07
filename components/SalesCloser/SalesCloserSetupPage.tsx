@@ -32,7 +32,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
           {/* Option 1: Round Robin */}
           <div
             className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
             onClick={() => handleSelectOption('round-robin')}
           >
             {/* Recommended Badge */}
@@ -108,7 +108,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
 
               <div
                 className="mb-6 rounded-xl p-6"
-                style={{ backgroundColor: 'var(--color-primary-bg)' }}
+                style={{ backgroundColor: 'var(--color-primary-light)' }}
               >
                 <h4 className="theme-text-primary mb-2 font-semibold">This is for you if...</h4>
                 <ul className="theme-text-secondary space-y-2 text-sm">
@@ -123,7 +123,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
           {/* Option 2: Dedicated Closer */}
           <div
             className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
             onClick={() => handleSelectOption('dedicated')}
           >
             <div className="p-6 md:p-8">
@@ -191,7 +191,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
 
               <div
                 className="mb-6 rounded-xl p-6"
-                style={{ backgroundColor: 'var(--color-primary-bg)' }}
+                style={{ backgroundColor: 'var(--color-primary-light)' }}
               >
                 <h4 className="theme-text-primary mb-2 font-semibold">This is for you if...</h4>
                 <ul className="theme-text-secondary space-y-2 text-sm">
@@ -205,7 +205,10 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
         </div>
 
         {/* Information Section */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg md:p-8">
+        <div
+          className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg md:p-8"
+          style={{ backgroundColor: 'var(--color-bg)' }}
+        >
           <h3 className="mb-6 text-xl font-bold text-gray-900 md:text-2xl">How It Works</h3>
 
           <div className="grid gap-6 md:grid-cols-3 md:gap-8">
