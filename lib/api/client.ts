@@ -12,7 +12,6 @@ export class APIError extends Error {
     this.details = details;
   }
 }
-
 // Create axios instance with defaults
 const client: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '/api/v2',
@@ -29,7 +28,8 @@ client.interceptors.request.use(
   (config) => {
     // Add auth token if available
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
+      const authTokens = JSON.parse(localStorage.getItem('authTokens') || '{}');
+      const token = authTokens.access_token;
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
