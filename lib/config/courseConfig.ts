@@ -21,7 +21,7 @@ export const COURSE_CONFIG = {
   },
   
   // Returning user messaging
-  RETURNING_USER_MESSAGES: {
+  RETURNING_USER_MESSAGES{
     continueButtonText: 'Continue Learning',
     continueButtonIcon: 'fas fa-play'
   },
