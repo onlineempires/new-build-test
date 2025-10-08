@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import { QueryClientProvider } from '@tanstack/react-query';
 import '../styles/globals.css';
 import '../components/library/library-theme.module.css';
@@ -75,8 +76,12 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router]);
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
+    <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+      </Head>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
         <NotificationProvider>
           <DevProvider>
             <UserProvider>
@@ -99,5 +104,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <DevToolsToggle />
       </ThemeProvider>
     </QueryClientProvider>
+    </>
   );
 }
