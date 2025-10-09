@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import useAuth from '@/utils/useAuth';
 import FunnelPreview from '@/components/funnel/FunnelPreview';
@@ -31,7 +30,7 @@ import type {
 export default function FunnelEditor() {
   const { user, isPending } = useAuth();
   const router = useRouter();
-  const { id } = useParams();
+  const { id } = router.query;
   const isEditing = Boolean(id);
 
   const [funnel, setFunnel] = useState<MemberFunnel | null>(null);
