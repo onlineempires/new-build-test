@@ -259,7 +259,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
             className="theme-hover flex items-center space-x-2 rounded-lg border px-4 py-2 transition-colors"
             style={{
               borderColor: 'var(--color-primary)',
-              backgroundColor: 'var(--color-background)',
+              backgroundColor: 'var(--color-bg)',
               color: 'var(--color-primary)',
             }}
           >
@@ -271,15 +271,15 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
         {showChangeCloser && (
           <div
             className="theme-border mb-6 rounded-lg border p-4"
-            style={{ backgroundColor: 'var(--color-background-secondary)' }}
+            style={{ backgroundColor: 'var(--color-warning-bg)' }}
           >
             <div className="mb-2 flex items-center space-x-2">
               <Settings className="h-5 w-5" style={{ color: 'var(--color-warning)' }} />
-              <h3 className="font-medium" style={{ color: 'var(--color-warning)' }}>
+              <h3 className="font-medium" style={{ color: 'var(--color-warning-text)' }}>
                 Change Your Dedicated Closer
               </h3>
             </div>
-            <p className="mb-3 text-sm" style={{ color: 'var(--color-warning)' }}>
+            <p className="mb-3 text-sm" style={{ color: 'var(--color-warning-text)' }}>
               To change your dedicated closer or switch to round-robin service, visit the sales
               closer page. This will deactivate your current preference.
             </p>
@@ -304,7 +304,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="lg:col-span-1">
             <div
               className="theme-border overflow-hidden rounded-2xl border shadow-lg"
-              style={{ backgroundColor: 'var(--color-background)' }}
+              style={{ backgroundColor: 'var(--color-bg)' }}
             >
               {/* Profile Header */}
               <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white">
@@ -357,7 +357,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                           key={index}
                           className="inline-block rounded-full px-2 py-1 text-xs font-medium"
                           style={{
-                            backgroundColor: 'var(--color-primary-light)',
+                            backgroundColor: 'var(--color-primary-bg)',
                             color: 'var(--color-primary)',
                           }}
                         >
@@ -371,15 +371,15 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                 {/* Partnership Info */}
                 <div
                   className="rounded-lg p-4"
-                  style={{ backgroundColor: 'var(--color-background-secondary)' }}
+                  style={{ backgroundColor: 'var(--color-success-bg)' }}
                 >
                   <div className="mb-2 flex items-center space-x-2">
                     <CheckCircle className="h-5 w-5" style={{ color: 'var(--color-success)' }} />
-                    <h3 className="font-semibold" style={{ color: 'var(--color-success)' }}>
+                    <h3 className="font-semibold" style={{ color: 'var(--color-success-text)' }}>
                       Active Partnership
                     </h3>
                   </div>
-                  <p className="text-sm" style={{ color: 'var(--color-success)' }}>
+                  <p className="text-sm" style={{ color: 'var(--color-success-text)' }}>
                     Since {new Date(preference.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -391,7 +391,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="lg:col-span-2">
             <div
               className="theme-border rounded-2xl border p-6 shadow-lg"
-              style={{ backgroundColor: 'var(--color-background)' }}
+              style={{ backgroundColor: 'var(--color-bg)' }}
             >
               <div className="mb-6 flex items-center space-x-3">
                 <MessageCircle className="h-6 w-6" style={{ color: 'var(--color-primary)' }} />
@@ -405,12 +405,12 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background)',
+                    backgroundColor: 'var(--color-bg)',
                   }}
                 >
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
-                    style={{ backgroundColor: 'var(--color-primary-light)' }}
+                    style={{ backgroundColor: 'var(--color-primary-bg)' }}
                   >
                     <Mail className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
                   </div>
@@ -427,12 +427,12 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background)',
+                    backgroundColor: 'var(--color-bg)',
                   }}
                 >
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
-                    style={{ backgroundColor: 'var(--color-primary-light)' }}
+                    style={{ backgroundColor: 'var(--color-primary-bg)' }}
                   >
                     <svg
                       className="h-5 w-5"
@@ -456,12 +456,12 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background)',
+                    backgroundColor: 'var(--color-bg)',
                   }}
                 >
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
-                    style={{ backgroundColor: 'var(--color-primary-light)' }}
+                    style={{ backgroundColor: 'var(--color-primary-bg)' }}
                   >
                     <svg
                       className="h-5 w-5"
@@ -481,7 +481,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
 
               <div
                 className="mt-6 rounded-lg p-4"
-                style={{ backgroundColor: 'var(--color-background-secondary)' }}
+                style={{ backgroundColor: 'var(--color-secondary-bg)' }}
               >
                 <p className="theme-text-secondary text-sm">
                   <strong className="theme-text-primary">Best contact method:</strong> Email is
@@ -497,7 +497,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           <div
             className="theme-border rounded-xl border p-6 text-center shadow-sm"
-            style={{ backgroundColor: 'var(--color-card-background)' }}
+            style={{ backgroundColor: 'var(--color-card-bg)' }}
           >
             <Star className="mx-auto mb-4 h-12 w-12" style={{ color: 'var(--color-warning)' }} />
             <h3 className="theme-text-primary mb-2 font-semibold">Rate Performance</h3>
@@ -542,7 +542,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
 
           <div
             className="theme-border flex flex-col justify-between rounded-xl border p-6 text-center shadow-sm"
-            style={{ backgroundColor: 'var(--color-card-background)' }}
+            style={{ backgroundColor: 'var(--color-card-bg)' }}
           >
             <div className="">
               <Activity
@@ -575,7 +575,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div
               className="theme-border w-full max-w-md rounded-2xl border p-6"
-              style={{ backgroundColor: 'var(--color-background)' }}
+              style={{ backgroundColor: 'var(--color-bg)' }}
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="theme-text-primary text-xl font-bold">Rate {closer.name}</h2>
@@ -628,7 +628,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover flex-1 rounded-lg border px-4 py-2 transition-colors"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-background)',
+                    backgroundColor: 'var(--color-bg)',
                     color: 'var(--color-text)',
                   }}
                 >
@@ -662,7 +662,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div
               className="theme-border flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border"
-              style={{ backgroundColor: 'var(--color-background)' }}
+              style={{ backgroundColor: 'var(--color-bg)' }}
             >
               <div className="theme-border flex items-center justify-between border-b p-6">
                 <h2 className="theme-text-primary text-xl font-bold">Activity Report</h2>
@@ -682,7 +682,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                       <div
                         key={activity.id}
                         className="theme-border flex items-start space-x-3 rounded-lg border p-4"
-                        style={{ backgroundColor: 'var(--color-card-background)' }}
+                        style={{ backgroundColor: 'var(--color-card-bg)' }}
                       >
                         <div
                           className="mt-2 h-2 w-2 rounded-full"

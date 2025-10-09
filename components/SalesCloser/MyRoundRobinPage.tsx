@@ -64,11 +64,11 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
           <div className="animate-pulse">
             <div
               className="mb-6 h-8 w-64 rounded"
-              style={{ backgroundColor: 'var(--color-background-secondary)' }}
+              style={{ backgroundColor: 'var(--color-secondary-bg)' }}
             ></div>
             <div
               className="h-96 rounded-2xl"
-              style={{ backgroundColor: 'var(--color-background-secondary)' }}
+              style={{ backgroundColor: 'var(--color-secondary-bg)' }}
             ></div>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
         <div className="mx-auto max-w-4xl text-center">
           <div
             className="theme-border rounded-2xl border p-8 shadow-lg md:p-12"
-            style={{ backgroundColor: 'var(--color-background)' }}
+            style={{ backgroundColor: 'var(--color-bg)' }}
           >
             <Zap className="mx-auto mb-4 h-16 w-16" style={{ color: 'var(--color-secondary)' }} />
             <h1 className="theme-text-primary mb-4 text-2xl font-bold">Round Robin Not Active</h1>
