@@ -70,11 +70,18 @@ const menuItems: MenuItem[] = [
     requiredPermission: 'canAccessAffiliate', // Only for paid members and downsell
   },
   {
-    name: 'Sales Closer Setup',
+    name: 'Sales Closer',
     href: '/sales_closer',
     icon: 'fas fa-handshake',
     section: 'sales-closer',
     requiredPermission: 'canAccessSalesCloser', // New permission for sales closer access
+  },
+  {
+    name: 'My Funnels',
+    href: 'member/funnels',
+    icon: 'fas fa-funnel',
+    section: 'member-funnels',
+    requiredPermission: 'canAccessMyFunnels', // New permission for my funnels access
   },
   {
     name: 'Statistics',
@@ -149,6 +156,10 @@ export default function Sidebar({
         return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
 
       case 'Sales Closer Setup':
+        // Paid members and downsell users can see this
+        return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
+
+      case 'My Funnels':
         // Paid members and downsell users can see this
         return currentRole === 'monthly' || currentRole === 'annual' || currentRole === 'downsell';
 

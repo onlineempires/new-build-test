@@ -14,6 +14,7 @@ export interface UserPermissions {
   // Feature Access
   canAccessAffiliate: boolean;
   canAccessSalesCloser: boolean;
+  canAccessMyFunnels: boolean;
   canAccessExpertDirectory: boolean;
   canAccessDMO: boolean;
   canAccessStats: boolean;
@@ -42,6 +43,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false,
     canAccessAffiliate: false,
     canAccessSalesCloser: false,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: false,
     canAccessDMO: false,
     canAccessStats: false,
@@ -63,6 +65,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false,
     canAccessAffiliate: false,
     canAccessSalesCloser: false,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: false, // No expert directory access
     canAccessDMO: false, // No DMO access for free users
     canAccessStats: false,
@@ -85,6 +88,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false,
     canAccessAffiliate: false,
     canAccessSalesCloser: false,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: false, // No expert directory access for trial
     canAccessDMO: false, // No DMO access for trial users
     canAccessStats: false,
@@ -107,6 +111,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false, // Must purchase individually
     canAccessAffiliate: true,
     canAccessSalesCloser: true,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: true,
     canAccessDMO: true,
     canAccessStats: true,
@@ -129,6 +134,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false, // Must purchase individually
     canAccessAffiliate: true,
     canAccessSalesCloser: true,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: true,
     canAccessDMO: true,
     canAccessStats: true,
@@ -151,6 +157,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: false,
     canAccessAffiliate: true,
     canAccessSalesCloser: true,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: false,
     canAccessDMO: false,
     canAccessStats: true,
@@ -173,6 +180,7 @@ const ROLE_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canAccessMasterclasses: true,
     canAccessAffiliate: true,
     canAccessSalesCloser: true,
+    canAccessMyFunnels: true,
     canAccessExpertDirectory: true,
     canAccessDMO: true,
     canAccessStats: true,
