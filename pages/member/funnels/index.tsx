@@ -394,11 +394,8 @@ export default function MemberFunnels() {
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">My Funnels</h1>
             <p className="mt-1 text-gray-600">Create and manage your affiliate marketing funnels</p>
-            <div className="mt-4">
-              <Link
-                href="/member/funnels/new"
-                className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
-              >
+            <div className="mt-4 inline-flex cursor-pointer items-center space-x-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700">
+              <Link href="/member/funnels/new">
                 <div className="flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
                   <span>Create Funnel</span>
@@ -443,15 +440,14 @@ export default function MemberFunnels() {
                 <p className="mb-6 text-gray-600">
                   Create your first funnel to start converting visitors into customers
                 </p>
-                <Link
-                  href="/member/funnels/new"
-                  className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Plus className="h-5 w-5" />
-                    <span>Create Your First Funnel</span>
-                  </div>
-                </Link>
+                <div className="inline-flex cursor-pointer items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-3 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700">
+                  <Link href="/member/funnels/new">
+                    <div className="flex items-center space-x-2">
+                      <Plus className="h-5 w-5" />
+                      <span>Create Your First Funnel</span>
+                    </div>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="overflow-x-auto">
