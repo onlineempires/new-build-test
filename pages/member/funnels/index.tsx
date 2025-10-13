@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
 import AppLayout from '../../../components/layout/AppLayout';
+import { funnelApi } from '../../../lib/api/funnel';
 import {
   Plus,
   Edit3,
@@ -42,12 +43,9 @@ export default function MemberFunnels() {
   const fetchFunnels = async () => {
     try {
       console.log('Fetching funnels, member funnels');
-      const response = await fetch('/member/funnels');
-      if (response.ok) {
-        const data = await response.json();
-        setFunnels(data);
-        setNoFunnels(true);
-      }
+      const data = await funnelApi.memberFunnel.getFunnels();
+      setFunnels(data);
+      setNoFunnels(true);
     } catch (error) {
       console.error('Failed to fetch funnels:', error);
     } finally {
@@ -108,7 +106,7 @@ export default function MemberFunnels() {
         // Refresh the funnels list to show the new duplicate
         await fetchFunnels();
         // Navigate to edit the duplicated funnel
-        router.push(`/member/funnels/${duplicatedFunnel.id}/edit`);
+        router.push(`/member/funnels/${duplicatedFunnel.id}`);
       } else {
         const errorData = await response.json();
         alert(`Failed to duplicate funnel: ${errorData.error || 'Unknown error'}`);
@@ -300,7 +298,7 @@ export default function MemberFunnels() {
                           <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
                             <div className="py-1">
                               <Link
-                                href={`/member/funnels/${funnel.id}/edit`}
+                                href={`/member/funnels/${funnel.id}`}
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                                 onClick={() => setActiveDropdown(null)}
                               >
@@ -516,7 +514,7 @@ export default function MemberFunnels() {
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end space-x-2">
                             <Link
-                              href={`/member/funnels/${funnel.id}/edit`}
+                              href={`/member/funnels/${funnel.id}`}
                               className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
                               title="Edit"
                             >

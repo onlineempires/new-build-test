@@ -78,7 +78,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'My Funnels',
-    href: 'member/funnels',
+    href: '/member/funnels',
     icon: 'fas fa-funnel',
     section: 'member-funnels',
     requiredPermission: 'canAccessMyFunnels', // New permission for my funnels access

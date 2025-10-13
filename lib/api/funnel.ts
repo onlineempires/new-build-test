@@ -8,14 +8,15 @@ import {
   CreateMemberFunnel,
   UpdateMemberFunnel,
   TrackAnalytics,
-} from '../types/funnel';
+} from '../../types/funnel';
 
 // API Base URL - points to new_features backend on port 3005
-const API_BASE_URL = process.env.NEXT_PUBLIC_FUNNEL_API_URL || 'http://localhost:3005/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_FUNNEL_API_URL || 'http://localhost:3005/api/v2';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
+  const authTokens = JSON.parse(localStorage.getItem('authTokens') || '{}');
+  const token = authTokens.access_token;
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),

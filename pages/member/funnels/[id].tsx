@@ -1,12 +1,63 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import Head from 'next/head';
 import useAuth from '@/utils/useAuth';
 import FunnelPreview from '@/components/funnel/FunnelPreview';
 import LandingPagePreview from '@/components/funnel/LandingPagePreview';
 import ImageUpload from '@/components/funnel/ImageUpload';
 import TemplateSelector from '@/components/funnel/TemplateSelector';
-import WysiwygEditor from '@/components/funnel/WysiwygEditor';
+import JoditEditor from '@/components/funnel/JoditEditor';
+import AppLayout from '../../../components/layout/AppLayout';
+import { funnelApi } from '../../../lib/api/funnel';
+
+// Hook to calculate available space dynamically
+const useAvailableSpace = () => {
+  const [availableSpace, setAvailableSpace] = useState({
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+  });
+
+  useEffect(() => {
+    const calculateSpace = () => {
+      const sidebar = document.querySelector('[data-sidebar]') as HTMLElement;
+      const header = document.querySelector('[data-header]') as HTMLElement;
+
+      // Fallback values for when elements aren't found
+      const sidebarWidth = sidebar ? sidebar.offsetWidth : window.innerWidth >= 1024 ? 256 : 0;
+      const headerHeight = header ? header.offsetHeight : 64;
+
+      setAvailableSpace({
+        left: sidebarWidth,
+        top: headerHeight + 20, // Add 20px offset to lower the modal
+        right: 0,
+        bottom: 0,
+      });
+    };
+
+    // Calculate on mount and when window resizes
+    calculateSpace();
+    window.addEventListener('resize', calculateSpace);
+
+    // Also listen for sidebar/header changes
+    const observer = new MutationObserver(calculateSpace);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style'],
+    });
+
+    return () => {
+      window.removeEventListener('resize', calculateSpace);
+      observer.disconnect();
+    };
+  }, []);
+
+  return availableSpace;
+};
 import {
   Save,
   Eye,
@@ -31,7 +82,13 @@ export default function FunnelEditor() {
   const { user, isPending } = useAuth();
   const router = useRouter();
   const { id } = router.query;
-  const isEditing = Boolean(id);
+  const isEditing = Boolean(id) && id !== 'new';
+  const availableSpace = useAvailableSpace();
+  // no portal state
+
+  useEffect(() => {
+    // no-op
+  }, []);
 
   const [funnel, setFunnel] = useState<MemberFunnel | null>(null);
 
@@ -183,11 +240,7 @@ export default function FunnelEditor() {
 
   const fetchTemplates = async () => {
     try {
-      const response = await fetch('/admin/templates');
-      if (response.ok) {
-        await response.json();
-        // Templates are used for template selector but we don't need to store them in state
-      }
+      await funnelApi.adminTemplate.getTemplates();
     } catch (error) {
       console.error('Failed to fetch templates:', error);
     }
@@ -618,11 +671,13 @@ export default function FunnelEditor() {
 
   if (isPending || !user || loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <div className="animate-spin">
-          <Loader2 className="h-10 w-10 text-blue-600" />
+      <AppLayout user={{ id: 0, name: 'Loading...', avatarUrl: '' }}>
+        <div className="flex min-h-screen flex-col items-center justify-center">
+          <div className="animate-spin">
+            <Loader2 className="h-10 w-10 text-blue-600" />
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -642,331 +697,1430 @@ export default function FunnelEditor() {
   ];
 
   return (
-    <>
-      <TemplateSelector
-        isOpen={showTemplateSelector}
-        onClose={() => setShowTemplateSelector(false)}
-        onSelect={handleTemplateSelect}
-      />
-      <div className="p-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/member/funnels"
-              className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {isEditing ? 'Edit Funnel' : 'Create New Funnel'}
-              </h1>
-              <p className="mt-1 text-gray-600">
-                {isEditing ? 'Update your funnel details' : 'Build your high-converting funnel'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            {funnel?.is_published && funnel.slug ? (
+    <React.Fragment>
+      <Head>
+        <title>{isEditing ? 'Edit Funnel' : 'Create Funnel'} - Online Empires</title>
+        <meta name="description" content="Create and edit your affiliate marketing funnels" />
+      </Head>
+      <AppLayout user={{ id: 0, name: 'User', avatarUrl: '' }}>
+        <TemplateSelector
+          isOpen={showTemplateSelector}
+          onClose={() => setShowTemplateSelector(false)}
+          onSelect={handleTemplateSelect}
+        />
+        <div className="p-8">
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
               <Link
-                to={`/funnel/${funnel.slug}`}
-                target="_blank"
-                className="inline-flex items-center space-x-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+                href="/member/funnels"
+                className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
               >
-                <Eye className="h-4 w-4" />
-                <span>Preview</span>
+                <ArrowLeft className="h-5 w-5" />
               </Link>
-            ) : null}
-            {isEditing ? (
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {isEditing ? 'Edit Funnel' : 'Create New Funnel'}
+                </h1>
+                <p className="mt-1 text-gray-600">
+                  {isEditing ? 'Update your funnel details' : 'Build your high-converting funnel'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              {funnel?.is_published && funnel.slug ? (
+                <Link
+                  href={`/funnel/${funnel.slug}`}
+                  target="_blank"
+                  className="inline-flex items-center space-x-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>Preview</span>
+                </Link>
+              ) : null}
+              {isEditing ? (
+                <button
+                  onClick={() => setShowSaveAsTemplateModal(true)}
+                  disabled={saving}
+                  className="inline-flex items-center space-x-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <BookmarkPlus className="h-4 w-4" />
+                  <span>Save as Template</span>
+                </button>
+              ) : null}
               <button
-                onClick={() => setShowSaveAsTemplateModal(true)}
-                disabled={saving}
-                className="inline-flex items-center space-x-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
-              >
-                <BookmarkPlus className="h-4 w-4" />
-                <span>Save as Template</span>
-              </button>
-            ) : null}
-            <button
-              onClick={() => handleSave(false)}
-              disabled={saving || !formData.title || !formData.funnel_name}
-              className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              <span>{saving ? 'Saving...' : 'Save Funnel'}</span>
-            </button>
-            {!isEditing ? (
-              <button
-                onClick={() => handleSave(true)}
+                onClick={() => handleSave(false)}
                 disabled={saving || !formData.title || !formData.funnel_name}
-                className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:from-green-700 hover:to-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                <span>{saving ? 'Publishing...' : 'Save & Publish'}</span>
+                <span>{saving ? 'Saving...' : 'Save Funnel'}</span>
               </button>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-          {/* Left Column - Form */}
-          <div className="space-y-6 xl:col-span-2">
-            {/* Tab Navigation */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
-                      activeTab === tab.id
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <tab.icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
+              {!isEditing ? (
+                <button
+                  onClick={() => handleSave(true)}
+                  disabled={saving || !formData.title || !formData.funnel_name}
+                  className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-2 font-medium text-white transition-all duration-200 hover:from-green-700 hover:to-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  <span>{saving ? 'Publishing...' : 'Save & Publish'}</span>
+                </button>
+              ) : null}
             </div>
+          </div>
 
-            {/* Setup Tab */}
-            {activeTab === 'setup' && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">Funnel Type & Setup</h2>
+          {/* Main Content */}
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+            {/* Left Column - Form */}
+            <div className="space-y-6 xl:col-span-2">
+              {/* Tab Navigation */}
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center space-x-2 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-white text-blue-600 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <tab.icon className="h-4 w-4" />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                  <div className="space-y-6">
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Funnel Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.funnel_name || ''}
-                        onChange={(e) => handleInputChange('funnel_name', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter a name for your funnel (for organization purposes)"
-                      />
-                      <p className="mt-2 text-sm text-gray-500">
-                        This is for your reference and organization. It won't be displayed to
-                        visitors.
-                      </p>
-                    </div>
+              {/* Setup Tab */}
+              {activeTab === 'setup' && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">
+                      Funnel Type & Setup
+                    </h2>
 
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Funnel Type *
-                      </label>
-                      <select
-                        value={formData.funnel_type}
-                        onChange={(e) => handleInputChange('funnel_type', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="direct_webinar">
-                          Direct Webinar - Takes users directly to the webinar
-                        </option>
-                        <option value="email_capture">
-                          Email Capture + Webinar - Collects email first, then shows webinar
-                        </option>
-                      </select>
-                      <p className="mt-2 text-sm text-gray-500">
-                        Choose between a direct webinar funnel or one that captures emails first.
-                      </p>
-                    </div>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Funnel Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.funnel_name || ''}
+                          onChange={(e) => handleInputChange('funnel_name', e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter a name for your funnel (for organization purposes)"
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                          This is for your reference and organization. It won't be displayed to
+                          visitors.
+                        </p>
+                      </div>
 
-                    {/* Email Capture Settings */}
-                    {formData.funnel_type === 'email_capture' && (
-                      <div className="border-t pt-6">
-                        <h3 className="mb-4 flex items-center text-lg font-medium text-gray-900">
-                          <Mail className="mr-2 h-5 w-5" />
-                          Email Capture Settings
-                        </h3>
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Funnel Type *
+                        </label>
+                        <select
+                          value={formData.funnel_type}
+                          onChange={(e) => handleInputChange('funnel_type', e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="direct_webinar">
+                            Direct Webinar - Takes users directly to the webinar
+                          </option>
+                          <option value="email_capture">
+                            Email Capture + Webinar - Collects email first, then shows webinar
+                          </option>
+                        </select>
+                        <p className="mt-2 text-sm text-gray-500">
+                          Choose between a direct webinar funnel or one that captures emails first.
+                        </p>
+                      </div>
 
-                        <div className="space-y-4">
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Landing Page Title
-                            </label>
-                            <WysiwygEditor
-                              value={
-                                formData.landing_page_title_html ||
-                                formData.landing_page_title ||
-                                ''
-                              }
-                              onChange={(value) => {
-                                const plainText = value.replace(/<[^>]*>/g, '').trim();
-                                handleInputChange('landing_page_title', plainText || '');
-                                handleInputChange('landing_page_title_html', value);
-                              }}
-                              placeholder="Free Training: How to..."
-                            />
-                          </div>
+                      {/* Email Capture Settings */}
+                      {formData.funnel_type === 'email_capture' && (
+                        <div className="border-t pt-6">
+                          <h3 className="mb-4 flex items-center text-lg font-medium text-gray-900">
+                            <Mail className="mr-2 h-5 w-5" />
+                            Email Capture Settings
+                          </h3>
 
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Landing Page Subtitle
-                            </label>
-                            <WysiwygEditor
-                              value={
-                                formData.landing_page_subtitle_html ||
-                                formData.landing_page_subtitle ||
-                                ''
-                              }
-                              onChange={(value) => {
-                                const plainText = value.replace(/<[^>]*>/g, '').trim();
-                                handleInputChange('landing_page_subtitle', plainText || '');
-                                handleInputChange('landing_page_subtitle_html', value);
-                              }}
-                              placeholder="Enter your email to get instant access"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Landing Page Description
-                            </label>
-                            <WysiwygEditor
-                              value={
-                                formData.landing_page_description_html ||
-                                formData.landing_page_description ||
-                                ''
-                              }
-                              onChange={(value) => {
-                                const plainText = value.replace(/<[^>]*>/g, '').trim();
-                                handleInputChange('landing_page_description', plainText || '');
-                                handleInputChange('landing_page_description_html', value);
-                              }}
-                              placeholder="Describe what visitors will learn in the webinar..."
-                            />
-                          </div>
-
-                          <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Form Heading
-                            </label>
-                            <input
-                              type="text"
-                              value={formData.landing_page_form_heading || ''}
-                              onChange={(e) =>
-                                handleInputChange('landing_page_form_heading', e.target.value)
-                              }
-                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Enter Your Email to Watch Now"
-                            />
-                            <p className="mt-2 text-sm text-gray-500">
-                              The heading text that appears above the email form.
-                            </p>
-                          </div>
-
-                          <div>
-                            <label className="flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={formData.landing_page_show_icon}
-                                onChange={(e) =>
-                                  handleInputChange('landing_page_show_icon', e.target.checked)
+                          <div className="space-y-4">
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Landing Page Title
+                              </label>
+                              <JoditEditor
+                                value={
+                                  formData.landing_page_title_html ||
+                                  formData.landing_page_title ||
+                                  ''
                                 }
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                onChange={(value) => {
+                                  const plainText = value.replace(/<[^>]*>/g, '').trim();
+                                  handleInputChange('landing_page_title', plainText || '');
+                                  handleInputChange('landing_page_title_html', value);
+                                }}
+                                placeholder="Free Training: How to..."
                               />
-                              <span className="ml-3 text-sm font-medium text-gray-700">
-                                Show mail icon next to form heading
-                              </span>
-                            </label>
-                            <p className="ml-7 mt-2 text-sm text-gray-500">
-                              Display an envelope icon next to the form heading text.
-                            </p>
-                          </div>
+                            </div>
 
-                          <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Privacy Text
-                            </label>
-                            <input
-                              type="text"
-                              value={formData.landing_page_privacy_text || ''}
-                              onChange={(e) =>
-                                handleInputChange('landing_page_privacy_text', e.target.value)
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Landing Page Subtitle
+                              </label>
+                              <JoditEditor
+                                value={
+                                  formData.landing_page_subtitle_html ||
+                                  formData.landing_page_subtitle ||
+                                  ''
+                                }
+                                onChange={(value) => {
+                                  const plainText = value.replace(/<[^>]*>/g, '').trim();
+                                  handleInputChange('landing_page_subtitle', plainText || '');
+                                  handleInputChange('landing_page_subtitle_html', value);
+                                }}
+                                placeholder="Enter your email to get instant access"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Landing Page Description
+                              </label>
+                              <JoditEditor
+                                value={
+                                  formData.landing_page_description_html ||
+                                  formData.landing_page_description ||
+                                  ''
+                                }
+                                onChange={(value) => {
+                                  const plainText = value.replace(/<[^>]*>/g, '').trim();
+                                  handleInputChange('landing_page_description', plainText || '');
+                                  handleInputChange('landing_page_description_html', value);
+                                }}
+                                placeholder="Describe what visitors will learn in the webinar..."
+                              />
+                            </div>
+
+                            <div>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Form Heading
+                              </label>
+                              <input
+                                type="text"
+                                value={formData.landing_page_form_heading || ''}
+                                onChange={(e) =>
+                                  handleInputChange('landing_page_form_heading', e.target.value)
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter Your Email to Watch Now"
+                              />
+                              <p className="mt-2 text-sm text-gray-500">
+                                The heading text that appears above the email form.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.landing_page_show_icon}
+                                  onChange={(e) =>
+                                    handleInputChange('landing_page_show_icon', e.target.checked)
+                                  }
+                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="ml-3 text-sm font-medium text-gray-700">
+                                  Show mail icon next to form heading
+                                </span>
+                              </label>
+                              <p className="ml-7 mt-2 text-sm text-gray-500">
+                                Display an envelope icon next to the form heading text.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Privacy Text
+                              </label>
+                              <input
+                                type="text"
+                                value={formData.landing_page_privacy_text || ''}
+                                onChange={(e) =>
+                                  handleInputChange('landing_page_privacy_text', e.target.value)
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="🔒 We respect your privacy. Your email will not be shared."
+                              />
+                              <p className="mt-2 text-sm text-gray-500">
+                                The privacy text that appears below the email form.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Privacy Text Color
+                              </label>
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="color"
+                                  value={formData.landing_page_privacy_text_color || '#9ca3af'}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_privacy_text_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                />
+                                <input
+                                  type="text"
+                                  value={formData.landing_page_privacy_text_color || ''}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_privacy_text_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="#9ca3af"
+                                />
+                              </div>
+                              <p className="mt-2 text-sm text-gray-500">
+                                Color of the privacy text below the email form.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Button Text
+                              </label>
+                              <input
+                                type="text"
+                                value={formData.landing_page_button_text || ''}
+                                onChange={(e) =>
+                                  handleInputChange('landing_page_button_text', e.target.value)
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Get Instant Access"
+                              />
+                            </div>
+
+                            <ImageUpload
+                              label="Landing Page Background Image (Optional)"
+                              value={formData.landing_page_background_image_url || ''}
+                              onChange={(url) =>
+                                handleInputChange('landing_page_background_image_url', url)
                               }
-                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="🔒 We respect your privacy. Your email will not be shared."
+                              placeholder="Upload landing page background image or enter URL"
+                            />
+
+                            {formData.landing_page_background_image_url && (
+                              <div>
+                                <label className="mb-3 block text-sm font-medium text-gray-700">
+                                  Landing Page Background Overlay Opacity:{' '}
+                                  {formData.landing_page_background_overlay_opacity !== undefined
+                                    ? formData.landing_page_background_overlay_opacity
+                                    : 60}
+                                  %
+                                </label>
+                                <div className="flex items-center gap-4">
+                                  <div className="flex-1">
+                                    <input
+                                      type="range"
+                                      min="0"
+                                      max="100"
+                                      step="1"
+                                      value={
+                                        formData.landing_page_background_overlay_opacity !==
+                                        undefined
+                                          ? formData.landing_page_background_overlay_opacity
+                                          : 60
+                                      }
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value, 10);
+                                        handleInputChange(
+                                          'landing_page_background_overlay_opacity',
+                                          value
+                                        );
+                                      }}
+                                      className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+                                    />
+                                  </div>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="1"
+                                    value={
+                                      formData.landing_page_background_overlay_opacity !== undefined
+                                        ? formData.landing_page_background_overlay_opacity
+                                        : 60
+                                    }
+                                    onChange={(e) => {
+                                      const value = parseInt(e.target.value, 10);
+                                      if (!isNaN(value) && value >= 0 && value <= 100) {
+                                        handleInputChange(
+                                          'landing_page_background_overlay_opacity',
+                                          value
+                                        );
+                                      }
+                                    }}
+                                    className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                  <span className="text-sm text-gray-500">%</span>
+                                </div>
+                                <div className="mt-2 flex justify-between text-xs text-gray-500">
+                                  <span>0% (No overlay)</span>
+                                  <span>100% (Fully dark)</span>
+                                </div>
+                                <p className="mt-2 text-sm text-gray-500">
+                                  Controls the darkness of the overlay on top of your background
+                                  image. Lower values show more of the image, higher values make
+                                  text more readable.
+                                </p>
+                              </div>
+                            )}
+
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Landing Page Background Color
+                              </label>
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="color"
+                                  value={formData.landing_page_background_color || '#000000'}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_background_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                />
+                                <input
+                                  type="text"
+                                  value={formData.landing_page_background_color || ''}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_background_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="#000000"
+                                />
+                              </div>
+                              <p className="mt-2 text-sm text-gray-500">
+                                Background color for the landing page. Leave empty to use default
+                                black. This color shows when no background image is set.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Fields to Collect
+                              </label>
+                              <div className="space-y-3">
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.collect_name}
+                                    onChange={(e) =>
+                                      handleInputChange('collect_name', e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-3 text-sm font-medium text-gray-700">
+                                    Name
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.collect_email}
+                                    onChange={(e) =>
+                                      handleInputChange('collect_email', e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-3 text-sm font-medium text-gray-700">
+                                    Email (Required)
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.collect_phone}
+                                    onChange={(e) =>
+                                      handleInputChange('collect_phone', e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-3 text-sm font-medium text-gray-700">
+                                    Phone Number
+                                  </span>
+                                </label>
+                                <label className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.collect_instagram}
+                                    onChange={(e) =>
+                                      handleInputChange('collect_instagram', e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span className="ml-3 text-sm font-medium text-gray-700">
+                                    Instagram Handle
+                                  </span>
+                                </label>
+                              </div>
+                              <p className="mt-2 text-sm text-gray-500">
+                                Choose which fields to collect from visitors. Email is always
+                                required and will be sent to your email service provider.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Email Service Integration
+                              </label>
+                              <select
+                                value={formData.email_service_type || ''}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    'email_service_type',
+                                    e.target.value || undefined
+                                  )
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              >
+                                <option value="">Select Email Service (Optional)</option>
+                                <option value="aweber">AWeber</option>
+                                <option value="mailchimp">Mailchimp</option>
+                                <option value="convertkit">ConvertKit</option>
+                                <option value="activecampaign">ActiveCampaign</option>
+                                <option value="custom_webhook">Custom Webhook</option>
+                              </select>
+                            </div>
+
+                            {/* Service-specific fields */}
+                            {formData.email_service_type === 'aweber' && (
+                              <div className="space-y-4">
+                                {!aweberConnected ? (
+                                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <h4 className="mb-1 text-sm font-medium text-blue-900">
+                                          Connect AWeber Account
+                                        </h4>
+                                        <p className="text-sm text-blue-700">
+                                          Connect your AWeber account using OAuth to securely access
+                                          your lists and add subscribers.
+                                        </p>
+                                      </div>
+                                      <button
+                                        onClick={initiateAweberAuth}
+                                        disabled={aweberLoading}
+                                        className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                                      >
+                                        {aweberLoading ? (
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : null}
+                                        Connect AWeber
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-4">
+                                    <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                          <div className="mr-2 h-2 w-2 rounded-full bg-green-500"></div>
+                                          <span className="text-sm font-medium text-green-900">
+                                            AWeber Connected
+                                          </span>
+                                        </div>
+                                        <button
+                                          onClick={disconnectAweber}
+                                          className="text-sm text-red-600 hover:text-red-800"
+                                        >
+                                          Disconnect
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                                        Select AWeber List
+                                      </label>
+                                      {aweberLoading ? (
+                                        <div className="flex items-center justify-center py-4">
+                                          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                                          <span className="ml-2 text-sm text-gray-600">
+                                            Loading lists...
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <select
+                                          value={formData.aweber_list_id || ''}
+                                          onChange={(e) =>
+                                            handleInputChange('aweber_list_id', e.target.value)
+                                          }
+                                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                          <option value="">Select a list</option>
+                                          {aweberLists.map((list) => (
+                                            <option key={list.id} value={list.id}>
+                                              {list.name} ({list.total_subscribed} subscribers)
+                                            </option>
+                                          ))}
+                                        </select>
+                                      )}
+                                      {aweberLists.length === 0 && !aweberLoading && (
+                                        <p className="mt-2 text-sm text-gray-500">
+                                          No lists found. Make sure you have lists set up in your
+                                          AWeber account.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {formData.email_service_type === 'mailchimp' && (
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    Mailchimp API Key
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={formData.mailchimp_api_key || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('mailchimp_api_key', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Your Mailchimp API key"
+                                  />
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Your Mailchimp API key (found in Account → Extras → API keys)
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    Mailchimp List ID
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={formData.mailchimp_list_id || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('mailchimp_list_id', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Your Mailchimp list ID"
+                                  />
+                                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
+                                    <p className="mb-1 font-medium text-blue-900">
+                                      📍 How to find your Mailchimp credentials:
+                                    </p>
+                                    <div className="space-y-2">
+                                      <div>
+                                        <p className="font-medium text-blue-800">API Key:</p>
+                                        <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
+                                          <li>
+                                            Go to your Mailchimp dashboard → Account → Extras → API
+                                            keys
+                                          </li>
+                                          <li>Generate a new API key if you don't have one</li>
+                                          <li>
+                                            Copy the entire API key (includes data center like
+                                            "us1", "us2", etc.)
+                                          </li>
+                                        </ol>
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-blue-800">List ID:</p>
+                                        <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
+                                          <li>
+                                            Go to Audience → All contacts → Select your audience
+                                          </li>
+                                          <li>Go to Settings → Audience name and defaults</li>
+                                          <li>The List ID is shown at the bottom of the page</li>
+                                          <li>
+                                            Also visible in the URL when viewing your audience
+                                          </li>
+                                        </ol>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {formData.email_service_type === 'convertkit' && (
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    ConvertKit API Key
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={formData.convertkit_api_key || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('convertkit_api_key', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Your ConvertKit API key"
+                                  />
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Your ConvertKit API key (found in Settings → Advanced → API)
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    ConvertKit Form ID
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={formData.convertkit_form_id || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('convertkit_form_id', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Your ConvertKit form ID"
+                                  />
+                                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
+                                    <p className="mb-1 font-medium text-blue-900">
+                                      📍 How to find your ConvertKit credentials:
+                                    </p>
+                                    <div className="space-y-2">
+                                      <div>
+                                        <p className="font-medium text-blue-800">API Key:</p>
+                                        <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
+                                          <li>
+                                            Go to your ConvertKit dashboard → Settings → Advanced
+                                          </li>
+                                          <li>Click on the "API" tab</li>
+                                          <li>Copy your API key from the "API Key" section</li>
+                                        </ol>
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-blue-800">Form ID:</p>
+                                        <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
+                                          <li>Go to Forms → Select the form you want to use</li>
+                                          <li>
+                                            <strong>Look in the URL bar</strong> - the Form ID is
+                                            the number (e.g., /forms/1234567 means Form ID is
+                                            "1234567")
+                                          </li>
+                                          <li>
+                                            Or check the form embed code - it contains the form ID
+                                          </li>
+                                          <li>
+                                            Enter just the number (e.g., "1234567", not the full
+                                            URL)
+                                          </li>
+                                        </ol>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {formData.email_service_type === 'activecampaign' && (
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    ActiveCampaign API URL
+                                  </label>
+                                  <input
+                                    type="url"
+                                    value={formData.activecampaign_api_url || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('activecampaign_api_url', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="https://yoursubdomain.api-us1.com"
+                                  />
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Your ActiveCampaign API URL (found in Settings → Developer)
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    ActiveCampaign API Key
+                                  </label>
+                                  <input
+                                    type="password"
+                                    value={formData.activecampaign_api_key || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('activecampaign_api_key', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Your ActiveCampaign API key"
+                                  />
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Your ActiveCampaign API key (found in Settings → Developer)
+                                  </p>
+                                </div>
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    ActiveCampaign List ID
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={formData.activecampaign_list_id || ''}
+                                    onChange={(e) =>
+                                      handleInputChange('activecampaign_list_id', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="List ID (e.g., 1, 2, 3)"
+                                  />
+                                  <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
+                                    <p className="mb-1 font-medium text-blue-900">
+                                      📍 How to find your ActiveCampaign List ID:
+                                    </p>
+                                    <ol className="list-inside list-decimal space-y-1 text-blue-800">
+                                      <li>Go to your ActiveCampaign dashboard → Lists</li>
+                                      <li>Click on the list you want to use</li>
+                                      <li>
+                                        <strong>Look in the URL bar</strong> - the List ID is the
+                                        number at the end (e.g., /lists/view/5 means List ID is "5")
+                                      </li>
+                                      <li>Enter just the number (e.g., "5", not the full URL)</li>
+                                    </ol>
+                                    <p className="mt-2 text-xs text-blue-700">
+                                      💡 The List ID is easiest to find in the URL when viewing your
+                                      list, not in the list settings.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {formData.email_service_type === 'custom_webhook' && (
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                  Custom Webhook URL
+                                </label>
+                                <input
+                                  type="url"
+                                  value={formData.custom_email_webhook || ''}
+                                  onChange={(e) =>
+                                    handleInputChange('custom_email_webhook', e.target.value)
+                                  }
+                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="https://your-webhook-url.com/submit"
+                                />
+                                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
+                                  <p className="mb-1 font-medium text-blue-900">
+                                    📍 Custom Webhook Setup:
+                                  </p>
+                                  <p className="mb-2 text-blue-800">
+                                    We'll POST the following data to your webhook:
+                                  </p>
+                                  <ul className="list-inside list-disc space-y-1 text-xs text-blue-800">
+                                    <li>email (required)</li>
+                                    <li>name (if collected)</li>
+                                    <li>phone (if collected)</li>
+                                    <li>instagram (if collected)</li>
+                                    <li>funnel_id, funnel_name, timestamp</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="space-y-4 border-t pt-6">
+                              <h3 className="mb-4 flex items-center text-lg font-medium text-gray-900">
+                                <Settings className="mr-2 h-5 w-5" />
+                                Branding & Icons
+                              </h3>
+
+                              <ImageUpload
+                                label="Logo (Optional)"
+                                value={formData.landing_page_logo_url || ''}
+                                onChange={(url) => {
+                                  handleInputChange('landing_page_logo_url', url);
+                                  // Automatically hide icon when logo is uploaded
+                                  if (url && url.trim()) {
+                                    handleInputChange('landing_page_show_icon', false);
+                                  }
+                                }}
+                                placeholder="Upload your logo or enter image URL"
+                              />
+                              <p className="-mt-4 text-sm text-gray-500">
+                                Upload your logo to replace the default icon at the top of your
+                                landing page. When you upload a logo, the default icon will be
+                                automatically hidden. Recommended size: 200x200 pixels or larger.
+                              </p>
+
+                              {formData.landing_page_logo_url && (
+                                <div>
+                                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                                    Logo Size
+                                  </label>
+                                  <select
+                                    value={formData.landing_page_logo_size || 'medium'}
+                                    onChange={(e) =>
+                                      handleInputChange('landing_page_logo_size', e.target.value)
+                                    }
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  >
+                                    <option value="small">Small (48px height)</option>
+                                    <option value="medium">Medium (64px height)</option>
+                                    <option value="large">Large (80px height)</option>
+                                  </select>
+                                  <p className="mt-2 text-sm text-gray-500">
+                                    Controls the display size of your logo on the landing page.
+                                  </p>
+                                </div>
+                              )}
+
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                  Form Icon (Email Form Icon)
+                                </label>
+                                <select
+                                  value={formData.landing_page_form_icon || 'Mail'}
+                                  onChange={(e) =>
+                                    handleInputChange('landing_page_form_icon', e.target.value)
+                                  }
+                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="Mail">📧 Mail (Email)</option>
+                                  <option value="Lock">🔒 Lock (Security/Privacy)</option>
+                                  <option value="Star">⭐ Star (Premium/Quality)</option>
+                                  <option value="Gift">🎁 Gift (Free/Bonus)</option>
+                                  <option value="Play">▶️ Play (Video/Training)</option>
+                                  <option value="CheckCircle">
+                                    ✅ CheckCircle (Success/Complete)
+                                  </option>
+                                  <option value="Award">🏆 Award (Achievement/Winner)</option>
+                                  <option value="Zap">⚡ Zap (Fast/Power)</option>
+                                  <option value="Target">🎯 Target (Focus/Goals)</option>
+                                  <option value="Users">👥 Users (Community/People)</option>
+                                  <option value="Crown">👑 Crown (Premium/Royal)</option>
+                                  <option value="Diamond">💎 Diamond (Valuable/Premium)</option>
+                                  <option value="Rocket">🚀 Rocket (Growth/Launch)</option>
+                                </select>
+                                <p className="mt-2 text-sm text-gray-500">
+                                  The small icon displayed next to your email form heading.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Content Tab */}
+              {activeTab === 'content' && (
+                <div className="space-y-6">
+                  {/* Basic Info */}
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">Content & Copy</h2>
+
+                    <div className="space-y-6">
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Main Title *
+                        </label>
+                        <JoditEditor
+                          value={formData.title_html || formData.title}
+                          onChange={(value) => {
+                            // Strip HTML for plain text fallback
+                            const plainText = value.replace(/<[^>]*>/g, '').trim();
+                            handleInputChange('title', plainText || 'Untitled');
+                            handleInputChange('title_html', value);
+                          }}
+                          placeholder="Enter your compelling funnel title..."
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Make it bold, colorful, and compelling. Use formatting to emphasize key
+                          words.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Subtitle
+                        </label>
+                        <JoditEditor
+                          value={formData.subtitle_html || formData.subtitle || ''}
+                          onChange={(value) => {
+                            const plainText = value.replace(/<[^>]*>/g, '').trim();
+                            handleInputChange('subtitle', plainText || '');
+                            handleInputChange('subtitle_html', value);
+                          }}
+                          placeholder="Add a compelling subtitle that supports your main message..."
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Explain the value proposition or what viewers will learn.
+                        </p>
+                      </div>
+
+                      {/* Outro Text */}
+                      <div>
+                        <div className="mb-3 flex items-center justify-between">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Outro Section Content
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={formData.show_outro_section}
+                              onChange={(e) =>
+                                handleInputChange('show_outro_section', e.target.checked)
+                              }
+                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">Show outro section</span>
+                          </label>
+                        </div>
+
+                        {formData.show_outro_section && (
+                          <>
+                            <JoditEditor
+                              value={formData.outro_text_html || formData.outro_text || ''}
+                              onChange={(value) => {
+                                const plainText = value.replace(/<[^>]*>/g, '').trim();
+                                handleInputChange('outro_text', plainText || '');
+                                handleInputChange('outro_text_html', value);
+                              }}
+                              placeholder="Add compelling outro content to transition to your call-to-action..."
                             />
                             <p className="mt-2 text-sm text-gray-500">
-                              The privacy text that appears below the email form.
+                              This appears after the main video to set up your Calendly
+                              call-to-action.
                             </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Video Tab */}
+              {activeTab === 'video' && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">Video Settings</h2>
+
+                    <div className="space-y-6">
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Main Video Source
+                        </label>
+                        <select
+                          value={formData.selected_video_type}
+                          onChange={(e) => handleInputChange('selected_video_type', e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="video_1">45 Minute Webinar</option>
+                          <option value="video_2">60 Min - Webinar</option>
+                          <option value="custom">Custom Video URL</option>
+                        </select>
+                      </div>
+
+                      {formData.selected_video_type === 'custom' && (
+                        <div>
+                          <label className="mb-3 block text-sm font-medium text-gray-700">
+                            Custom Video URL or Embed Code
+                          </label>
+                          <textarea
+                            value={formData.custom_video_url || ''}
+                            onChange={(e) => handleInputChange('custom_video_url', e.target.value)}
+                            rows={4}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="https://youtube.com/watch?v=... or <iframe src='...'></iframe>"
+                          />
+                          <p className="mt-2 text-sm text-gray-500">
+                            Paste a YouTube/Vimeo URL, direct video file URL, or custom embed code
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Autoplay Option */}
+                      <div>
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={formData.autoplay_video}
+                            onChange={(e) => handleInputChange('autoplay_video', e.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="ml-3 text-sm font-medium text-gray-700">
+                            Auto-play main video when page loads (muted)
+                          </span>
+                        </label>
+                        <p className="ml-7 mt-2 text-sm text-gray-500">
+                          Videos will auto-play muted to comply with browser policies. Viewers can
+                          unmute and interact normally.
+                        </p>
+                      </div>
+
+                      {formData.show_outro_section && (
+                        <>
+                          <div>
+                            <label className="mb-3 block text-sm font-medium text-gray-700">
+                              Outro Video Source
+                            </label>
+                            <select
+                              value={formData.outro_video_type}
+                              onChange={(e) =>
+                                handleInputChange('outro_video_type', e.target.value)
+                              }
+                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="option_1">Default Outro Video</option>
+                              <option value="custom">Custom Outro Video URL</option>
+                            </select>
                           </div>
+
+                          {formData.outro_video_type === 'custom' && (
+                            <div>
+                              <label className="mb-3 block text-sm font-medium text-gray-700">
+                                Custom Outro Video URL or Embed Code
+                              </label>
+                              <textarea
+                                value={formData.outro_custom_url || ''}
+                                onChange={(e) =>
+                                  handleInputChange('outro_custom_url', e.target.value)
+                                }
+                                rows={4}
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="https://youtube.com/watch?v=... or <iframe src='...'></iframe>"
+                              />
+                              <p className="mt-2 text-sm text-gray-500">
+                                Paste a YouTube/Vimeo URL, direct video file URL, or custom embed
+                                code
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Design Tab */}
+              {activeTab === 'design' && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">Design & Styling</h2>
+
+                    <div className="space-y-6">
+                      <ImageUpload
+                        label="Webinar Page Background Image (Optional)"
+                        value={formData.background_image_url || ''}
+                        onChange={(url) => handleInputChange('background_image_url', url)}
+                        placeholder="Upload background image or enter URL"
+                        className="col-span-full"
+                      />
+
+                      {formData.background_image_url && (
+                        <div>
+                          <label className="mb-3 block text-sm font-medium text-gray-700">
+                            Webinar Page Background Overlay Opacity:{' '}
+                            {formData.background_image_overlay_opacity !== undefined
+                              ? formData.background_image_overlay_opacity
+                              : 60}
+                            %
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="1"
+                                value={
+                                  formData.background_image_overlay_opacity !== undefined
+                                    ? formData.background_image_overlay_opacity
+                                    : 60
+                                }
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value, 10);
+                                  handleInputChange('background_image_overlay_opacity', value);
+                                }}
+                                className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+                              />
+                            </div>
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={
+                                formData.background_image_overlay_opacity !== undefined
+                                  ? formData.background_image_overlay_opacity
+                                  : 60
+                              }
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value, 10);
+                                if (!isNaN(value) && value >= 0 && value <= 100) {
+                                  handleInputChange('background_image_overlay_opacity', value);
+                                }
+                              }}
+                              className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-500">%</span>
+                          </div>
+                          <div className="mt-2 flex justify-between text-xs text-gray-500">
+                            <span>0% (No overlay)</span>
+                            <span>100% (Fully dark)</span>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Controls the darkness of the overlay on top of your background image.
+                            Lower values show more of the image, higher values make text more
+                            readable.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium text-gray-900">Background Colors</h3>
+
+                        <div>
+                          <label className="mb-3 block text-sm font-medium text-gray-700">
+                            Webinar Page Background Color
+                          </label>
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={formData.webinar_background_color || '#000000'}
+                              onChange={(e) =>
+                                handleInputChange('webinar_background_color', e.target.value)
+                              }
+                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                            />
+                            <input
+                              type="text"
+                              value={formData.webinar_background_color || ''}
+                              onChange={(e) =>
+                                handleInputChange('webinar_background_color', e.target.value)
+                              }
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="#000000"
+                            />
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Background color for the webinar page. Leave empty to use default black.
+                            This color shows when no background image is set.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        {/* Title Styling */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-gray-900">Title Styling</h3>
 
                           <div>
                             <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Privacy Text Color
+                              Default Title Color
                             </label>
                             <div className="flex items-center space-x-3">
                               <input
                                 type="color"
-                                value={formData.landing_page_privacy_text_color || '#9ca3af'}
+                                value={formData.title_color}
+                                onChange={(e) => handleInputChange('title_color', e.target.value)}
+                                className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                              />
+                              <input
+                                type="text"
+                                value={formData.title_color}
+                                onChange={(e) => handleInputChange('title_color', e.target.value)}
+                                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="#ffffff"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Default Title Size
+                            </label>
+                            <select
+                              value={formData.title_size}
+                              onChange={(e) => handleInputChange('title_size', e.target.value)}
+                              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="text-2xl">Small (2xl)</option>
+                              <option value="text-3xl">Medium (3xl)</option>
+                              <option value="text-4xl">Large (4xl)</option>
+                              <option value="text-5xl">Extra Large (5xl)</option>
+                              <option value="text-6xl">Huge (6xl)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Subtitle Styling */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-gray-900">Subtitle Styling</h3>
+
+                          <div>
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Default Subtitle Color
+                            </label>
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="color"
+                                value={formData.subtitle_color}
                                 onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_privacy_text_color',
-                                    e.target.value
-                                  )
+                                  handleInputChange('subtitle_color', e.target.value)
                                 }
                                 className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
                               />
                               <input
                                 type="text"
-                                value={formData.landing_page_privacy_text_color || ''}
+                                value={formData.subtitle_color}
                                 onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_privacy_text_color',
-                                    e.target.value
-                                  )
+                                  handleInputChange('subtitle_color', e.target.value)
                                 }
                                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="#9ca3af"
+                                placeholder="#d1d5db"
                               />
                             </div>
-                            <p className="mt-2 text-sm text-gray-500">
-                              Color of the privacy text below the email form.
-                            </p>
                           </div>
 
                           <div>
                             <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Button Text
+                              Default Subtitle Size
                             </label>
+                            <select
+                              value={formData.subtitle_size}
+                              onChange={(e) => handleInputChange('subtitle_size', e.target.value)}
+                              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="text-sm">Small (sm)</option>
+                              <option value="text-base">Base</option>
+                              <option value="text-lg">Large (lg)</option>
+                              <option value="text-xl">Extra Large (xl)</option>
+                              <option value="text-2xl">2X Large (2xl)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Arrow Color */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium text-gray-900">Arrow Styling</h3>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Arrow Color
+                          </label>
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={formData.arrow_color || '#3b82f6'}
+                              onChange={(e) => handleInputChange('arrow_color', e.target.value)}
+                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                            />
                             <input
                               type="text"
-                              value={formData.landing_page_button_text || ''}
-                              onChange={(e) =>
-                                handleInputChange('landing_page_button_text', e.target.value)
-                              }
-                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Get Instant Access"
+                              value={formData.arrow_color || '#3b82f6'}
+                              onChange={(e) => handleInputChange('arrow_color', e.target.value)}
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="#3b82f6"
                             />
                           </div>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Color of the animated arrows that appear between sections
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Outro Text Styling */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium text-gray-900">Outro Text Styling</h3>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Default Outro Text Color
+                          </label>
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="color"
+                              value={formData.outro_text_color || '#d1d5db'}
+                              onChange={(e) =>
+                                handleInputChange('outro_text_color', e.target.value)
+                              }
+                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                            />
+                            <input
+                              type="text"
+                              value={formData.outro_text_color || '#d1d5db'}
+                              onChange={(e) =>
+                                handleInputChange('outro_text_color', e.target.value)
+                              }
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="#d1d5db"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Default Outro Text Size
+                          </label>
+                          <select
+                            value={formData.outro_text_size || 'text-xl'}
+                            onChange={(e) => handleInputChange('outro_text_size', e.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="text-sm">Small (sm)</option>
+                            <option value="text-base">Base</option>
+                            <option value="text-lg">Large (lg)</option>
+                            <option value="text-xl">Extra Large (xl)</option>
+                            <option value="text-2xl">2X Large (2xl)</option>
+                            <option value="text-3xl">3X Large (3xl)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Outro Section Background */}
+                      {formData.show_outro_section && (
+                        <div className="space-y-4 border-t pt-6">
+                          <h3 className="text-lg font-medium text-gray-900">
+                            Outro Section Background
+                          </h3>
 
                           <ImageUpload
-                            label="Landing Page Background Image (Optional)"
-                            value={formData.landing_page_background_image_url || ''}
-                            onChange={(url) =>
-                              handleInputChange('landing_page_background_image_url', url)
-                            }
-                            placeholder="Upload landing page background image or enter URL"
+                            label="Outro Background Image (Optional)"
+                            value={formData.outro_background_image_url || ''}
+                            onChange={(url) => handleInputChange('outro_background_image_url', url)}
+                            placeholder="Upload outro background image or enter URL"
+                            className="col-span-full"
                           />
 
-                          {formData.landing_page_background_image_url && (
+                          {formData.outro_background_image_url && (
                             <div>
                               <label className="mb-3 block text-sm font-medium text-gray-700">
-                                Landing Page Background Overlay Opacity:{' '}
-                                {formData.landing_page_background_overlay_opacity !== undefined
-                                  ? formData.landing_page_background_overlay_opacity
+                                Outro Background Overlay Opacity:{' '}
+                                {formData.outro_background_overlay_opacity !== undefined
+                                  ? formData.outro_background_overlay_opacity
                                   : 60}
                                 %
                               </label>
@@ -978,16 +2132,13 @@ export default function FunnelEditor() {
                                     max="100"
                                     step="1"
                                     value={
-                                      formData.landing_page_background_overlay_opacity !== undefined
-                                        ? formData.landing_page_background_overlay_opacity
+                                      formData.outro_background_overlay_opacity !== undefined
+                                        ? formData.outro_background_overlay_opacity
                                         : 60
                                     }
                                     onChange={(e) => {
                                       const value = parseInt(e.target.value, 10);
-                                      handleInputChange(
-                                        'landing_page_background_overlay_opacity',
-                                        value
-                                      );
+                                      handleInputChange('outro_background_overlay_opacity', value);
                                     }}
                                     className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
                                   />
@@ -998,17 +2149,14 @@ export default function FunnelEditor() {
                                   max="100"
                                   step="1"
                                   value={
-                                    formData.landing_page_background_overlay_opacity !== undefined
-                                      ? formData.landing_page_background_overlay_opacity
+                                    formData.outro_background_overlay_opacity !== undefined
+                                      ? formData.outro_background_overlay_opacity
                                       : 60
                                   }
                                   onChange={(e) => {
                                     const value = parseInt(e.target.value, 10);
                                     if (!isNaN(value) && value >= 0 && value <= 100) {
-                                      handleInputChange(
-                                        'landing_page_background_overlay_opacity',
-                                        value
-                                      );
+                                      handleInputChange('outro_background_overlay_opacity', value);
                                     }
                                   }}
                                   className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1020,1615 +2168,598 @@ export default function FunnelEditor() {
                                 <span>100% (Fully dark)</span>
                               </div>
                               <p className="mt-2 text-sm text-gray-500">
-                                Controls the darkness of the overlay on top of your background
-                                image. Lower values show more of the image, higher values make text
-                                more readable.
+                                Controls the darkness of the overlay on top of your outro background
+                                image.
                               </p>
                             </div>
                           )}
 
                           <div>
                             <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Landing Page Background Color
+                              Outro Background Color
                             </label>
                             <div className="flex items-center space-x-3">
                               <input
                                 type="color"
-                                value={formData.landing_page_background_color || '#000000'}
+                                value={formData.outro_background_color || '#1f2937'}
                                 onChange={(e) =>
-                                  handleInputChange('landing_page_background_color', e.target.value)
+                                  handleInputChange('outro_background_color', e.target.value)
                                 }
                                 className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
                               />
                               <input
                                 type="text"
-                                value={formData.landing_page_background_color || ''}
+                                value={formData.outro_background_color || ''}
                                 onChange={(e) =>
-                                  handleInputChange('landing_page_background_color', e.target.value)
+                                  handleInputChange('outro_background_color', e.target.value)
                                 }
                                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="#000000"
+                                placeholder="#1f2937"
                               />
                             </div>
                             <p className="mt-2 text-sm text-gray-500">
-                              Background color for the landing page. Leave empty to use default
-                              black. This color shows when no background image is set.
+                              Background color for the outro section. Leave empty to use default
+                              gradient.
                             </p>
                           </div>
+                        </div>
+                      )}
 
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Fields to Collect
-                            </label>
-                            <div className="space-y-3">
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.collect_name}
-                                  onChange={(e) =>
-                                    handleInputChange('collect_name', e.target.checked)
-                                  }
-                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="ml-3 text-sm font-medium text-gray-700">Name</span>
-                              </label>
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.collect_email}
-                                  onChange={(e) =>
-                                    handleInputChange('collect_email', e.target.checked)
-                                  }
-                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="ml-3 text-sm font-medium text-gray-700">
-                                  Email (Required)
-                                </span>
-                              </label>
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.collect_phone}
-                                  onChange={(e) =>
-                                    handleInputChange('collect_phone', e.target.checked)
-                                  }
-                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="ml-3 text-sm font-medium text-gray-700">
-                                  Phone Number
-                                </span>
-                              </label>
-                              <label className="flex items-center">
-                                <input
-                                  type="checkbox"
-                                  checked={formData.collect_instagram}
-                                  onChange={(e) =>
-                                    handleInputChange('collect_instagram', e.target.checked)
-                                  }
-                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                />
-                                <span className="ml-3 text-sm font-medium text-gray-700">
-                                  Instagram Handle
-                                </span>
-                              </label>
-                            </div>
-                            <p className="mt-2 text-sm text-gray-500">
-                              Choose which fields to collect from visitors. Email is always required
-                              and will be sent to your email service provider.
-                            </p>
-                          </div>
+                      {/* Button Styling */}
+                      <div className="space-y-6 border-t pt-6">
+                        <h3 className="text-lg font-medium text-gray-900">Button Styling</h3>
 
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Email Service Integration
-                            </label>
-                            <select
-                              value={formData.email_service_type || ''}
-                              onChange={(e) =>
-                                handleInputChange('email_service_type', e.target.value || undefined)
-                              }
-                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Select Email Service (Optional)</option>
-                              <option value="aweber">AWeber</option>
-                              <option value="mailchimp">Mailchimp</option>
-                              <option value="convertkit">ConvertKit</option>
-                              <option value="activecampaign">ActiveCampaign</option>
-                              <option value="custom_webhook">Custom Webhook</option>
-                            </select>
-                          </div>
+                        {/* Email Capture Button Styling */}
+                        {formData.funnel_type === 'email_capture' && (
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium text-gray-800">
+                              Email Capture Button
+                            </h4>
 
-                          {/* Service-specific fields */}
-                          {formData.email_service_type === 'aweber' && (
-                            <div className="space-y-4">
-                              {!aweberConnected ? (
-                                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <h4 className="mb-1 text-sm font-medium text-blue-900">
-                                        Connect AWeber Account
-                                      </h4>
-                                      <p className="text-sm text-blue-700">
-                                        Connect your AWeber account using OAuth to securely access
-                                        your lists and add subscribers.
-                                      </p>
-                                    </div>
-                                    <button
-                                      onClick={initiateAweberAuth}
-                                      disabled={aweberLoading}
-                                      className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
-                                    >
-                                      {aweberLoading ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                      ) : null}
-                                      Connect AWeber
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="space-y-4">
-                                  <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center">
-                                        <div className="mr-2 h-2 w-2 rounded-full bg-green-500"></div>
-                                        <span className="text-sm font-medium text-green-900">
-                                          AWeber Connected
-                                        </span>
-                                      </div>
-                                      <button
-                                        onClick={disconnectAweber}
-                                        className="text-sm text-red-600 hover:text-red-800"
-                                      >
-                                        Disconnect
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div>
-                                    <label className="mb-2 block text-sm font-medium text-gray-700">
-                                      Select AWeber List
-                                    </label>
-                                    {aweberLoading ? (
-                                      <div className="flex items-center justify-center py-4">
-                                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                                        <span className="ml-2 text-sm text-gray-600">
-                                          Loading lists...
-                                        </span>
-                                      </div>
-                                    ) : (
-                                      <select
-                                        value={formData.aweber_list_id || ''}
-                                        onChange={(e) =>
-                                          handleInputChange('aweber_list_id', e.target.value)
-                                        }
-                                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      >
-                                        <option value="">Select a list</option>
-                                        {aweberLists.map((list) => (
-                                          <option key={list.id} value={list.id}>
-                                            {list.name} ({list.total_subscribed} subscribers)
-                                          </option>
-                                        ))}
-                                      </select>
-                                    )}
-                                    {aweberLists.length === 0 && !aweberLoading && (
-                                      <p className="mt-2 text-sm text-gray-500">
-                                        No lists found. Make sure you have lists set up in your
-                                        AWeber account.
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {formData.email_service_type === 'mailchimp' && (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  Mailchimp API Key
-                                </label>
-                                <input
-                                  type="password"
-                                  value={formData.mailchimp_api_key || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('mailchimp_api_key', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="Your Mailchimp API key"
-                                />
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Your Mailchimp API key (found in Account → Extras → API keys)
-                                </p>
-                              </div>
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  Mailchimp List ID
-                                </label>
-                                <input
-                                  type="text"
-                                  value={formData.mailchimp_list_id || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('mailchimp_list_id', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="Your Mailchimp list ID"
-                                />
-                                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
-                                  <p className="mb-1 font-medium text-blue-900">
-                                    📍 How to find your Mailchimp credentials:
-                                  </p>
-                                  <div className="space-y-2">
-                                    <div>
-                                      <p className="font-medium text-blue-800">API Key:</p>
-                                      <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
-                                        <li>
-                                          Go to your Mailchimp dashboard → Account → Extras → API
-                                          keys
-                                        </li>
-                                        <li>Generate a new API key if you don't have one</li>
-                                        <li>
-                                          Copy the entire API key (includes data center like "us1",
-                                          "us2", etc.)
-                                        </li>
-                                      </ol>
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-blue-800">List ID:</p>
-                                      <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
-                                        <li>
-                                          Go to Audience → All contacts → Select your audience
-                                        </li>
-                                        <li>Go to Settings → Audience name and defaults</li>
-                                        <li>The List ID is shown at the bottom of the page</li>
-                                        <li>Also visible in the URL when viewing your audience</li>
-                                      </ol>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {formData.email_service_type === 'convertkit' && (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  ConvertKit API Key
-                                </label>
-                                <input
-                                  type="password"
-                                  value={formData.convertkit_api_key || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('convertkit_api_key', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="Your ConvertKit API key"
-                                />
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Your ConvertKit API key (found in Settings → Advanced → API)
-                                </p>
-                              </div>
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  ConvertKit Form ID
-                                </label>
-                                <input
-                                  type="text"
-                                  value={formData.convertkit_form_id || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('convertkit_form_id', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="Your ConvertKit form ID"
-                                />
-                                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
-                                  <p className="mb-1 font-medium text-blue-900">
-                                    📍 How to find your ConvertKit credentials:
-                                  </p>
-                                  <div className="space-y-2">
-                                    <div>
-                                      <p className="font-medium text-blue-800">API Key:</p>
-                                      <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
-                                        <li>
-                                          Go to your ConvertKit dashboard → Settings → Advanced
-                                        </li>
-                                        <li>Click on the "API" tab</li>
-                                        <li>Copy your API key from the "API Key" section</li>
-                                      </ol>
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-blue-800">Form ID:</p>
-                                      <ol className="list-inside list-decimal space-y-1 text-sm text-blue-800">
-                                        <li>Go to Forms → Select the form you want to use</li>
-                                        <li>
-                                          <strong>Look in the URL bar</strong> - the Form ID is the
-                                          number (e.g., /forms/1234567 means Form ID is "1234567")
-                                        </li>
-                                        <li>
-                                          Or check the form embed code - it contains the form ID
-                                        </li>
-                                        <li>
-                                          Enter just the number (e.g., "1234567", not the full URL)
-                                        </li>
-                                      </ol>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {formData.email_service_type === 'activecampaign' && (
-                            <div className="space-y-4">
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  ActiveCampaign API URL
-                                </label>
-                                <input
-                                  type="url"
-                                  value={formData.activecampaign_api_url || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('activecampaign_api_url', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="https://yoursubdomain.api-us1.com"
-                                />
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Your ActiveCampaign API URL (found in Settings → Developer)
-                                </p>
-                              </div>
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  ActiveCampaign API Key
-                                </label>
-                                <input
-                                  type="password"
-                                  value={formData.activecampaign_api_key || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('activecampaign_api_key', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="Your ActiveCampaign API key"
-                                />
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Your ActiveCampaign API key (found in Settings → Developer)
-                                </p>
-                              </div>
-                              <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  ActiveCampaign List ID
-                                </label>
-                                <input
-                                  type="text"
-                                  value={formData.activecampaign_list_id || ''}
-                                  onChange={(e) =>
-                                    handleInputChange('activecampaign_list_id', e.target.value)
-                                  }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="List ID (e.g., 1, 2, 3)"
-                                />
-                                <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
-                                  <p className="mb-1 font-medium text-blue-900">
-                                    📍 How to find your ActiveCampaign List ID:
-                                  </p>
-                                  <ol className="list-inside list-decimal space-y-1 text-blue-800">
-                                    <li>Go to your ActiveCampaign dashboard → Lists</li>
-                                    <li>Click on the list you want to use</li>
-                                    <li>
-                                      <strong>Look in the URL bar</strong> - the List ID is the
-                                      number at the end (e.g., /lists/view/5 means List ID is "5")
-                                    </li>
-                                    <li>Enter just the number (e.g., "5", not the full URL)</li>
-                                  </ol>
-                                  <p className="mt-2 text-xs text-blue-700">
-                                    💡 The List ID is easiest to find in the URL when viewing your
-                                    list, not in the list settings.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {formData.email_service_type === 'custom_webhook' && (
                             <div>
-                              <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Custom Webhook URL
+                              <label className="mb-3 flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.landing_page_button_use_gradient}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_button_use_gradient',
+                                      e.target.checked
+                                    )
+                                  }
+                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="ml-3 text-sm font-medium text-gray-700">
+                                  Use gradient background
+                                </span>
                               </label>
-                              <input
-                                type="url"
-                                value={formData.custom_email_webhook || ''}
-                                onChange={(e) =>
-                                  handleInputChange('custom_email_webhook', e.target.value)
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="https://your-webhook-url.com/submit"
-                              />
-                              <div className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-gray-600">
-                                <p className="mb-1 font-medium text-blue-900">
-                                  📍 Custom Webhook Setup:
-                                </p>
-                                <p className="mb-2 text-blue-800">
-                                  We'll POST the following data to your webhook:
-                                </p>
-                                <ul className="list-inside list-disc space-y-1 text-xs text-blue-800">
-                                  <li>email (required)</li>
-                                  <li>name (if collected)</li>
-                                  <li>phone (if collected)</li>
-                                  <li>instagram (if collected)</li>
-                                  <li>funnel_id, funnel_name, timestamp</li>
-                                </ul>
-                              </div>
                             </div>
-                          )}
 
-                          <div className="space-y-4 border-t pt-6">
-                            <h3 className="mb-4 flex items-center text-lg font-medium text-gray-900">
-                              <Settings className="mr-2 h-5 w-5" />
-                              Branding & Icons
-                            </h3>
-
-                            <ImageUpload
-                              label="Logo (Optional)"
-                              value={formData.landing_page_logo_url || ''}
-                              onChange={(url) => {
-                                handleInputChange('landing_page_logo_url', url);
-                                // Automatically hide icon when logo is uploaded
-                                if (url && url.trim()) {
-                                  handleInputChange('landing_page_show_icon', false);
-                                }
-                              }}
-                              placeholder="Upload your logo or enter image URL"
-                            />
-                            <p className="-mt-4 text-sm text-gray-500">
-                              Upload your logo to replace the default icon at the top of your
-                              landing page. When you upload a logo, the default icon will be
-                              automatically hidden. Recommended size: 200x200 pixels or larger.
-                            </p>
-
-                            {formData.landing_page_logo_url && (
+                            {formData.landing_page_button_use_gradient ? (
                               <div>
                                 <label className="mb-2 block text-sm font-medium text-gray-700">
-                                  Logo Size
+                                  Button Gradient
                                 </label>
                                 <select
-                                  value={formData.landing_page_logo_size || 'medium'}
+                                  value={formData.landing_page_button_bg_gradient}
                                   onChange={(e) =>
-                                    handleInputChange('landing_page_logo_size', e.target.value)
+                                    handleInputChange(
+                                      'landing_page_button_bg_gradient',
+                                      e.target.value
+                                    )
                                   }
-                                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                  <option value="small">Small (48px height)</option>
-                                  <option value="medium">Medium (64px height)</option>
-                                  <option value="large">Large (80px height)</option>
+                                  <option value="from-blue-600 to-purple-600">
+                                    Blue to Purple
+                                  </option>
+                                  <option value="from-green-600 to-blue-600">Green to Blue</option>
+                                  <option value="from-purple-600 to-pink-600">
+                                    Purple to Pink
+                                  </option>
+                                  <option value="from-yellow-600 to-orange-600">
+                                    Yellow to Orange
+                                  </option>
+                                  <option value="from-red-600 to-pink-600">Red to Pink</option>
+                                  <option value="from-indigo-600 to-purple-600">
+                                    Indigo to Purple
+                                  </option>
+                                  <option value="from-teal-600 to-green-600">Teal to Green</option>
+                                  <option value="from-gray-600 to-gray-800">
+                                    Gray to Dark Gray
+                                  </option>
                                 </select>
-                                <p className="mt-2 text-sm text-gray-500">
-                                  Controls the display size of your logo on the landing page.
-                                </p>
+                              </div>
+                            ) : (
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                  Button Background Color
+                                </label>
+                                <div className="flex items-center space-x-3">
+                                  <input
+                                    type="color"
+                                    value={formData.landing_page_button_bg_color}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        'landing_page_button_bg_color',
+                                        e.target.value
+                                      )
+                                    }
+                                    className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={formData.landing_page_button_bg_color}
+                                    onChange={(e) =>
+                                      handleInputChange(
+                                        'landing_page_button_bg_color',
+                                        e.target.value
+                                      )
+                                    }
+                                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="#3b82f6"
+                                  />
+                                </div>
                               </div>
                             )}
 
                             <div>
                               <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Form Icon (Email Form Icon)
+                                Button Text Color
                               </label>
-                              <select
-                                value={formData.landing_page_form_icon || 'Mail'}
-                                onChange={(e) =>
-                                  handleInputChange('landing_page_form_icon', e.target.value)
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="Mail">📧 Mail (Email)</option>
-                                <option value="Lock">🔒 Lock (Security/Privacy)</option>
-                                <option value="Star">⭐ Star (Premium/Quality)</option>
-                                <option value="Gift">🎁 Gift (Free/Bonus)</option>
-                                <option value="Play">▶️ Play (Video/Training)</option>
-                                <option value="CheckCircle">
-                                  ✅ CheckCircle (Success/Complete)
-                                </option>
-                                <option value="Award">🏆 Award (Achievement/Winner)</option>
-                                <option value="Zap">⚡ Zap (Fast/Power)</option>
-                                <option value="Target">🎯 Target (Focus/Goals)</option>
-                                <option value="Users">👥 Users (Community/People)</option>
-                                <option value="Crown">👑 Crown (Premium/Royal)</option>
-                                <option value="Diamond">💎 Diamond (Valuable/Premium)</option>
-                                <option value="Rocket">🚀 Rocket (Growth/Launch)</option>
-                              </select>
-                              <p className="mt-2 text-sm text-gray-500">
-                                The small icon displayed next to your email form heading.
-                              </p>
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="color"
+                                  value={formData.landing_page_button_text_color}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_button_text_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                />
+                                <input
+                                  type="text"
+                                  value={formData.landing_page_button_text_color}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'landing_page_button_text_color',
+                                      e.target.value
+                                    )
+                                  }
+                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="#ffffff"
+                                />
+                              </div>
                             </div>
+
+                            {/* Preview */}
+                            <div className="rounded-lg bg-gray-100 p-4">
+                              <p className="mb-2 text-sm font-medium text-gray-700">
+                                Button Preview:
+                              </p>
+                              <button
+                                className={`rounded-xl px-6 py-3 font-semibold transition-all duration-200 ${
+                                  formData.landing_page_button_use_gradient
+                                    ? `bg-gradient-to-r ${formData.landing_page_button_bg_gradient}`
+                                    : ''
+                                }`}
+                                style={
+                                  !formData.landing_page_button_use_gradient
+                                    ? {
+                                        backgroundColor: formData.landing_page_button_bg_color,
+                                        color: formData.landing_page_button_text_color,
+                                      }
+                                    : {
+                                        color: formData.landing_page_button_text_color,
+                                      }
+                                }
+                              >
+                                {formData.landing_page_button_text || 'Get Instant Access'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Calendly Button Styling */}
+                        {formData.calendly_link && (
+                          <div className="space-y-4">
+                            <h4 className="text-md font-medium text-gray-800">Calendly Button</h4>
+
+                            <div>
+                              <label className="mb-3 flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.calendly_button_use_gradient}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      'calendly_button_use_gradient',
+                                      e.target.checked
+                                    )
+                                  }
+                                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span className="ml-3 text-sm font-medium text-gray-700">
+                                  Use gradient background
+                                </span>
+                              </label>
+                            </div>
+
+                            {formData.calendly_button_use_gradient ? (
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                  Button Gradient
+                                </label>
+                                <select
+                                  value={formData.calendly_button_bg_gradient}
+                                  onChange={(e) =>
+                                    handleInputChange('calendly_button_bg_gradient', e.target.value)
+                                  }
+                                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="from-blue-600 to-purple-600">
+                                    Blue to Purple
+                                  </option>
+                                  <option value="from-green-600 to-blue-600">Green to Blue</option>
+                                  <option value="from-purple-600 to-pink-600">
+                                    Purple to Pink
+                                  </option>
+                                  <option value="from-yellow-600 to-orange-600">
+                                    Yellow to Orange
+                                  </option>
+                                  <option value="from-red-600 to-pink-600">Red to Pink</option>
+                                  <option value="from-indigo-600 to-purple-600">
+                                    Indigo to Purple
+                                  </option>
+                                  <option value="from-teal-600 to-green-600">Teal to Green</option>
+                                  <option value="from-gray-600 to-gray-800">
+                                    Gray to Dark Gray
+                                  </option>
+                                </select>
+                              </div>
+                            ) : (
+                              <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                  Button Background Color
+                                </label>
+                                <div className="flex items-center space-x-3">
+                                  <input
+                                    type="color"
+                                    value={formData.calendly_button_bg_color}
+                                    onChange={(e) =>
+                                      handleInputChange('calendly_button_bg_color', e.target.value)
+                                    }
+                                    className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={formData.calendly_button_bg_color}
+                                    onChange={(e) =>
+                                      handleInputChange('calendly_button_bg_color', e.target.value)
+                                    }
+                                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="#3b82f6"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            <div>
+                              <label className="mb-2 block text-sm font-medium text-gray-700">
+                                Button Text Color
+                              </label>
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="color"
+                                  value={formData.calendly_button_text_color}
+                                  onChange={(e) =>
+                                    handleInputChange('calendly_button_text_color', e.target.value)
+                                  }
+                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
+                                />
+                                <input
+                                  type="text"
+                                  value={formData.calendly_button_text_color}
+                                  onChange={(e) =>
+                                    handleInputChange('calendly_button_text_color', e.target.value)
+                                  }
+                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="#ffffff"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Preview */}
+                            <div className="rounded-lg bg-gray-100 p-4">
+                              <p className="mb-2 text-sm font-medium text-gray-700">
+                                Button Preview:
+                              </p>
+                              <button
+                                className={`flex items-center space-x-2 rounded-xl px-6 py-3 font-semibold transition-all duration-200 ${
+                                  formData.calendly_button_use_gradient
+                                    ? `bg-gradient-to-r ${formData.calendly_button_bg_gradient}`
+                                    : ''
+                                }`}
+                                style={
+                                  !formData.calendly_button_use_gradient
+                                    ? {
+                                        backgroundColor: formData.calendly_button_bg_color,
+                                        color: formData.calendly_button_text_color,
+                                      }
+                                    : {
+                                        color: formData.calendly_button_text_color,
+                                      }
+                                }
+                              >
+                                <Calendar className="h-5 w-5" />
+                                <span>Schedule Your Call Now</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <div className="flex">
+                          <Settings className="mr-3 mt-0.5 h-5 w-5 text-blue-500" />
+                          <div>
+                            <h4 className="mb-1 text-sm font-medium text-blue-900">
+                              Style Override
+                            </h4>
+                            <p className="text-sm text-blue-700">
+                              These are default colors and sizes. You can override them with custom
+                              formatting in the text editor for individual words or sections.
+                            </p>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Content Tab */}
-            {activeTab === 'content' && (
-              <div className="space-y-6">
-                {/* Basic Info */}
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">Content & Copy</h2>
-
-                  <div className="space-y-6">
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Main Title *
-                      </label>
-                      <WysiwygEditor
-                        value={formData.title_html || formData.title}
-                        onChange={(value) => {
-                          // Strip HTML for plain text fallback
-                          const plainText = value.replace(/<[^>]*>/g, '').trim();
-                          handleInputChange('title', plainText || 'Untitled');
-                          handleInputChange('title_html', value);
-                        }}
-                        placeholder="Enter your compelling funnel title..."
-                      />
-                      <p className="mt-2 text-sm text-gray-500">
-                        Make it bold, colorful, and compelling. Use formatting to emphasize key
-                        words.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Subtitle
-                      </label>
-                      <WysiwygEditor
-                        value={formData.subtitle_html || formData.subtitle || ''}
-                        onChange={(value) => {
-                          const plainText = value.replace(/<[^>]*>/g, '').trim();
-                          handleInputChange('subtitle', plainText || '');
-                          handleInputChange('subtitle_html', value);
-                        }}
-                        placeholder="Add a compelling subtitle that supports your main message..."
-                      />
-                      <p className="mt-2 text-sm text-gray-500">
-                        Explain the value proposition or what viewers will learn.
-                      </p>
-                    </div>
-
-                    {/* Outro Text */}
-                    <div>
-                      <div className="mb-3 flex items-center justify-between">
-                        <label className="block text-sm font-medium text-gray-700">
-                          Outro Section Content
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={formData.show_outro_section}
-                            onChange={(e) =>
-                              handleInputChange('show_outro_section', e.target.checked)
-                            }
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">Show outro section</span>
-                        </label>
-                      </div>
-
-                      {formData.show_outro_section && (
-                        <>
-                          <WysiwygEditor
-                            value={formData.outro_text_html || formData.outro_text || ''}
-                            onChange={(value) => {
-                              const plainText = value.replace(/<[^>]*>/g, '').trim();
-                              handleInputChange('outro_text', plainText || '');
-                              handleInputChange('outro_text_html', value);
-                            }}
-                            placeholder="Add compelling outro content to transition to your call-to-action..."
-                          />
-                          <p className="mt-2 text-sm text-gray-500">
-                            This appears after the main video to set up your Calendly
-                            call-to-action.
-                          </p>
-                        </>
-                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Video Tab */}
-            {activeTab === 'video' && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">Video Settings</h2>
+              {/* SEO & Social Tab */}
+              {activeTab === 'seo' && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">
+                      SEO & Social Sharing
+                    </h2>
 
-                  <div className="space-y-6">
-                    <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Main Video Source
-                      </label>
-                      <select
-                        value={formData.selected_video_type}
-                        onChange={(e) => handleInputChange('selected_video_type', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="video_1">45 Minute Webinar</option>
-                        <option value="video_2">60 Min - Webinar</option>
-                        <option value="custom">Custom Video URL</option>
-                      </select>
-                    </div>
-
-                    {formData.selected_video_type === 'custom' && (
+                    <div className="space-y-6">
                       <div>
                         <label className="mb-3 block text-sm font-medium text-gray-700">
-                          Custom Video URL or Embed Code
+                          Meta Title
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.meta_title || ''}
+                          onChange={(e) => handleInputChange('meta_title', e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Custom page title for search engines and browser tabs"
+                          maxLength={60}
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Appears in browser tabs and search results. Recommended: 50-60 characters.
+                          Leave empty to use funnel title.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Meta Description
                         </label>
                         <textarea
-                          value={formData.custom_video_url || ''}
-                          onChange={(e) => handleInputChange('custom_video_url', e.target.value)}
-                          rows={4}
+                          value={formData.meta_description || ''}
+                          onChange={(e) => handleInputChange('meta_description', e.target.value)}
+                          rows={3}
                           className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="https://youtube.com/watch?v=... or <iframe src='...'></iframe>"
+                          placeholder="Brief description of your funnel for search engines and social media"
+                          maxLength={160}
                         />
                         <p className="mt-2 text-sm text-gray-500">
-                          Paste a YouTube/Vimeo URL, direct video file URL, or custom embed code
+                          Appears in search results and when shared on social media. Recommended:
+                          150-160 characters.
                         </p>
                       </div>
-                    )}
 
-                    {/* Autoplay Option */}
-                    <div>
-                      <label className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.autoplay_video}
-                          onChange={(e) => handleInputChange('autoplay_video', e.target.checked)}
-                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="ml-3 text-sm font-medium text-gray-700">
-                          Auto-play main video when page loads (muted)
-                        </span>
-                      </label>
-                      <p className="ml-7 mt-2 text-sm text-gray-500">
-                        Videos will auto-play muted to comply with browser policies. Viewers can
-                        unmute and interact normally.
+                      <ImageUpload
+                        label="Social Media Preview Image (Open Graph)"
+                        value={formData.og_image_url || ''}
+                        onChange={(url) => handleInputChange('og_image_url', url)}
+                        placeholder="Upload image for social media previews or enter URL"
+                        className="col-span-full"
+                      />
+                      <p className="-mt-4 text-sm text-gray-500">
+                        This image appears when your funnel is shared on Facebook, Twitter,
+                        LinkedIn, etc. Recommended size: 1200x630 pixels.
                       </p>
-                    </div>
 
-                    {formData.show_outro_section && (
-                      <>
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <div className="flex">
+                          <Mail className="mr-3 mt-0.5 h-5 w-5 text-blue-500" />
+                          <div>
+                            <h4 className="mb-1 text-sm font-medium text-blue-900">
+                              SEO & Social Media Tips
+                            </h4>
+                            <p className="text-sm text-blue-700">
+                              Well-optimized meta tags can significantly improve your funnel's
+                              visibility in search results and click-through rates when shared on
+                              social media platforms.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Integration Tab */}
+              {activeTab === 'integration' && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="mb-6 text-xl font-semibold text-gray-900">
+                      Calendly Integration
+                    </h2>
+
+                    <div className="space-y-6">
+                      <div>
+                        <label className="mb-3 block text-sm font-medium text-gray-700">
+                          Calendly Booking Link
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.calendly_link || ''}
+                          onChange={(e) => handleInputChange('calendly_link', e.target.value)}
+                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="https://calendly.com/your-link"
+                        />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Add your Calendly booking link for the final call-to-action
+                        </p>
+                      </div>
+
+                      {formData.calendly_link && (
                         <div>
                           <label className="mb-3 block text-sm font-medium text-gray-700">
-                            Outro Video Source
+                            Calendly Display Type
                           </label>
                           <select
-                            value={formData.outro_video_type}
-                            onChange={(e) => handleInputChange('outro_video_type', e.target.value)}
+                            value={formData.calendly_display_type}
+                            onChange={(e) =>
+                              handleInputChange('calendly_display_type', e.target.value)
+                            }
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
-                            <option value="option_1">Default Outro Video</option>
-                            <option value="custom">Custom Outro Video URL</option>
+                            <option value="button">Button Only</option>
+                            <option value="embed">Embedded Widget Only</option>
+                            <option value="both">Both Button and Embedded Widget</option>
                           </select>
-                        </div>
-
-                        {formData.outro_video_type === 'custom' && (
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Custom Outro Video URL or Embed Code
-                            </label>
-                            <textarea
-                              value={formData.outro_custom_url || ''}
-                              onChange={(e) =>
-                                handleInputChange('outro_custom_url', e.target.value)
-                              }
-                              rows={4}
-                              className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="https://youtube.com/watch?v=... or <iframe src='...'></iframe>"
-                            />
-                            <p className="mt-2 text-sm text-gray-500">
-                              Paste a YouTube/Vimeo URL, direct video file URL, or custom embed code
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Design Tab */}
-            {activeTab === 'design' && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">Design & Styling</h2>
-
-                  <div className="space-y-6">
-                    <ImageUpload
-                      label="Webinar Page Background Image (Optional)"
-                      value={formData.background_image_url || ''}
-                      onChange={(url) => handleInputChange('background_image_url', url)}
-                      placeholder="Upload background image or enter URL"
-                      className="col-span-full"
-                    />
-
-                    {formData.background_image_url && (
-                      <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">
-                          Webinar Page Background Overlay Opacity:{' '}
-                          {formData.background_image_overlay_opacity !== undefined
-                            ? formData.background_image_overlay_opacity
-                            : 60}
-                          %
-                        </label>
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1">
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              step="1"
-                              value={
-                                formData.background_image_overlay_opacity !== undefined
-                                  ? formData.background_image_overlay_opacity
-                                  : 60
-                              }
-                              onChange={(e) => {
-                                const value = parseInt(e.target.value, 10);
-                                handleInputChange('background_image_overlay_opacity', value);
-                              }}
-                              className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-                            />
-                          </div>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="1"
-                            value={
-                              formData.background_image_overlay_opacity !== undefined
-                                ? formData.background_image_overlay_opacity
-                                : 60
-                            }
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value, 10);
-                              if (!isNaN(value) && value >= 0 && value <= 100) {
-                                handleInputChange('background_image_overlay_opacity', value);
-                              }
-                            }}
-                            className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-500">%</span>
-                        </div>
-                        <div className="mt-2 flex justify-between text-xs text-gray-500">
-                          <span>0% (No overlay)</span>
-                          <span>100% (Fully dark)</span>
-                        </div>
-                        <p className="mt-2 text-sm text-gray-500">
-                          Controls the darkness of the overlay on top of your background image.
-                          Lower values show more of the image, higher values make text more
-                          readable.
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-gray-900">Background Colors</h3>
-
-                      <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">
-                          Webinar Page Background Color
-                        </label>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="color"
-                            value={formData.webinar_background_color || '#000000'}
-                            onChange={(e) =>
-                              handleInputChange('webinar_background_color', e.target.value)
-                            }
-                            className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                          />
-                          <input
-                            type="text"
-                            value={formData.webinar_background_color || ''}
-                            onChange={(e) =>
-                              handleInputChange('webinar_background_color', e.target.value)
-                            }
-                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="#000000"
-                          />
-                        </div>
-                        <p className="mt-2 text-sm text-gray-500">
-                          Background color for the webinar page. Leave empty to use default black.
-                          This color shows when no background image is set.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                      {/* Title Styling */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-medium text-gray-900">Title Styling</h3>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Default Title Color
-                          </label>
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="color"
-                              value={formData.title_color}
-                              onChange={(e) => handleInputChange('title_color', e.target.value)}
-                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                            />
-                            <input
-                              type="text"
-                              value={formData.title_color}
-                              onChange={(e) => handleInputChange('title_color', e.target.value)}
-                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="#ffffff"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Default Title Size
-                          </label>
-                          <select
-                            value={formData.title_size}
-                            onChange={(e) => handleInputChange('title_size', e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="text-2xl">Small (2xl)</option>
-                            <option value="text-3xl">Medium (3xl)</option>
-                            <option value="text-4xl">Large (4xl)</option>
-                            <option value="text-5xl">Extra Large (5xl)</option>
-                            <option value="text-6xl">Huge (6xl)</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Subtitle Styling */}
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-medium text-gray-900">Subtitle Styling</h3>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Default Subtitle Color
-                          </label>
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="color"
-                              value={formData.subtitle_color}
-                              onChange={(e) => handleInputChange('subtitle_color', e.target.value)}
-                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                            />
-                            <input
-                              type="text"
-                              value={formData.subtitle_color}
-                              onChange={(e) => handleInputChange('subtitle_color', e.target.value)}
-                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="#d1d5db"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Default Subtitle Size
-                          </label>
-                          <select
-                            value={formData.subtitle_size}
-                            onChange={(e) => handleInputChange('subtitle_size', e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="text-sm">Small (sm)</option>
-                            <option value="text-base">Base</option>
-                            <option value="text-lg">Large (lg)</option>
-                            <option value="text-xl">Extra Large (xl)</option>
-                            <option value="text-2xl">2X Large (2xl)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Arrow Color */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-gray-900">Arrow Styling</h3>
-
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">
-                          Arrow Color
-                        </label>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="color"
-                            value={formData.arrow_color || '#3b82f6'}
-                            onChange={(e) => handleInputChange('arrow_color', e.target.value)}
-                            className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                          />
-                          <input
-                            type="text"
-                            value={formData.arrow_color || '#3b82f6'}
-                            onChange={(e) => handleInputChange('arrow_color', e.target.value)}
-                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="#3b82f6"
-                          />
-                        </div>
-                        <p className="mt-2 text-sm text-gray-500">
-                          Color of the animated arrows that appear between sections
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Outro Text Styling */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-gray-900">Outro Text Styling</h3>
-
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">
-                          Default Outro Text Color
-                        </label>
-                        <div className="flex items-center space-x-3">
-                          <input
-                            type="color"
-                            value={formData.outro_text_color || '#d1d5db'}
-                            onChange={(e) => handleInputChange('outro_text_color', e.target.value)}
-                            className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                          />
-                          <input
-                            type="text"
-                            value={formData.outro_text_color || '#d1d5db'}
-                            onChange={(e) => handleInputChange('outro_text_color', e.target.value)}
-                            className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="#d1d5db"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700">
-                          Default Outro Text Size
-                        </label>
-                        <select
-                          value={formData.outro_text_size || 'text-xl'}
-                          onChange={(e) => handleInputChange('outro_text_size', e.target.value)}
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="text-sm">Small (sm)</option>
-                          <option value="text-base">Base</option>
-                          <option value="text-lg">Large (lg)</option>
-                          <option value="text-xl">Extra Large (xl)</option>
-                          <option value="text-2xl">2X Large (2xl)</option>
-                          <option value="text-3xl">3X Large (3xl)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Outro Section Background */}
-                    {formData.show_outro_section && (
-                      <div className="space-y-4 border-t pt-6">
-                        <h3 className="text-lg font-medium text-gray-900">
-                          Outro Section Background
-                        </h3>
-
-                        <ImageUpload
-                          label="Outro Background Image (Optional)"
-                          value={formData.outro_background_image_url || ''}
-                          onChange={(url) => handleInputChange('outro_background_image_url', url)}
-                          placeholder="Upload outro background image or enter URL"
-                          className="col-span-full"
-                        />
-
-                        {formData.outro_background_image_url && (
-                          <div>
-                            <label className="mb-3 block text-sm font-medium text-gray-700">
-                              Outro Background Overlay Opacity:{' '}
-                              {formData.outro_background_overlay_opacity !== undefined
-                                ? formData.outro_background_overlay_opacity
-                                : 60}
-                              %
-                            </label>
-                            <div className="flex items-center gap-4">
-                              <div className="flex-1">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  step="1"
-                                  value={
-                                    formData.outro_background_overlay_opacity !== undefined
-                                      ? formData.outro_background_overlay_opacity
-                                      : 60
-                                  }
-                                  onChange={(e) => {
-                                    const value = parseInt(e.target.value, 10);
-                                    handleInputChange('outro_background_overlay_opacity', value);
-                                  }}
-                                  className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
-                                />
-                              </div>
-                              <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="1"
-                                value={
-                                  formData.outro_background_overlay_opacity !== undefined
-                                    ? formData.outro_background_overlay_opacity
-                                    : 60
-                                }
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value, 10);
-                                  if (!isNaN(value) && value >= 0 && value <= 100) {
-                                    handleInputChange('outro_background_overlay_opacity', value);
-                                  }
-                                }}
-                                className="w-16 rounded border border-gray-300 px-2 py-1 text-center text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                              <span className="text-sm text-gray-500">%</span>
-                            </div>
-                            <div className="mt-2 flex justify-between text-xs text-gray-500">
-                              <span>0% (No overlay)</span>
-                              <span>100% (Fully dark)</span>
-                            </div>
-                            <p className="mt-2 text-sm text-gray-500">
-                              Controls the darkness of the overlay on top of your outro background
-                              image.
-                            </p>
-                          </div>
-                        )}
-
-                        <div>
-                          <label className="mb-3 block text-sm font-medium text-gray-700">
-                            Outro Background Color
-                          </label>
-                          <div className="flex items-center space-x-3">
-                            <input
-                              type="color"
-                              value={formData.outro_background_color || '#1f2937'}
-                              onChange={(e) =>
-                                handleInputChange('outro_background_color', e.target.value)
-                              }
-                              className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                            />
-                            <input
-                              type="text"
-                              value={formData.outro_background_color || ''}
-                              onChange={(e) =>
-                                handleInputChange('outro_background_color', e.target.value)
-                              }
-                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="#1f2937"
-                            />
-                          </div>
                           <p className="mt-2 text-sm text-gray-500">
-                            Background color for the outro section. Leave empty to use default
-                            gradient.
+                            Choose how to display your Calendly booking: button, embedded widget, or
+                            both
                           </p>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Button Styling */}
-                    <div className="space-y-6 border-t pt-6">
-                      <h3 className="text-lg font-medium text-gray-900">Button Styling</h3>
-
-                      {/* Email Capture Button Styling */}
-                      {formData.funnel_type === 'email_capture' && (
-                        <div className="space-y-4">
-                          <h4 className="text-md font-medium text-gray-800">
-                            Email Capture Button
-                          </h4>
-
-                          <div>
-                            <label className="mb-3 flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={formData.landing_page_button_use_gradient}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_button_use_gradient',
-                                    e.target.checked
-                                  )
-                                }
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <span className="ml-3 text-sm font-medium text-gray-700">
-                                Use gradient background
-                              </span>
-                            </label>
-                          </div>
-
-                          {formData.landing_page_button_use_gradient ? (
-                            <div>
-                              <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Button Gradient
-                              </label>
-                              <select
-                                value={formData.landing_page_button_bg_gradient}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_button_bg_gradient',
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="from-blue-600 to-purple-600">Blue to Purple</option>
-                                <option value="from-green-600 to-blue-600">Green to Blue</option>
-                                <option value="from-purple-600 to-pink-600">Purple to Pink</option>
-                                <option value="from-yellow-600 to-orange-600">
-                                  Yellow to Orange
-                                </option>
-                                <option value="from-red-600 to-pink-600">Red to Pink</option>
-                                <option value="from-indigo-600 to-purple-600">
-                                  Indigo to Purple
-                                </option>
-                                <option value="from-teal-600 to-green-600">Teal to Green</option>
-                                <option value="from-gray-600 to-gray-800">Gray to Dark Gray</option>
-                              </select>
-                            </div>
-                          ) : (
-                            <div>
-                              <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Button Background Color
-                              </label>
-                              <div className="flex items-center space-x-3">
-                                <input
-                                  type="color"
-                                  value={formData.landing_page_button_bg_color}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      'landing_page_button_bg_color',
-                                      e.target.value
-                                    )
-                                  }
-                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                                />
-                                <input
-                                  type="text"
-                                  value={formData.landing_page_button_bg_color}
-                                  onChange={(e) =>
-                                    handleInputChange(
-                                      'landing_page_button_bg_color',
-                                      e.target.value
-                                    )
-                                  }
-                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="#3b82f6"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Button Text Color
-                            </label>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="color"
-                                value={formData.landing_page_button_text_color}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_button_text_color',
-                                    e.target.value
-                                  )
-                                }
-                                className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                              />
-                              <input
-                                type="text"
-                                value={formData.landing_page_button_text_color}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    'landing_page_button_text_color',
-                                    e.target.value
-                                  )
-                                }
-                                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="#ffffff"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Preview */}
-                          <div className="rounded-lg bg-gray-100 p-4">
-                            <p className="mb-2 text-sm font-medium text-gray-700">
-                              Button Preview:
-                            </p>
-                            <button
-                              className={`rounded-xl px-6 py-3 font-semibold transition-all duration-200 ${
-                                formData.landing_page_button_use_gradient
-                                  ? `bg-gradient-to-r ${formData.landing_page_button_bg_gradient}`
-                                  : ''
-                              }`}
-                              style={
-                                !formData.landing_page_button_use_gradient
-                                  ? {
-                                      backgroundColor: formData.landing_page_button_bg_color,
-                                      color: formData.landing_page_button_text_color,
-                                    }
-                                  : {
-                                      color: formData.landing_page_button_text_color,
-                                    }
-                              }
-                            >
-                              {formData.landing_page_button_text || 'Get Instant Access'}
-                            </button>
-                          </div>
-                        </div>
                       )}
-
-                      {/* Calendly Button Styling */}
-                      {formData.calendly_link && (
-                        <div className="space-y-4">
-                          <h4 className="text-md font-medium text-gray-800">Calendly Button</h4>
-
-                          <div>
-                            <label className="mb-3 flex items-center">
-                              <input
-                                type="checkbox"
-                                checked={formData.calendly_button_use_gradient}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    'calendly_button_use_gradient',
-                                    e.target.checked
-                                  )
-                                }
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                              <span className="ml-3 text-sm font-medium text-gray-700">
-                                Use gradient background
-                              </span>
-                            </label>
-                          </div>
-
-                          {formData.calendly_button_use_gradient ? (
-                            <div>
-                              <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Button Gradient
-                              </label>
-                              <select
-                                value={formData.calendly_button_bg_gradient}
-                                onChange={(e) =>
-                                  handleInputChange('calendly_button_bg_gradient', e.target.value)
-                                }
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              >
-                                <option value="from-blue-600 to-purple-600">Blue to Purple</option>
-                                <option value="from-green-600 to-blue-600">Green to Blue</option>
-                                <option value="from-purple-600 to-pink-600">Purple to Pink</option>
-                                <option value="from-yellow-600 to-orange-600">
-                                  Yellow to Orange
-                                </option>
-                                <option value="from-red-600 to-pink-600">Red to Pink</option>
-                                <option value="from-indigo-600 to-purple-600">
-                                  Indigo to Purple
-                                </option>
-                                <option value="from-teal-600 to-green-600">Teal to Green</option>
-                                <option value="from-gray-600 to-gray-800">Gray to Dark Gray</option>
-                              </select>
-                            </div>
-                          ) : (
-                            <div>
-                              <label className="mb-2 block text-sm font-medium text-gray-700">
-                                Button Background Color
-                              </label>
-                              <div className="flex items-center space-x-3">
-                                <input
-                                  type="color"
-                                  value={formData.calendly_button_bg_color}
-                                  onChange={(e) =>
-                                    handleInputChange('calendly_button_bg_color', e.target.value)
-                                  }
-                                  className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                                />
-                                <input
-                                  type="text"
-                                  value={formData.calendly_button_bg_color}
-                                  onChange={(e) =>
-                                    handleInputChange('calendly_button_bg_color', e.target.value)
-                                  }
-                                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  placeholder="#3b82f6"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Button Text Color
-                            </label>
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="color"
-                                value={formData.calendly_button_text_color}
-                                onChange={(e) =>
-                                  handleInputChange('calendly_button_text_color', e.target.value)
-                                }
-                                className="h-10 w-12 cursor-pointer rounded-lg border border-gray-300"
-                              />
-                              <input
-                                type="text"
-                                value={formData.calendly_button_text_color}
-                                onChange={(e) =>
-                                  handleInputChange('calendly_button_text_color', e.target.value)
-                                }
-                                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="#ffffff"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Preview */}
-                          <div className="rounded-lg bg-gray-100 p-4">
-                            <p className="mb-2 text-sm font-medium text-gray-700">
-                              Button Preview:
-                            </p>
-                            <button
-                              className={`flex items-center space-x-2 rounded-xl px-6 py-3 font-semibold transition-all duration-200 ${
-                                formData.calendly_button_use_gradient
-                                  ? `bg-gradient-to-r ${formData.calendly_button_bg_gradient}`
-                                  : ''
-                              }`}
-                              style={
-                                !formData.calendly_button_use_gradient
-                                  ? {
-                                      backgroundColor: formData.calendly_button_bg_color,
-                                      color: formData.calendly_button_text_color,
-                                    }
-                                  : {
-                                      color: formData.calendly_button_text_color,
-                                    }
-                              }
-                            >
-                              <Calendar className="h-5 w-5" />
-                              <span>Schedule Your Call Now</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                      <div className="flex">
-                        <Settings className="mr-3 mt-0.5 h-5 w-5 text-blue-500" />
-                        <div>
-                          <h4 className="mb-1 text-sm font-medium text-blue-900">Style Override</h4>
-                          <p className="text-sm text-blue-700">
-                            These are default colors and sizes. You can override them with custom
-                            formatting in the text editor for individual words or sections.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* SEO & Social Tab */}
-            {activeTab === 'seo' && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">SEO & Social Sharing</h2>
+            {/* Right Column - Preview */}
+            <div className="space-y-6 xl:col-span-1">
+              {/* Show Landing Page Preview ABOVE webinar content if email capture funnel */}
+              {formData.funnel_type === 'email_capture' && (
+                <LandingPagePreview formData={formData} />
+              )}
 
-                  <div className="space-y-6">
+              {/* Main Funnel Preview (Webinar Content) */}
+              <FunnelPreview formData={formData} />
+            </div>
+          </div>
+
+          {/* Save as Template Modal */}
+          {showSaveAsTemplateModal && (
+            <>
+              {/* Full-screen backdrop */}
+              <div className="fixed inset-0 z-[90] bg-black bg-opacity-50" />
+
+              {/* Modal content positioned within available space */}
+              <div
+                className="fixed z-[100] flex items-center justify-center overflow-y-auto p-4"
+                style={{
+                  left: `${availableSpace.left}px`,
+                  top: `${availableSpace.top}px`,
+                  right: `${availableSpace.right}px`,
+                  bottom: `${availableSpace.bottom}px`,
+                }}
+              >
+                <div className="theme-border flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl border bg-white p-6 shadow-2xl">
+                  <h3 className="mb-4 text-xl font-semibold text-gray-900">Save as Template</h3>
+                  <p className="mb-6 text-gray-600">
+                    Create a personal template from this funnel that you can reuse for future
+                    projects.
+                  </p>
+
+                  <div className="space-y-4">
                     <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Meta Title
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Template Name *
                       </label>
                       <input
                         type="text"
-                        value={formData.meta_title || ''}
-                        onChange={(e) => handleInputChange('meta_title', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Custom page title for search engines and browser tabs"
-                        maxLength={60}
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="My Awesome Template"
+                        maxLength={100}
                       />
-                      <p className="mt-2 text-sm text-gray-500">
-                        Appears in browser tabs and search results. Recommended: 50-60 characters.
-                        Leave empty to use funnel title.
-                      </p>
                     </div>
 
                     <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Meta Description
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Description (Optional)
                       </label>
                       <textarea
-                        value={formData.meta_description || ''}
-                        onChange={(e) => handleInputChange('meta_description', e.target.value)}
+                        value={templateDescription}
+                        onChange={(e) => setTemplateDescription(e.target.value)}
                         rows={3}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Brief description of your funnel for search engines and social media"
-                        maxLength={160}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Describe when to use this template..."
+                        maxLength={500}
                       />
-                      <p className="mt-2 text-sm text-gray-500">
-                        Appears in search results and when shared on social media. Recommended:
-                        150-160 characters.
-                      </p>
                     </div>
 
-                    <ImageUpload
-                      label="Social Media Preview Image (Open Graph)"
-                      value={formData.og_image_url || ''}
-                      onChange={(url) => handleInputChange('og_image_url', url)}
-                      placeholder="Upload image for social media previews or enter URL"
-                      className="col-span-full"
-                    />
-                    <p className="-mt-4 text-sm text-gray-500">
-                      This image appears when your funnel is shared on Facebook, Twitter, LinkedIn,
-                      etc. Recommended size: 1200x630 pixels.
-                    </p>
-
-                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                      <div className="flex">
-                        <Mail className="mr-3 mt-0.5 h-5 w-5 text-blue-500" />
-                        <div>
-                          <h4 className="mb-1 text-sm font-medium text-blue-900">
-                            SEO & Social Media Tips
-                          </h4>
-                          <p className="text-sm text-blue-700">
-                            Well-optimized meta tags can significantly improve your funnel's
-                            visibility in search results and click-through rates when shared on
-                            social media platforms.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Integration Tab */}
-            {activeTab === 'integration' && (
-              <div className="space-y-6">
-                <div className="rounded-xl border border-gray-200 bg-white p-6">
-                  <h2 className="mb-6 text-xl font-semibold text-gray-900">Calendly Integration</h2>
-
-                  <div className="space-y-6">
                     <div>
-                      <label className="mb-3 block text-sm font-medium text-gray-700">
-                        Calendly Booking Link
+                      <label className="mb-2 block text-sm font-medium text-gray-700">
+                        Category
                       </label>
                       <input
-                        type="url"
-                        value={formData.calendly_link || ''}
-                        onChange={(e) => handleInputChange('calendly_link', e.target.value)}
-                        className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="https://calendly.com/your-link"
+                        type="text"
+                        value={templateCategory}
+                        onChange={(e) => setTemplateCategory(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Personal"
+                        maxLength={50}
                       />
-                      <p className="mt-2 text-sm text-gray-500">
-                        Add your Calendly booking link for the final call-to-action
-                      </p>
                     </div>
+                  </div>
 
-                    {formData.calendly_link && (
-                      <div>
-                        <label className="mb-3 block text-sm font-medium text-gray-700">
-                          Calendly Display Type
-                        </label>
-                        <select
-                          value={formData.calendly_display_type}
-                          onChange={(e) =>
-                            handleInputChange('calendly_display_type', e.target.value)
-                          }
-                          className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="button">Button Only</option>
-                          <option value="embed">Embedded Widget Only</option>
-                          <option value="both">Both Button and Embedded Widget</option>
-                        </select>
-                        <p className="mt-2 text-sm text-gray-500">
-                          Choose how to display your Calendly booking: button, embedded widget, or
-                          both
-                        </p>
-                      </div>
-                    )}
+                  <div className="mt-6 flex items-center justify-end space-x-3">
+                    <button
+                      onClick={() => {
+                        setShowSaveAsTemplateModal(false);
+                        setTemplateName('');
+                        setTemplateDescription('');
+                        setTemplateCategory('Personal');
+                      }}
+                      disabled={savingTemplate}
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveAsTemplate}
+                      disabled={savingTemplate || !templateName.trim()}
+                      className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {savingTemplate ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <BookmarkPlus className="h-4 w-4" />
+                      )}
+                      <span>{savingTemplate ? 'Saving...' : 'Save Template'}</span>
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Right Column - Preview */}
-          <div className="space-y-6 xl:col-span-1">
-            {/* Show Landing Page Preview ABOVE webinar content if email capture funnel */}
-            {formData.funnel_type === 'email_capture' && <LandingPagePreview formData={formData} />}
-
-            {/* Main Funnel Preview (Webinar Content) */}
-            <FunnelPreview formData={formData} />
-          </div>
+            </>
+          )}
         </div>
-
-        {/* Save as Template Modal */}
-        {showSaveAsTemplateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
-              <h3 className="mb-4 text-xl font-semibold text-gray-900">Save as Template</h3>
-              <p className="mb-6 text-gray-600">
-                Create a personal template from this funnel that you can reuse for future projects.
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Template Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="My Awesome Template"
-                    maxLength={100}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    value={templateDescription}
-                    onChange={(e) => setTemplateDescription(e.target.value)}
-                    rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Describe when to use this template..."
-                    maxLength={500}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">Category</label>
-                  <input
-                    type="text"
-                    value={templateCategory}
-                    onChange={(e) => setTemplateCategory(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Personal"
-                    maxLength={50}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setShowSaveAsTemplateModal(false);
-                    setTemplateName('');
-                    setTemplateDescription('');
-                    setTemplateCategory('Personal');
-                  }}
-                  disabled={savingTemplate}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveAsTemplate}
-                  disabled={savingTemplate || !templateName.trim()}
-                  className="inline-flex items-center space-x-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white transition-all duration-200 hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {savingTemplate ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <BookmarkPlus className="h-4 w-4" />
-                  )}
-                  <span>{savingTemplate ? 'Saving...' : 'Save Template'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+      </AppLayout>
+    </React.Fragment>
   );
 }
