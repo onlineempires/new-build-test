@@ -56,12 +56,8 @@ export default function MemberFunnels() {
     if (!confirm('Are you sure you want to delete this funnel?')) return;
 
     try {
-      const response = await fetch(`/member/funnels/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setFunnels(funnels.filter((f) => f.id !== id));
-      }
+      await funnelApi.memberFunnel.deleteFunnel(id);
+      setFunnels(funnels.filter((f) => f.id !== id));
     } catch (error) {
       console.error('Failed to delete funnel:', error);
     }
@@ -69,12 +65,8 @@ export default function MemberFunnels() {
 
   const handlePublish = async (id: number) => {
     try {
-      const response = await fetch(`/member/funnels/${id}/publish`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setFunnels(funnels.map((f) => (f.id === id ? { ...f, is_published: 1 } : f)));
-      }
+      await funnelApi.memberFunnel.publishFunnel(id);
+      setFunnels(funnels.map((f) => (f.id === id ? { ...f, is_published: 1 } : f)));
     } catch (error) {
       console.error('Failed to publish funnel:', error);
     }
@@ -97,20 +89,9 @@ export default function MemberFunnels() {
   const handleDuplicate = async (id: number) => {
     setDuplicatingFunnel(id);
     try {
-      const response = await fetch(`/member/funnels/${id}/duplicate`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        const duplicatedFunnel = await response.json();
-        // Refresh the funnels list to show the new duplicate
-        await fetchFunnels();
-        // Navigate to edit the duplicated funnel
-        router.push(`/member/funnels/${duplicatedFunnel.id}`);
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to duplicate funnel: ${errorData.error || 'Unknown error'}`);
-      }
+      const duplicatedFunnel = await funnelApi.memberFunnel.duplicateFunnel(id);
+      await fetchFunnels();
+      router.push(`/member/funnels/${duplicatedFunnel.id}`);
     } catch (error) {
       console.error('Failed to duplicate funnel:', error);
       alert('Failed to duplicate funnel. Please try again.');
@@ -302,7 +283,7 @@ export default function MemberFunnels() {
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                                 onClick={() => setActiveDropdown(null)}
                               >
-                                <Edit3 className="mr-3 h-4 w-4" />
+                                <Edit3 className="mr-3 h-4 w-4 cursor-pointer" />
                                 Edit Funnel
                               </Link>
 
@@ -518,7 +499,7 @@ export default function MemberFunnels() {
                               className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
                               title="Edit"
                             >
-                              <Edit3 className="h-4 w-4" />
+                              <Edit3 className="h-4 w-4 cursor-pointer" />
                             </Link>
 
                             <button

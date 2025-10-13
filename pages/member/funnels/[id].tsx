@@ -433,31 +433,19 @@ export default function FunnelEditor() {
 
       console.log('Sending data:', cleanData);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cleanData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+      // Use API client targeting /api/v2 with auth
+      const result = isEditing
+        ? await funnelApi.memberFunnel.updateFunnel(Number(id), cleanData as any)
+        : await funnelApi.memberFunnel.createFunnel(cleanData as any);
+      if (result) {
         console.log('Funnel saved successfully:', result);
 
         // If this is a new funnel and we should publish it
-        if (shouldPublish && !isEditing && result.id) {
+        if (shouldPublish && !isEditing && (result as any).id) {
           try {
-            const publishResponse = await fetch(`/member/funnels/${result.id}/publish`, {
-              method: 'POST',
-            });
-            if (publishResponse.ok) {
+            await funnelApi.memberFunnel.publishFunnel((result as any).id);
+            {
               console.log('Funnel published successfully');
-            } else {
-              console.error('Failed to publish funnel');
-              alert(
-                'Funnel saved but failed to publish. You can publish it from the My Funnels page.'
-              );
             }
           } catch (publishError) {
             console.error('Failed to publish funnel:', publishError);
@@ -469,46 +457,7 @@ export default function FunnelEditor() {
 
         router.push('/member/funnels');
       } else {
-        let errorMessage = 'Unknown error';
-        try {
-          const errorData = await response.json();
-          console.error('Failed to save funnel:', response.status, errorData);
-
-          // Handle different error response formats
-          if (typeof errorData === 'string') {
-            errorMessage = errorData;
-          } else if (errorData && typeof errorData === 'object') {
-            // Check various possible error fields
-            if (errorData.error && typeof errorData.error === 'string') {
-              errorMessage = errorData.error;
-            } else if (errorData.message && typeof errorData.message === 'string') {
-              errorMessage = errorData.message;
-            } else if (errorData.details && typeof errorData.details === 'string') {
-              errorMessage = errorData.details;
-            } else if (errorData.issues && Array.isArray(errorData.issues)) {
-              // Handle Zod validation errors
-              errorMessage = errorData.issues
-                .map((issue: any) => {
-                  const path = issue.path ? issue.path.join('.') : '';
-                  return path ? `${path}: ${issue.message}` : issue.message;
-                })
-                .join(', ');
-            } else {
-              // Fallback - try to stringify the error object safely
-              try {
-                errorMessage = JSON.stringify(errorData, null, 2);
-              } catch {
-                errorMessage = `Server error (${response.status})`;
-              }
-            }
-          } else {
-            errorMessage = `Server error: ${response.status}`;
-          }
-        } catch (e) {
-          console.error('Failed to parse error response:', e);
-          errorMessage = `Server error (${response.status}) - Unable to parse error details`;
-        }
-        alert(`Failed to save funnel: ${errorMessage}`);
+        alert('Failed to save funnel: Unknown error');
       }
     } catch (error) {
       console.error('Failed to save funnel:', error);
@@ -584,27 +533,19 @@ export default function FunnelEditor() {
 
     setSavingTemplate(true);
     try {
-      const response = await fetch(`/member/funnels/${id}/save-as-template`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: templateName.trim(),
-          description: templateDescription.trim() || undefined,
-          category: templateCategory.trim() || 'Personal',
-        }),
+      // Use API client so it hits /api/v2 with auth
+      const result = await funnelApi.memberFunnel.saveAsTemplate(Number(id), {
+        name: templateName.trim(),
+        description: templateDescription.trim() || undefined,
+        category: templateCategory.trim() || 'Personal',
       });
 
-      if (response.ok) {
+      if (result) {
         setShowSaveAsTemplateModal(false);
         setTemplateName('');
         setTemplateDescription('');
         setTemplateCategory('Personal');
         alert('Template saved successfully! You can now use it when creating new funnels.');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to save template: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Failed to save template:', error);
