@@ -77,6 +77,25 @@ const JoditEditor = forwardRef<JoditEditorRef, JoditEditorProps>(
     useEffect(() => {
       if (!editorRef.current) return;
 
+      // Ensure Jodit stylesheet is loaded; without it the toolbar renders as raw text
+      const ensureJoditStyles = async () => {
+        if (typeof document === 'undefined') return;
+        let link = document.querySelector('link[data-jodit-styles]') as HTMLLinkElement | null;
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'https://cdn.jsdelivr.net/npm/jodit@3.24.7/build/jodit.min.css';
+          link.setAttribute('data-jodit-styles', '');
+          document.head.appendChild(link);
+          // Wait for the stylesheet to load to avoid FOUC
+          await new Promise((resolve) => {
+            link!.addEventListener('load', resolve as any, { once: true });
+            // Fallback resolve after 1s
+            setTimeout(resolve, 1000);
+          });
+        }
+      };
+
       // Build buttons array based on props
       const buildButtons = () => {
         let buttons = [
@@ -186,6 +205,7 @@ const JoditEditor = forwardRef<JoditEditorRef, JoditEditorProps>(
       const initializeJodit = async () => {
         try {
           if (!editorRef.current) return;
+          await ensureJoditStyles();
           const { Jodit } = await import('jodit');
           joditInstance.current = Jodit.make(editorRef.current, defaultConfig);
 
@@ -230,38 +250,39 @@ const JoditEditor = forwardRef<JoditEditorRef, JoditEditorProps>(
       },
     }));
 
-    if (!isReady) {
-      return (
+    return (
+      <div style={{ position: 'relative' }}>
+        {/* The editor host element should always render so useEffect can initialize Jodit */}
         <div
-          className={`jodit-editor-loading ${className}`}
+          ref={editorRef}
+          className={`jodit-editor ${className}`}
           style={{
             border: '1px solid #d1d5db',
             borderRadius: '8px',
-            height: height,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#f9fafb',
-            color: '#6b7280',
+            overflow: 'hidden',
+            minHeight: height,
             ...style,
           }}
-        >
-          Loading editor...
-        </div>
-      );
-    }
-
-    return (
-      <div
-        ref={editorRef}
-        className={`jodit-editor ${className}`}
-        style={{
-          border: '1px solid #d1d5db',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          ...style,
-        }}
-      />
+        />
+        {!isReady && (
+          <div
+            className="jodit-editor-loading"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f9fafb',
+              color: '#6b7280',
+              border: '1px solid #d1d5db',
+              borderRadius: '8px',
+            }}
+          >
+            Loading editor...
+          </div>
+        )}
+      </div>
     );
   }
 );
