@@ -75,14 +75,17 @@ export default function MemberFunnels() {
   const copyFunnelUrl = (slug: string) => {
     const url = `${window.location.origin}/funnel/${slug}`;
     navigator.clipboard.writeText(url);
-    // Show success feedback
+
+    // Show temporary success feedback
     const button = document.querySelector(`[data-funnel-slug="${slug}"]`);
     if (button) {
-      const originalText = button.textContent;
-      button.textContent = 'Copied!';
+      const originalContent = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check text-green-600"></i>';
+      button.classList.add('text-green-600');
       setTimeout(() => {
-        button.textContent = originalText;
-      }, 2000);
+        button.innerHTML = originalContent;
+        button.classList.remove('text-green-600');
+      }, 1000);
     }
   };
 
@@ -282,6 +285,7 @@ export default function MemberFunnels() {
                                 href={`/member/funnels/${funnel.id}`}
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                                 onClick={() => setActiveDropdown(null)}
+                                title="Edit Funnel"
                               >
                                 <Edit3 className="mr-3 h-4 w-4 cursor-pointer" />
                                 Edit Funnel
@@ -494,13 +498,14 @@ export default function MemberFunnels() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end space-x-2">
-                            <Link
-                              href={`/member/funnels/${funnel.id}`}
-                              className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                              title="Edit"
-                            >
-                              <Edit3 className="h-4 w-4 cursor-pointer" />
-                            </Link>
+                            <div title="Edit Funnel">
+                              <Link
+                                href={`/member/funnels/${funnel.id}`}
+                                className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                              >
+                                <Edit3 className="h-4 w-4 cursor-pointer" />
+                              </Link>
+                            </div>
 
                             <button
                               onClick={() => handleDuplicate(funnel.id)}
@@ -519,14 +524,16 @@ export default function MemberFunnels() {
 
                             {funnel.is_published && funnel.slug ? (
                               <>
-                                <Link
-                                  href={`/funnel/${funnel.slug}`}
-                                  target="_blank"
-                                  className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-green-50 hover:text-green-600"
-                                  title="View"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Link>
+                                <div title="View">
+                                  <Link
+                                    href={`/funnel/${funnel.slug}`}
+                                    target="_blank"
+                                    className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-green-50 hover:text-green-600"
+                                    title="View"
+                                  >
+                                    <Eye className="h-4 w-4 cursor-pointer" />
+                                  </Link>
+                                </div>
                                 <button
                                   onClick={() => copyFunnelUrl(funnel.slug!)}
                                   className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
