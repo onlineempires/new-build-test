@@ -237,7 +237,7 @@ export default function SalesCloserForm({
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
         <div
           className="theme-border w-full max-w-md rounded-2xl border p-8 text-center"
-          style={{ backgroundColor: 'var(--color-bg)' }}
+          style={{ backgroundColor: 'var(--color-background)' }}
         >
           <div className="mb-4 animate-spin">
             <div
@@ -268,10 +268,7 @@ export default function SalesCloserForm({
         }}
       >
         {currentStep === 'closer-selection' && (
-          <div
-            className="theme-border flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl border shadow-lg"
-            style={{ backgroundColor: 'var(--color-bg)' }}
-          >
+          <div className="theme-border flex max-h-[calc(100vh-8rem)] w-full max-w-6xl flex-col rounded-2xl border bg-[var(--color-card-background)] shadow-lg">
             {/* Modal Header */}
             <div className="theme-border flex items-center justify-between border-b p-6">
               <h2 className="theme-text-primary text-2xl font-bold">
@@ -303,7 +300,7 @@ export default function SalesCloserForm({
                     className="theme-input w-full rounded-lg border py-3 pl-10 pr-4 focus:border-transparent focus:ring-2"
                     style={{
                       borderColor: 'var(--color-border)',
-                      backgroundColor: 'var(--color-bg)',
+                      backgroundColor: 'var(--color-background)',
                     }}
                   />
                 </div>
@@ -319,7 +316,7 @@ export default function SalesCloserForm({
                     className="theme-input min-w-[200px] appearance-none rounded-lg border py-3 pl-10 pr-8 focus:border-transparent focus:ring-2"
                     style={{
                       borderColor: 'var(--color-border)',
-                      backgroundColor: 'var(--color-bg)',
+                      backgroundColor: 'var(--color-background)',
                     }}
                   >
                     <option value="">All Specialties</option>

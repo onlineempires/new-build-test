@@ -32,7 +32,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
           {/* Option 1: Round Robin */}
           <div
             className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
             onClick={() => handleSelectOption('round-robin')}
           >
             {/* Recommended Badge */}
@@ -123,7 +123,7 @@ export default function SalesCloserSetupPage({ onSelectOption }: SalesCloserSetu
           {/* Option 2: Dedicated Closer */}
           <div
             className="theme-border relative transform cursor-pointer overflow-hidden rounded-2xl border-2 shadow-lg transition-all duration-300 hover:scale-[1.02]"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
             onClick={() => handleSelectOption('dedicated')}
           >
             <div className="p-6 md:p-8">

@@ -259,7 +259,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
             className="theme-hover flex items-center space-x-2 rounded-lg border px-4 py-2 transition-colors"
             style={{
               borderColor: 'var(--color-primary)',
-              backgroundColor: 'var(--color-bg)',
+              backgroundColor: 'var(--color-background)',
               color: 'var(--color-primary)',
             }}
           >
@@ -271,7 +271,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
         {showChangeCloser && (
           <div
             className="theme-border mb-6 rounded-lg border p-4"
-            style={{ backgroundColor: 'var(--color-warning-bg)' }}
+            style={{ backgroundColor: 'var(--color-warning)' }}
           >
             <div className="mb-2 flex items-center space-x-2">
               <Settings className="h-5 w-5" style={{ color: 'var(--color-warning)' }} />
@@ -304,7 +304,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="lg:col-span-1">
             <div
               className="theme-border overflow-hidden rounded-2xl border shadow-lg"
-              style={{ backgroundColor: 'var(--color-bg)' }}
+              style={{ backgroundColor: 'var(--color-background)' }}
             >
               {/* Profile Header */}
               <div className="bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white">
@@ -391,7 +391,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="lg:col-span-2">
             <div
               className="theme-border rounded-2xl border p-6 shadow-lg"
-              style={{ backgroundColor: 'var(--color-bg)' }}
+              style={{ backgroundColor: 'var(--color-background)' }}
             >
               <div className="mb-6 flex items-center space-x-3">
                 <MessageCircle className="h-6 w-6" style={{ color: 'var(--color-primary)' }} />
@@ -405,7 +405,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-bg)',
+                    backgroundColor: 'var(--color-background)',
                   }}
                 >
                   <div
@@ -427,7 +427,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-bg)',
+                    backgroundColor: 'var(--color-background)',
                   }}
                 >
                   <div
@@ -456,7 +456,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover group flex items-center space-x-3 rounded-lg border p-4 transition-all"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-bg)',
+                    backgroundColor: 'var(--color-background)',
                   }}
                 >
                   <div
@@ -575,7 +575,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div
               className="theme-border w-full max-w-md rounded-2xl border p-6"
-              style={{ backgroundColor: 'var(--color-bg)' }}
+              style={{ backgroundColor: 'var(--color-background)' }}
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="theme-text-primary text-xl font-bold">Rate {closer.name}</h2>
@@ -617,7 +617,10 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   onChange={(e) => setReview(e.target.value)}
                   placeholder="Share your experience working with this closer..."
                   className="theme-input w-full rounded-lg border px-3 py-2 focus:border-transparent focus:ring-2"
-                  style={{ borderColor: 'var(--color-border)', backgroundColor: 'var(--color-bg)' }}
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    backgroundColor: 'var(--color-background)',
+                  }}
                   rows={4}
                 />
               </div>
@@ -628,7 +631,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
                   className="theme-hover flex-1 rounded-lg border px-4 py-2 transition-colors"
                   style={{
                     borderColor: 'var(--color-border)',
-                    backgroundColor: 'var(--color-bg)',
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text)',
                   }}
                 >
@@ -662,7 +665,7 @@ export default function MyDedicatedCloserPage({ onPreferenceChange }: MyDedicate
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div
               className="theme-border flex max-h-[80vh] w-full max-w-2xl flex-col rounded-2xl border"
-              style={{ backgroundColor: 'var(--color-bg)' }}
+              style={{ backgroundColor: 'var(--color-background)' }}
             >
               <div className="theme-border flex items-center justify-between border-b p-6">
                 <h2 className="theme-text-primary text-xl font-bold">Activity Report</h2>

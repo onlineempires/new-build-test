@@ -82,7 +82,7 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
         <div className="mx-auto max-w-4xl text-center">
           <div
             className="theme-border rounded-2xl border p-8 shadow-lg md:p-12"
-            style={{ backgroundColor: 'var(--color-bg)' }}
+            style={{ backgroundColor: 'var(--color-background)' }}
           >
             <Zap className="mx-auto mb-4 h-16 w-16" style={{ color: 'var(--color-secondary)' }} />
             <h1 className="theme-text-primary mb-4 text-2xl font-bold">Round Robin Not Active</h1>
@@ -132,7 +132,7 @@ export default function MyRoundRobinPage({ onPreferenceChange }: MyRoundRobinPag
         {/* Main Status Card */}
         <div
           className="theme-border mb-8 overflow-hidden rounded-2xl border shadow-lg"
-          style={{ backgroundColor: 'var(--color-bg)' }}
+          style={{ backgroundColor: 'var(--color-background)' }}
         >
           {/* Header Section */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center text-white md:p-8">
